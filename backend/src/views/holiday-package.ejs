@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('components/head', { 
+    pageTitle: 'Holiday Packages - Mangalam Travel & Tours | Explore Curated Categories',
+    pageDescription: 'Choose your perfect holiday from our categories: Curated Itineraries, Fixed Departures, and Romantic Honeymoon packages.',
+    pageKeywords: 'holiday packages, tour packages, curated itineraries, fixed departures, honeymoon packages, Mangalam Tours',
+    pageImage: './assets/images/destination-banner.webp',
+    pageUrl: ''
+}) %>
+<body class="font-dm-sans bg-white">
+    <%- include('components/header') %>
+    <main>
+        <!-- Hero Section -->
+        <section class="relative h-[50vh] overflow-hidden">
+            <!-- Background Image -->
+            <div class="absolute inset-0">
+                <img src="./assets/images/holiday-packages.jpg" alt="Holiday Packages Banner" class="hidden lg:block w-full h-full object-cover md:rounded-br-[150px]">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent rounded-br-[150px]"></div> 
+            </div>
+            
+            <!-- Hero Content -->
+            <div class="relative z-10 h-full flex items-end">
+                <div class="container mx-auto px-4 pb-8">
+                    <h1 class="text-3xl md:text-5xl font-bold text-white font-[Quicksand] leading-tight">
+                        Holiday Packages
+                    </h1>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section class="lg:py-24 py-16" data-aos="fade-up">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                    <!-- Destinations -->
+                    <a href="/curated-itineraries.php" class="group relative h-[400px] lg:h-[500px] w-full rounded-3xl overflow-hidden cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-500 ease-out transform hover:-translate-y-2">
+                        <div class="absolute inset-0 z-0">
+                            <img src="./assets/images/destination-card-2.webp" alt="Destinations" class="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500"></div>
+                        </div>
+                        
+                        <div class="absolute top-6 right-6 z-10">
+                            <div class="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center group-hover:bg-white group-hover:scale-110 transition-all duration-300">
+                                <i class="fi fi-rr-map-marker-home text-white group-hover:text-red-600 text-2xl transition-colors duration-300 flex items-center"></i>
+                            </div>
+                        </div>
+
+                        <div class="absolute bottom-0 left-0 right-0 px-4 lg:px-8 py-8 z-10 flex flex-col items-start translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            <h3 class="text-2xl lg:text-3xl font-bold text-white mb-2 font-[Quicksand] leading-tight">Destinations</h3>
+                            <div>
+                                <span class="inline-flex items-center space-x-2 text-white text-sm font-medium border-b border-red-500 pb-1">
+                                    <span>Explore Collection</span>
+                                    <i class="fi fi-rr-arrow-right transform group-hover:translate-x-1 transition-transform"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Fixed Departures -->
+                    <a href="/fixed-departures.php" class="group relative h-[400px] lg:h-[500px] w-full rounded-3xl overflow-hidden cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-500 ease-out transform hover:-translate-y-2">
+                        <div class="absolute inset-0 z-0">
+                            <img src="./assets/images/package-card-1.webp" alt="Fixed Departures" class="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500"></div>
+                        </div>
+
+                        <div class="absolute top-6 right-6 z-10">
+                            <div class="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center group-hover:bg-white group-hover:scale-110 transition-all duration-300">
+                                <i class="fi fi-rr-calendar text-white group-hover:text-red-600 text-2xl transition-colors duration-300 flex items-center"></i>
+                            </div>
+                        </div>
+
+                        <div class="absolute bottom-0 left-0 right-0 px-4 lg:px-8 py-8 z-10 flex flex-col items-start translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            <h3 class="text-2xl lg:text-3xl font-bold text-white mb-2 font-[Quicksand] leading-tight">Fixed Departures</h3>
+                            <div>
+                                <span class="inline-flex items-center space-x-2 text-white text-sm font-medium border-b border-red-500 pb-1">
+                                    <span>Explore Collection</span>
+                                    <i class="fi fi-rr-arrow-right transform group-hover:translate-x-1 transition-transform"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Honeymoon -->
+                    <a href="/honeymoon-packages.php" class="group relative h-[400px] lg:h-[500px] w-full rounded-3xl overflow-hidden cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-500 ease-out transform hover:-translate-y-2">
+                        <div class="absolute inset-0 z-0">
+                            <img src="./assets/images/destination-card-3.webp" alt="Honeymoon" class="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500"></div>
+                        </div>
+
+                        <div class="absolute top-6 right-6 z-10">
+                            <div class="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center group-hover:bg-white group-hover:scale-110 transition-all duration-300">
+                                <i class="fi fi-rr-heart text-white group-hover:text-red-600 text-2xl transition-colors duration-300 flex items-center"></i>
+                            </div>
+                        </div>
+
+                        <div class="absolute bottom-0 left-0 right-0 px-4 lg:px-8 py-8 z-10 flex flex-col items-start translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            <h3 class="text-2xl lg:text-3xl font-bold text-white mb-2 font-[Quicksand] leading-tight">Honeymoon Packages</h3>
+                            <div>
+                                <span class="inline-flex items-center space-x-2 text-white text-sm font-medium border-b border-red-500 pb-1">
+                                    <span>Explore Collection</span>
+                                    <i class="fi fi-rr-arrow-right transform group-hover:translate-x-1 transition-transform"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <%- include('components/footer') %>
+    <%- include('components/Customize') %>
+    <%- include('components/FixedCustomizeButton') %>
+    <%- include('components/MobileNav') %>
+    <%- include('components/script') %>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mangalam Travel & Tours - Add Destination</title>
+        <!-- main style -->
+        <link rel="stylesheet" href="libs/css/style.css">
+        
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+        integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#9942a4',
+                        secondary: '#450f20',
+                        bgLight: '#f8f8ff',
+                    },
+                    fontFamily: {
+                        sans: ['"Mukta"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+                integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
+                crossorigin="anonymous">
+</head>
+
+<body data-barba="wrapper">
+        <main data-barba="container" data-barba-namespace="add-destination">
+                <div class="page-header">
+                        <h1 class="page-title"></h1>
+                </div>
+
+                <div class="content">
+                        <div class="form-feild">
+                                <form action="" id="destination-form">
+                                        <div class="form-group">
+                                                <div class="input-holder">
+                                                        <label for="">Enter destination Name</label>
+                                                        <input type="text" required id="destination-name"
+                                                                placeholder="" />
+                                                </div>
+                                                <div class="input-holder">
+                                                        <label for="">Select destination card Image</label>
+                                                        <input type="file" required id="destination_card_image"
+                                                                placeholder="" />
+                                                </div>
+                                                <div class="input-holder">
+                                                        <label for="">Select destination Inner Image</label>
+                                                        <input type="file" required id="destination_inner_image"
+                                                                placeholder="" />
+                                                </div>
+                                                <div class="input-holder">
+                                                        <label for="">Select destination Icon</label>
+                                                        <input type="file" required id="destination_icon"
+                                                                placeholder="" />
+                                                </div>
+                                                <div class="input-holder" style="width: 100%;">
+                                                        <label for="">Enter Meta-Tag ( optional )</label>
+                                                        <textarea name="" id="meta" cols="30" rows="10"></textarea>
+                                                </div>
+                                                <div class="featured_btn">
+                                                        <label id="btn_label" for="">Feature This</label>
+                                                        <label class="switch">
+                                                                <input type="checkbox" id="featured">
+                                                                <span class="slider"></span>
+                                                        </label>
+                                                </div>
+
+                                                <div class="input-holder" style="width: 100%;">
+                                                        <label for="">Discription</label>
+                                                        <textarea name="" required id="discription"
+                                                                placeholder=""></textarea>
+                                                </div>
+                                        </div>
+                                        <button id="save_btn" type="submit">Create &nbsp; <img
+                                                        src="assets/icons/arrow-right.png" alt=""></button>
+                                </form>
+                        </div>
+                </div>
+        </main>
+</body>
+<!-- global jquery -->
+<script src="https://cdn.ckeditor.com/ckeditor5/35.4.0/classic/ckeditor.js"></script>
+<!-- global jquery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<!-- app js -->
+<script type="module" src="src/app.js"></script>
+
+</html>

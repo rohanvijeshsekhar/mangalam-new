@@ -1,0 +1,31 @@
+.loader-08 {
+  position: relative;
+  z-index: 5;
+  height: 20px;
+  width: 20px;
+  margin-right: 10px;
+}
+.loader-08:before, .loader-08:after {
+  content: "";
+  width: inherit;
+  height: inherit;
+  border-radius: 50%;
+  background-color: currentcolor;
+  opacity: 0.6;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: loader-08 2s infinite ease-in-out;
+}
+.loader-08:after {
+  animation-delay: -1s;
+}
+
+@keyframes loader-08 {
+  0%, 100% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1);
+  }
+}/*# sourceMappingURL=button.css.map */

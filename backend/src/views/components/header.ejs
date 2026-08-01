@@ -1,0 +1,120 @@
+<header class="fixed top-0 left-0 w-full bg-white/95 backdrop-blur-md shadow-sm z-[999] transition-all duration-300">
+    <%
+    const activeNav = typeof activePage !== 'undefined' ? activePage : 'home';
+    const baseLinkClass = 'text-gray-600 hover:text-gray-900 font-dm-sans transition-colors';
+    const activeLinkClass = 'text-gray-900 font-bold font-dm-sans';
+
+    const homeClass = activeNav === 'home' ? activeLinkClass : baseLinkClass;
+    const destinationClass = activeNav === 'destination' ? activeLinkClass : baseLinkClass;
+    const activityClass = activeNav === 'activity' ? activeLinkClass : baseLinkClass;
+    const ticketsClass = activeNav === 'tickets' ? activeLinkClass : baseLinkClass;
+    %>
+    <div class="container mx-auto p-2">
+        <div class="flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center space-x-2 w-[120px]">
+                <a href="/"><img src="./assets/images/logo-color.png" alt="Mangalam Travel & Tours" class="w-full h-full"></a>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="hidden md:flex items-center space-x-8 relative">
+                <a href="/" class="<%= homeClass %>">Home</a>
+                <a href="/holiday-package.php" class="<%= destinationClass %>">Holiday Packages</a>
+                <!-- Services Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 <%= baseLinkClass %> focus:outline-none">
+                        Services 
+                        <i class="fi fi-rr-angle-small-down pt-1 flex items-center justify-center"></i>
+                    </button>
+                    <div class="absolute top-full -left-4 mt-0 w-64 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+                        <div class="py-2">
+                            <a href="/flight-tickets.php" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Flight Tickets
+                            </a>
+                            <a href="/global-visa-services.php" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Visa Services
+                            </a>
+                            <a href="/travel-insurance.php" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Travel Insurance
+                            </a>
+                            <a href="/miscellaneous.php" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Miscellaneous Services
+                            </a>
+                            <a href="/mice-tourism.php" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                MICE Tourism
+                            </a>
+                            <a href="/cruises.php" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Cruises
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <a href="/attraction.php" class="<%= activityClass %>">Attractions</a>
+                <a href="https://agents.mangalamtravel.com/Config/Login/Agent" target="_blank" class="<%= activityClass %>">Agent Login</a>
+            </nav>
+
+            <!-- Header Icons -->
+            <div class="flex items-center space-x-4">
+                <a href="/cart.php" class="cart-trigger p-2 border border-gray-500 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors relative">
+                    <div class="counter absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</div>
+                    <i class="fi fi-rr-shopping-cart text-gray-600 text-lg flex items-center justify-center"></i>
+                </a>
+                
+                <!-- Menu Dropdown Container -->
+                <div class="relative">
+                    <div id="menuDropdownTrigger2" class="p-2 border border-gray-200 hover:bg-gray-50 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 group">
+                        <i class="fi fi-br-grid text-gray-600 text-lg group-hover:scale-110 transition-transform duration-300 flex items-center justify-center"></i>
+                    </div>
+
+                    <!-- Dropdown Modal -->
+                    <div id="menuDropdown2" class="hidden absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden ring-1 ring-black/5 origin-top-right transition-all duration-200">
+                        <div class="py-2">
+                            <!-- Mobile Services Dropdown -->
+                            <div class="md:hidden">
+                                <details class="group">
+                                    <summary class="flex items-center justify-between px-5 py-3 text-gray-700 hover:bg-gray-50 cursor-pointer font-dm-sans font-medium select-none list-none [&::-webkit-details-marker]:hidden">
+                                        Services
+                                        <i class="fi fi-rr-angle-small-down transition-transform duration-300 group-open:rotate-180"></i>
+                                    </summary>
+                                    <div class="bg-gray-50 py-2">
+                                        <a href="/flight-tickets.php" class="block pl-8 pr-5 py-2 text-gray-600 hover:text-sky-500 transition-colors font-dm-sans text-sm">
+                                            Flight Tickets
+                                        </a>
+                                        <a href="/global-visa-services.php" class="block pl-8 pr-5 py-2 text-gray-600 hover:text-sky-500 transition-colors font-dm-sans text-sm">
+                                            Visa Services
+                                        </a>
+                                        <a href="/travel-insurance.php" class="block pl-8 pr-5 py-2 text-gray-600 hover:text-sky-500 transition-colors font-dm-sans text-sm">
+                                            Travel Insurance
+                                        </a>
+                                        <a href="/miscellaneous.php" class="block pl-8 pr-5 py-2 text-gray-600 hover:text-sky-500 transition-colors font-dm-sans text-sm">
+                                            Miscellaneous Services
+                                        </a>
+                                        <a href="/mice-tourism.php" class="block pl-8 pr-5 py-2 text-gray-600 hover:text-sky-500 transition-colors font-dm-sans text-sm">
+                                            MICE Tourism
+                                        </a>
+                                        <a href="/cruises.php" class="block pl-8 pr-5 py-2 text-gray-600 hover:text-sky-500 transition-colors font-dm-sans text-sm">
+                                            Cruises
+                                        </a>
+                                    </div>
+                                </details>
+                            </div>
+
+                            <a href="/about.php" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                About
+                            </a>
+                            <a href="/contact.php" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Contact
+                            </a>
+                            <a href="/" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Blog
+                            </a>
+                            <a href="/career.php" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Career
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

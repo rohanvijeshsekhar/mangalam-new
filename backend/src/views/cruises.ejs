@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('components/head', { 
+    pageTitle: 'Cruises - Mangalam Travel & Tours',
+    pageDescription: 'Sail into a world of refined luxury with Mangalam Travel & Tours expertly curated cruise holidays.',
+    pageKeywords: 'cruises, luxury cruise, cruise holidays, Mangalam Tours',
+    pageImage: './assets/images/cruise.webp',
+    pageUrl: ''
+}) %>
+<body class="font-dm-sans bg-white">
+    <%- include('components/header') %>
+    <main>
+        <section class="py-16 md:py-20 mt-10">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row items-center gap-12 max-w-6xl mx-auto">
+                    <div class="md:w-1/2" data-aos="fade-right">
+                        <span class="text-sky-600 font-bold tracking-wider text-xs capitalize mb-2 block">Cruises</span>
+                        <h2 class="text-3xl md:text-4xl font-medium text-gray-900 font-[Quicksand] mb-6 leading-tight">
+                            Sail Beyond Ordinary with <span class="font-bold">Mangalam Travel & Tours</span>
+                        </h2>
+                        <p class="text-gray-600 mb-6 leading-relaxed font-dm-sans text-lg">
+                            Sail into a world of refined luxury with Mangalam Travel & Tours’ expertly curated cruise holidays. Whether you’re dreaming of a short, elegant getaway or a grand international voyage, we take care of every single detail—so all you do is relax, unwind, and enjoy the rhythm of the waves.
+                        </p>
+                        <p class="text-gray-600 leading-relaxed font-dm-sans">
+                            From sunrise views over the deck to evenings filled with fine dining and entertainment, our cruises are designed for travellers who value comfort, class, and seamless planning.
+                        </p>
+                    </div>
+
+                    <div class="md:w-1/2 relative" data-aos="fade-left">
+                        <div class="relative rounded-2xl overflow-hidden">
+                             <img src="./assets/images/cruise.webp" alt="Luxury Cruise Deck" class="w-full h-full object-cover">
+                             <div class="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border-l-4 border-sky-500 max-w-xs hidden md:block">
+                                 <p class="text-gray-800 font-medium italic text-sm">"Travel should feel effortless, like a well-hosted celebration."</p>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- buttons -->
+        <div class="container mx-auto px-4 -mt-8 mb-12 relative z-20">
+            <div class="flex flex-col sm:flex-row gap-4 items-center justify-center max-w-6xl mx-auto">
+                <a href="tel:+919585541102" class="w-full sm:w-auto px-10 py-4 rounded-2xl bg-gray-900 text-white font-bold text-center text-sm uppercase tracking-widest font-dm-sans hover:bg-sky-600 transition-all hover:shadow-2xl hover:shadow-sky-600/20 flex items-center justify-center gap-3 group">
+                    <i class="fi fi-rr-phone-call transition-transform group-hover:rotate-12"></i>
+                    Talk to Expert
+                </a>
+                <a href="https://wa.me/919585541102" target="_blank" class="w-full sm:w-auto px-10 py-4 rounded-2xl bg-[#25D366] text-white font-bold text-center text-sm uppercase tracking-widest font-dm-sans hover:bg-[#128C7E] transition-all hover:shadow-2xl hover:shadow-[#25D366]/20 flex items-center justify-center gap-3 group">
+                    <i class="fi fi-brands-whatsapp transition-transform group-hover:scale-110"></i>
+                    WhatsApp Inquiry
+                </a>
+            </div>
+        </div>
+
+        <section class="py-20 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-gray-900 font-[Quicksand]">Curated Cruise Experiences</h2>
+                    <p class="text-gray-500 mt-2 font-light">Find the perfect voyage that speaks to you.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12 max-w-5xl mx-auto">
+                    <div class="flex items-start group p-6 rounded-3xl hover:bg-gray-50 transition-all duration-300 cursor-pointer">
+                        <div class="flex-shrink-0 w-16 h-16 bg-sky-100 rounded-2xl flex items-center justify-center text-sky-600 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                             <i class="fi fi-rr-ship-side text-3xl"></i>
+                        </div>
+                        <div class="ml-6">
+                            <h3 class="text-xl font-bold text-gray-900 font-[Quicksand] mb-2 group-hover:text-sky-600 transition-colors">Short-Haul</h3>
+                            <p class="text-gray-600 leading-relaxed font-dm-sans">Perfect for first-time cruisers. Enjoy premium comfort, curated shore excursions, and a relaxed pace.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start group p-6 rounded-3xl hover:bg-gray-50 transition-all duration-300 cursor-pointer">
+                        <div class="flex-shrink-0 w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                             <i class="fi fi-rr-world text-3xl"></i>
+                        </div>
+                        <div class="ml-6">
+                            <h3 class="text-xl font-bold text-gray-900 font-[Quicksand] mb-2 group-hover:text-purple-600 transition-colors">International</h3>
+                            <p class="text-gray-600 leading-relaxed font-dm-sans">Explore iconic destinations across Europe, the Middle East, Asia, and beyond with global cuisine.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start group p-6 rounded-3xl hover:bg-gray-50 transition-all duration-300 cursor-pointer">
+                        <div class="flex-shrink-0 w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                             <i class="fi fi-rr-users-alt text-3xl"></i>
+                        </div>
+                        <div class="ml-6">
+                            <h3 class="text-xl font-bold text-gray-900 font-[Quicksand] mb-2 group-hover:text-orange-600 transition-colors">Family Fun</h3>
+                            <p class="text-gray-600 leading-relaxed font-dm-sans">Kids’ activities and entertainment for all ages.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start group p-6 rounded-3xl hover:bg-gray-50 transition-all duration-300 cursor-pointer">
+                        <div class="flex-shrink-0 w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center text-pink-600 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                             <i class="fi fi-rr-heart text-3xl"></i>
+                        </div>
+                        <div class="ml-6">
+                            <h3 class="text-xl font-bold text-gray-900 font-[Quicksand] mb-2 group-hover:text-pink-600 transition-colors">Romantic</h3>
+                            <p class="text-gray-600 leading-relaxed font-dm-sans">Celebrate love with private balconies, sunset dinners, and unforgettable moments at sea.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="bg-gray-900 py-16 text-center text-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold font-[Quicksand] mb-6">Your Journey, Perfectly Planned</h2>
+                <a href="/contact.php" class="inline-block bg-white text-gray-900 font-bold py-3 px-8 rounded-xl hover:bg-sky-500 hover:text-white transition-all duration-300">
+                    Contact Us Now
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <%- include('components/footer') %>
+    <%- include('components/Customize') %>
+    <%- include('components/FixedCustomizeButton') %>
+    <%- include('components/MobileNav') %>
+    <%- include('components/script') %>
+</body>
+</html>

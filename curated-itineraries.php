@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<?php 
+$pageTitle = 'Curated Itineraries - Mangalam Travel & Tours';
+$pageDescription = 'Explore our handpicked curated itineraries with Mangalam Travel & Tours. Expertly planned packages for unforgettable journeys.';
+$pageKeywords = 'curated itineraries, travel packages, holiday packages, Mangalam Tours';
+$pageImage = './assets/images/destination-banner.webp';
+$pageUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+
+include './head.php'; 
+?>
+<body class="font-dm-sans bg-white">
+    <?php include './components/header.php'; ?>
+    <main>
+        <section class="relative h-[50vh] overflow-hidden">
+            <div class="absolute inset-0">
+                <img src="./assets/images/destination-banner.webp" alt="Curated Itineraries Banner" class="hidden lg:block w-full h-full object-cover md:rounded-br-[150px]">
+                <img src="./assets/images/res-destination-banner.webp" alt="Curated Itineraries Banner" class="w-full h-full object-cover lg:hidden rounded-br-[150px]">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent rounded-br-[150px]"></div>
+            </div>
+            <div class="relative z-10 h-full flex items-end">
+                <div class="container mx-auto px-4 pb-8">
+                    <h1 class="text-4xl md:text-5xl font-bold text-white font-[Quicksand] leading-tight">
+                        Curated Itineraries
+                    </h1>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 bg-gray-50" data-aos="fade-up">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <?php
+                    require_once './_class/query.php';
+                    $obj = new Query();
+                    $packages = $obj->selectData("*", "packages", "WHERE category = 'curated_itineraries' AND status != 0 ORDER BY package_id DESC");
+                    
+                    if ($packages && $packages->num_rows > 0) {
+                        while ($row = $packages->fetch_assoc()) {
+                            $imagePath = './admin/files/packages/' . $row['card_image'];
+                            $title = htmlspecialchars($row['title']);
+                            $duration = htmlspecialchars($row['duration']);
+                            $amount = $row['amount'];
+                            $slug = htmlspecialchars($row['slug_url']);
+                    ?>
+                    <a href="package-details.php?slug=<?= urlencode($slug) ?>" class="group block bg-white rounded-[32px] p-3 shadow-xs hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-500 hover:-translate-y-1 border border-gray-100">
+                        <div class="relative h-64 overflow-hidden rounded-[24px]">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"></div>
+                            <img src="<?= htmlspecialchars($imagePath) ?>" alt="<?= $title ?>" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out">
+                            <div class="absolute top-4 right-4 bg-black/20 backdrop-blur-md border border-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 z-20">
+                                <i class="fi fi-rr-clock"></i> <?= $duration ?>
+                            </div>
+                        </div>
+                        <div class="px-2 pt-5 pb-2">
+                            <h3 class="text-xl font-bold text-gray-900 transition-colors line-clamp-1 mb-3 font-[Quicksand] tracking-tight">
+                                <?= $title ?>
+                            </h3>
+                            <div class="mt-4 flex items-end justify-between">
+                                <div>
+                                    <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Starting From</p>
+                                    <p class="text-2xl font-bold text-gray-900 font-[Quicksand]">₹<?= number_format((float) $amount) ?></p>
+                                </div>
+                                <span class="px-5 py-2.5 rounded-xl bg-gray-50 text-gray-900 text-xs font-bold uppercase tracking-wider group-hover:bg-red-600 group-hover:text-white transition-all duration-300">
+                                    View Details
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                    <?php
+                        }
+                    } else {
+                        echo '<div class="col-span-full text-center py-12">
+                                <div class="inline-block p-4 rounded-full bg-gray-100 mb-4"><i class="fi fi-rr-map text-2xl text-gray-400"></i></div>
+                                <h3 class="text-lg font-medium text-gray-900">No curated itineraries found</h3>
+                                <p class="text-gray-500">We are preparing special curated packages. Please check back soon!</p>
+                              </div>';
+                    }
+                    ?>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <?php include './components/footer.php'; ?>
+    <?php include './components/Customize.php'; ?>
+    <?php include './components/FixedCustomizeButton.php'; ?>
+    <?php 
+    include './components/MobileNav.php';
+    responsiveMenu('destination'); 
+    ?>
+  <?php include './script.php'; ?>
+</body>
+</html>

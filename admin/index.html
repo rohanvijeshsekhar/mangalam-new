@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- ion icon -->
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <!-- main style -->
+    <link rel="stylesheet" href="libs/css/style.css" />
+    
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+        integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#9942a4',
+                        secondary: '#450f20',
+                        bgLight: '#f8f8ff',
+                    },
+                    fontFamily: {
+                        sans: ['"Mukta"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+<title>Mangalam Travel & Tours - Admin Login</title>
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+
+      .sidemenu {
+        display: none;
+      }
+
+      header {
+        display: none;
+      }
+
+      label {
+        margin-bottom: 5px;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 21px;
+        letter-spacing: -0.03em;
+        text-align: left;
+        display: block;
+        opacity: 0.8;
+      }
+
+      @media (max-width: 768px) {
+        label {
+          font-size: 14px;
+        }
+      }
+
+      input,
+      select {
+        width: 100%;
+        height: 40px;
+        border-radius: 5px;
+        border: none;
+        outline: none;
+        padding-left: 10px;
+        font-size: 16px;
+        border: 1px solid rgba(0, 0, 0, 0.253);
+        background: none;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        color: rgb(75, 75, 75);
+      }
+
+      .error-input {
+        border: 1px solid red;
+      }
+
+      .error {
+        color: red;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+      }
+
+      .error ion-icon {
+        right: 20px;
+      }
+
+      /*# sourceMappingURL=input.css.map */
+      #login-page {
+        display: flex;
+        height: 100vh;
+        color: rgb(80, 80, 80);
+      }
+
+      @media (max-width: 768px) {
+        #login-page {
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: auto;
+          padding-top: 80px;
+        }
+      }
+
+      #login-page .box {
+        width: 100%;
+        height: 100%;
+        background: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      @media (max-width: 768px) {
+        #login-page .box {
+          width: 90%;
+        }
+      }
+
+      #login-page .box .login {
+        width: 400px;
+        background: white;
+        padding: 30px 20px;
+        border-radius: 33px;
+      }
+
+      @media (max-width: 768px) {
+        #login-page .box .login {
+          width: 100%;
+          box-shadow: none;
+          padding: 0px;
+        }
+        #login-page .box .login .login-title .login-logo {
+          max-width: 150px;
+        }
+        #login-page .box .login .login-title .login-brand-name {
+          font-size: 20px;
+        }
+      }
+
+      #login-page .box .login .login-title {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+
+      #login-page .box .login .login-title .login-logo {
+        max-width: 200px;
+        width: 100%;
+        height: auto;
+        margin-bottom: 15px;
+        display: block;
+      }
+
+      #login-page .box .login .login-title .login-brand-name {
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        color: rgb(80, 80, 80);
+        margin-top: 10px;
+      }
+
+      #login-page .box .login .login-title span {
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      #login-page .box .login p {
+        margin: 20px 0px;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 20px;
+        letter-spacing: -0.03em;
+        text-align: left;
+        opacity: 0.7;
+      }
+
+      #login-page .box .login .input-holder {
+        margin-bottom: 20px;
+        position: relative;
+      }
+
+      #login-page .box .login .input-holder input {
+        height: 50px;
+      }
+
+      #login-page .box .login .input-holder .eye-button {
+        position: absolute;
+        right: 0;
+        top: 36px;
+        right: 5px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 5px;
+      }
+
+      #login-page .box .login .input-holder .eye-button ion-icon {
+        font-size: 20px;
+      }
+
+      #login-page .box .login .forgot-trigger {
+        margin-bottom: 20px;
+        text-align: right;
+        width: 100%;
+        text-align: left;
+      }
+
+      #login-page .box .login .forgot-trigger a {
+        text-decoration: none;
+        color: #8c6cff;
+      }
+
+      #login-page .box .login button {
+        height: 45px;
+        width: 100%;
+        left: 181px;
+        top: 602px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 21px;
+        letter-spacing: -0.03em;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        font-family: "Poppins", sans-serif;
+      }
+
+      #login-page .box .login .login-button {
+        background: #8c6cff;
+        color: white;
+      }
+
+      #login-page .box .login .signup-navigate-cta {
+        background: rgb(39, 38, 38) !important;
+        color: rgb(80, 80, 80);
+        border: 1px solid rgb(39, 38, 38);
+        height: 45px;
+        width: 100%;
+        left: 181px;
+        top: 602px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 21px;
+        letter-spacing: -0.03em;
+        text-align: center;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        background: none;
+      }
+
+      #login-page .box .login .signup-navigate-cta a {
+        text-decoration: none;
+        color: white;
+      }
+
+      #login-page .box .login .signup-navigate-cta:hover {
+        background: #8c6cff;
+        color: white;
+        border: none;
+      }
+
+      .signup {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0px;
+      }
+
+      .signup .box {
+        width: 100% !important;
+      }
+
+      @media (max-width: 768px) {
+        .signup .box {
+          padding: 20px;
+        }
+      }
+
+      .signup .box .login {
+        width: 600px !important;
+      }
+
+      .signup .box .login form {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+
+      .signup .box .login form .input-holder {
+        width: calc(50% - 20px);
+      }
+
+      @media (max-width: 768px) {
+        .signup .box .login form .input-holder {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body data-barba="wrapper">
+    <main
+      data-barba="container"
+      data-barba-namespace="login"
+      page-ref=""
+      style="background: #19192c"
+    >
+      <!-- code -->
+      <section id="login-page">
+        <div class="box">
+          <div class="login">
+            <div class="login-title">
+              <img
+                src="../assets/images/logo-color.png"
+                alt="Mangalam Travel & Tours"
+                class="login-logo"
+              />
+              <div class="login-brand-name">Mangalam Travel & Tours</div>
+            </div>
+
+            <form id="login_form">
+              <div class="input-holder">
+                <label>User Name</label>
+                <input id="userName" type="text" />
+              </div>
+              <div class="input-holder">
+                <label>Password</label>
+                <input id="password" type="password" class="" />
+                <div class="eye-button">
+                  <ion-icon name="eye-off-outline"></ion-icon>
+                </div>
+                <p class="error" style="display: none">
+                  <ion-icon name="warning-outline"></ion-icon> Username or
+                  Password is Incorrect
+                </p>
+              </div>
+              <div class="forgot-trigger"></div>
+              <button class="login-button" type="submit">Login</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+    <!-- global jquery -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/35.4.0/classic/ckeditor.js"></script>
+    <!-- global jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <!-- app js -->
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

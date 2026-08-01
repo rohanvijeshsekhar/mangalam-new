@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Mangalam Travel & Tours - Admin Dashboard</title>
+    <!-- main style -->
+    <link rel="stylesheet" href="libs/css/style.css">
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+        integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#9942a4',
+                        secondary: '#450f20',
+                        bgLight: '#f3f4f6',
+                    },
+                    fontFamily: {
+                        sans: ['"Mukta"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@200;300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* Custom scrollbar for this page */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+
+<body data-barba="wrapper">
+    <main data-barba="container" data-barba-namespace="dashboard">
+        <div class="min-h-screen font-sans transition-all duration-300">
+            <div class="container mx-auto px-4 py-8">
+
+                <!-- Greeting & Date -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
+                    <div>
+
+                        <h1 class="text-2xl lg:text-3xl font-bold text-gray-800">
+                            Welcome Back, <span class="text-blue-600">Admin</span>
+                        </h1>
+                        <p class="text-gray-500 text-sm mt-0.5">Here's what's happening with your business today.</p>
+                    </div>
+                </div>
+
+                <!-- Key Metrics (Extracted from old 'Enquiry' card) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <!-- Enquiry Stats -->
+                    <a href="list-enquiry.html"
+                        class="group bg-white rounded-xl p-4 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 transition-all duration-300 border border-gray-100/50">
+                        <div class="flex justify-between items-start mb-2">
+                            <div
+                                class="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                                <i class="fi fi-rr-envelope text-lg flex justify-center items-center"></i>
+                            </div>
+                            <span
+                                class="text-[10px] font-bold text-green-500 bg-green-50 px-1.5 py-0.5 rounded-full">+12%</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800 mb-0.5" id="package_enq">0</div>
+                        <div class="text-xs font-medium text-gray-400">Total Enquiries</div>
+                        <div class="w-full h-1 bg-gray-100 rounded-full mt-3 overflow-hidden">
+                            <div class="h-full bg-blue-500 w-[70%]"></div>
+                        </div>
+                    </a>
+
+                    <!-- Customizations Stats -->
+                    <a href="list-enquiry.html"
+                        class="group bg-white rounded-xl p-4 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 transition-all duration-300 border border-gray-100/50">
+                        <div class="flex justify-between items-start mb-2">
+                            <div
+                                class="p-2 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+                                <i class="fi fi-rr-settings-sliders text-lg flex justify-center items-center"></i>
+                            </div>
+                            <span
+                                class="text-[10px] font-bold text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-full">Today</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800 mb-0.5" id="customization">0</div>
+                        <div class="text-xs font-medium text-gray-400">Customizations</div>
+                        <div class="w-full h-1 bg-gray-100 rounded-full mt-3 overflow-hidden">
+                            <div class="h-full bg-purple-500 w-[45%]"></div>
+                        </div>
+                    </a>
+
+                    <!-- Activities/Tickets Stats -->
+                    <a href="list-enquiry.html"
+                        class="group bg-white rounded-xl p-4 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 transition-all duration-300 border border-gray-100/50">
+                        <div class="flex justify-between items-start mb-2">
+                            <div
+                                class="p-2 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+                                <i class="fi fi-rr-ticket text-lg flex justify-center items-center"></i>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800 mb-0.5" id="activity_tickets">0</div>
+                        <div class="text-xs font-medium text-gray-400">Activities / Tickets</div>
+                        <div class="w-full h-1 bg-gray-100 rounded-full mt-3 overflow-hidden">
+                            <div class="h-full bg-orange-500 w-[60%]"></div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Management Modules Grid -->
+                <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fi fi-rr-apps text-primary"></i> Management Modules
+                </h3>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- Packages -->
+                    <a href="./list-package.html"
+                        class="group bg-white p-4 rounded-xl border border-gray-200 hover:border-primary/30 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+                        <div
+                            class="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-bl-[100px] -mr-4 -mt-4 transition-transform group-hover:scale-110">
+                        </div>
+                        <div class="relative z-10">
+                            <div
+                                class="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center text-pink-600 mb-2 group-hover:scale-110 transition-transform">
+                                <i class="fi fi-rr-backpack text-lg flex justify-center items-center"></i>
+                            </div>
+                            <h4 class="text-gray-900 font-bold text-base mb-0.5">Packages</h4>
+                            <p class="text-gray-500 text-xs mb-2">Manage tour packages</p>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl font-bold text-gray-800" id="packages">0</span>
+                                <span
+                                    class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Active</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Destinations -->
+                    <a href="./list-destinations.html"
+                        class="group bg-white p-4 rounded-xl border border-gray-200 hover:border-blue-500/30 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+                        <div
+                            class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-bl-[100px] -mr-4 -mt-4 transition-transform group-hover:scale-110">
+                        </div>
+                        <div class="relative z-10">
+                            <div
+                                class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 mb-2 group-hover:scale-110 transition-transform">
+                                <i class="fi fi-rr-plane-alt text-lg flex justify-center items-center"></i>
+                            </div>
+                            <h4 class="text-gray-900 font-bold text-base mb-0.5">Destinations</h4>
+                            <p class="text-gray-500 text-xs mb-2">Manage locations</p>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl font-bold text-gray-800" id="destinations">0</span>
+                                <span
+                                    class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Live</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Tickets -->
+                    <a href="./list-tickets.html"
+                        class="group bg-white p-4 rounded-xl border border-gray-200 hover:border-purple-500/30 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+                        <div
+                            class="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-bl-[100px] -mr-4 -mt-4 transition-transform group-hover:scale-110">
+                        </div>
+                        <div class="relative z-10">
+                            <div
+                                class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 mb-2 group-hover:scale-110 transition-transform">
+                                <i class="fi fi-rr-ticket text-lg flex justify-center items-center"></i>
+                            </div>
+                            <h4 class="text-gray-900 font-bold text-base mb-0.5">Tickets</h4>
+                            <p class="text-gray-500 text-xs mb-2">Manage bookings</p>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl font-bold text-gray-800" id="tickets">0</span>
+                                <span
+                                    class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Total</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Activities -->
+                    <a href="./list-activities.html"
+                        class="group bg-white p-4 rounded-xl border border-gray-200 hover:border-orange-500/30 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+                        <div
+                            class="absolute top-0 right-0 w-20 h-20 bg-orange-500/5 rounded-bl-[100px] -mr-4 -mt-4 transition-transform group-hover:scale-110">
+                        </div>
+                        <div class="relative z-10">
+                            <div
+                                class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600 mb-2 group-hover:scale-110 transition-transform">
+                                <i class="fi fi-rr-running text-lg flex justify-center items-center"></i>
+                            </div>
+                            <h4 class="text-gray-900 font-bold text-base mb-0.5">Activities</h4>
+                            <p class="text-gray-500 text-xs mb-2">Adventure & Fun</p>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl font-bold text-gray-800" id="activity">0</span>
+                                <span
+                                    class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Items</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Content Stats Row -->
+                <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fi fi-rr-document text-primary"></i> Content & Blog
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <a href="list-blog.html"
+                        class="flex items-center p-4 bg-white rounded-xl border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center mr-4 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                            <i class="fi fi-rr-edit text-xl flex justify-center items-center"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold text-gray-800 mb-0.5">Blog Posts</h4>
+                            <p class="text-gray-400 text-xs mb-1">Manage website articles</p>
+                            <span class="text-xl font-bold text-teal-600" id="blog">0</span>
+                        </div>
+                        <div
+                            class="ml-auto opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all">
+                            <i class="fi fi-rr-arrow-small-right text-xl text-gray-400"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Date Script -->
+            <script>
+                const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.querySelector('.date-display').textContent = new Date().toLocaleDateString('en-US', dateOptions);
+            </script>
+        </div>
+    </main>
+</body>
+
+</html>
+<!-- global jquery -->
+<script src="https://cdn.ckeditor.com/ckeditor5/35.4.0/classic/ckeditor.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<!-- app js -->
+<script type="module" src="src/app.js"></script>

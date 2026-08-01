@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('components/head', { 
+    pageTitle: 'Travel Blog - Mangalam Travel & Tours | Travel Tips, Guides & Destinations',
+    pageDescription: 'Read our latest travel blogs, destination guides, and travel tips from Mangalam Travel & Tours.',
+    pageKeywords: 'travel blog, travel tips, destination guides, travel news, Mangalam Tours blog'
+}) %>
+<body class="font-dm-sans bg-white">
+    <%- include('components/EnquiryOtpFields') %>
+    <%- include('components/header') %>
+
+    <main class="pt-24 min-h-screen">
+        <% if (typeof latestNotice !== 'undefined' && latestNotice) { %>
+            <div class="bg-red-600 text-white py-2 px-4 text-center text-sm font-medium">📢 <%= latestNotice %></div>
+        <% } %>
+
+        <!-- Blog Posts Section -->
+        <section class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="text-left mb-12">
+                    <h1 class="text-3xl lg:text-5xl font-medium text-gray-900 font-[Quicksand] mb-2">
+                        Travel <span class="font-bold">Blog</span>
+                    </h1>
+                    <p class="text-base text-gray-600 font-dm-sans">Discover amazing destinations, travel tips, and insider insights</p>
+                </div>
+
+                <% if (typeof blogs !== 'undefined' && Array.isArray(blogs) && blogs.length > 0) { %>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <% blogs.forEach(function(blog) { 
+                            const blogTitle = blog.title || blog.blog_title || 'Travel Guide';
+                            const blogSlug = blog.slug_url || blog.blog_id || blog.id || '';
+                            const blogDate = blog.date || 'Recent';
+                            const rawDesc = blog.description || blog.discription || '';
+                            const cleanDesc = typeof rawDesc === 'string' ? rawDesc.replace(/<[^>]*>/g, '').substring(0, 150) : '';
+                            const blogImg = blog.card_image || (blog.images && blog.images.length > 0 ? (typeof blog.images[0] === 'object' ? (blog.images[0].file_name || blog.images[0].name || blog.images[0].image) : blog.images[0]) : '');
+                            const imagePath = resolveImgUrl(blogImg, 'blogs');
+                        %>
+                            <a href="/blog-details.php?slug=<%= encodeURIComponent(blogSlug) %>" class="group block">
+                                <div class="bg-white rounded-2xl overflow-hidden transition-shadow duration-300 border border-gray-200 hover:shadow-lg">
+                                    <div class="relative overflow-hidden h-64">
+                                        <img src="<%= imagePath %>" 
+                                             alt="<%= blogTitle %>" 
+                                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                             onerror="this.onerror=null; this.src='./assets/images/logo-color.png';">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                    </div>
+                                    <div class="p-6">
+                                        <div class="flex items-center text-gray-500 text-sm mb-3">
+                                            <i class="fi fi-rr-calendar mr-2"></i>
+                                            <span class="font-dm-sans"><%= blogDate %></span>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-gray-900 font-dm-sans mb-3 group-hover:text-red-600 transition-colors line-clamp-2">
+                                            <%= blogTitle %>
+                                        </h3>
+                                        <% if (cleanDesc) { %>
+                                            <p class="text-gray-600 font-dm-sans line-clamp-3 mb-4">
+                                                <%= cleanDesc %>...
+                                            </p>
+                                        <% } %>
+                                        <div class="flex items-center text-red-600 font-dm-sans font-semibold">
+                                            <span>Read More</span>
+                                            <i class="fi fi-rr-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-20">
+                        <div class="max-w-md mx-auto">
+                            <i class="fi fi-rr-document text-gray-300 text-6xl mb-4 block"></i>
+                            <h3 class="text-2xl font-bold text-gray-900 font-[Quicksand] mb-3">No Blog Posts Yet</h3>
+                            <p class="text-gray-600 font-dm-sans">Check back soon for exciting travel stories and tips!</p>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <%- include('components/footer') %>
+</body>
+</html>

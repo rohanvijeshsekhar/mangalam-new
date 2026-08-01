@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('components/head', { 
+    pageTitle: 'Thank You - Mangalam Travel & Tours',
+    pageDescription: 'Thank you for your enquiry.',
+    pageKeywords: 'thank you'
+}) %>
+<body class="font-dm-sans bg-white flex flex-col min-h-screen">
+    <header class="bg-white border-b border-gray-100 py-4">
+        <div class="container mx-auto px-4 flex items-center justify-between">
+            <a href="/"><img src="/assets/images/logo-color.png" alt="Mangalam Logo" class="h-10"></a>
+            <a href="/" class="text-sm font-semibold text-red-600">Back to Home</a>
+        </div>
+    </header>
+
+    <main class="flex-1 flex items-center justify-center py-16 px-4">
+        <div class="bg-gray-50 rounded-3xl p-8 md:p-12 max-w-md w-full text-center border border-gray-100 shadow-sm">
+            <div class="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
+                <i class="fi fi-rr-check-circle"></i>
+            </div>
+            <h1 class="text-3xl font-bold font-[Quicksand] text-gray-900 mb-3">Enquiry Received!</h1>
+            <p class="text-gray-600 text-sm leading-relaxed mb-6">Thank you for choosing Mangalam Travel & Tours. Our travel specialists will contact you shortly.</p>
+            <a href="/" class="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-md">Return to Homepage</a>
+        </div>
+    </main>
+
+    <footer class="bg-black text-white py-8 text-center text-xs text-gray-400">
+        <p>© <%= new Date().getFullYear() %> Mangalam Travel & Tours. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>

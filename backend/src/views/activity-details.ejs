@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('components/head', { 
+    pageTitle: 'Activity Details - Mangalam Travel & Tours',
+    pageDescription: 'Book sightseeing activities and experiences.',
+    pageKeywords: 'activities, tours, mangalam'
+}) %>
+<body class="font-dm-sans bg-white">
+    <%- include('components/EnquiryOtpFields') %>
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 py-4">
+        <div class="container mx-auto px-4 flex items-center justify-between">
+            <a href="/"><img src="/assets/images/logo-color.png" alt="Mangalam Logo" class="h-10"></a>
+            <nav class="flex items-center space-x-6 text-sm font-medium">
+                <a href="/" class="hover:text-red-600">Home</a>
+                <a href="/package.php" class="hover:text-red-600">Packages</a>
+                <a href="/contact.php" class="hover:text-red-600">Contact</a>
+                <a href="/cart.php" class="bg-red-600 text-white px-4 py-2 rounded-xl">Cart</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="pt-24 py-12">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h1 class="text-3xl font-bold font-[Quicksand] text-gray-900 mb-4">Activity Booking & Enquiry</h1>
+            <p class="text-gray-600 mb-8">Select your travel date and number of guests to add to cart or request an instant quote.</p>
+            <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100">
+                <a href="/package.php" class="bg-red-600 text-white px-6 py-3 rounded-xl font-semibold inline-block">Browse All Activities</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-black text-white py-12 text-center text-sm text-gray-400">
+        <p>© <%= new Date().getFullYear() %> Mangalam Travel & Tours. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>

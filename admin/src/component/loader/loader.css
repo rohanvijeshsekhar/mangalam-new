@@ -1,0 +1,39 @@
+.page-loader {
+  width: calc(100% - 300px);
+  float: right;
+  height: 100%;
+  background: #f2f2ff;
+  position: fixed;
+  right: 0;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 4;
+}
+.page-loader .loader-container {
+  height: 100px;
+  width: 100px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.page-loader .loader-container .loader-11 {
+  background-color: #2f3542;
+  animation: loader-11 1.2s infinite ease-in-out;
+  height: 30px;
+  width: 30px;
+  border-radius: 5px;
+}
+@keyframes loader-11 {
+  0% {
+    transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+  }
+  50% {
+    transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+  }
+  100% {
+    transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+  }
+}/*# sourceMappingURL=loader.css.map */
