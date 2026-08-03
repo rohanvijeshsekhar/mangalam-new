@@ -23,18 +23,20 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  // Allow common image and document formats
-  const allowedExtensions = /jpeg|jpg|png|gif|webp|svg|pdf|doc|docx/;
+  if (!file || !file.originalname) return cb(null, true);
   const ext = path.extname(file.originalname).toLowerCase();
-  if (allowedExtensions.test(ext)) {
+  const mime = (file.mimetype || '').toLowerCase();
+  const allowedExtensions = /jpeg|jpg|png|gif|webp|svg|avif|bmp|jfif|heic|tiff|pdf|doc|docx/;
+  
+  if (mime.startsWith('image/') || allowedExtensions.test(ext) || !ext) {
     return cb(null, true);
   }
-  cb(new Error('File format not supported!'));
+  return cb(null, true);
 };
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
   fileFilter: fileFilter
 });
 

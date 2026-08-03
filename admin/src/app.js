@@ -27,7 +27,31 @@ const toaster = new Toaster();
 // Loader
 const loader = new Loader();
 const editorInstances = new WeakMap();
-const editorPending = new WeakSet();
+function getEditIdFromContext(data) {
+  if (data && data.next && data.next.url) {
+    if (data.next.url.search) {
+      const p = new URLSearchParams(data.next.url.search);
+      const val = p.get('id');
+      if (val) return val;
+    }
+    if (data.next.url.href && data.next.url.href.includes('id=')) {
+      const match = data.next.url.href.match(/id=([^&]+)/);
+      if (match) return match[1];
+    }
+  }
+  const urlParams = new URLSearchParams(window.location.search);
+  const val = urlParams.get('id');
+  if (val) return val;
+
+  if (window.location.href.includes('id=')) {
+    const match = window.location.href.match(/id=([^&]+)/);
+    if (match) return match[1];
+  }
+  if (window.location.href.includes('=')) {
+    return window.location.href.split('=')[1].split('&')[0];
+  }
+  return null;
+}
 
 function createClassicEditor(target) {
   if (!target) {
@@ -182,7 +206,7 @@ function updateFileInputStatus($container, sources, isNew = false) {
   const $input = $holder.find('input[type="file"]');
   if (!$input.length) return;
 
-  $input.css({ "display": "inline-block", "color": "transparent", "max-width": "130px", "vertical-align": "middle" });
+  $input.css({ "display": "inline-block", "max-width": "220px", "vertical-align": "middle" });
   const $parentMulti = $input.parent();
   if ($parentMulti.hasClass("multi")) {
     $parentMulti.css({ "display": "inline-block", "vertical-align": "middle" });
@@ -255,8 +279,17 @@ function bindFilePreview($input, $container, { multiple = false } = {}) {
   if (!$input || !$input.length || !$container || !$container.length) {
     return;
   }
-  $input.off("change.imagePreview").on("change.imagePreview", function () {
+  $input.off("change.imagePreview").on("change.imagePreview", function (e) {
+    const el = this;
     const files = Array.from(this.files || []);
+    console.log("[File Trace] Change event fired on input:", el.id || el.name || el.className, "Selected files count:", files.length);
+    if (files.length) {
+      console.log("[File Trace] Selected file name(s):", files.map(f => `${f.name} (${f.size} bytes)`).join(", "));
+    }
+    setTimeout(() => {
+      console.log("[File Trace 100ms later] Element still in DOM:", document.body.contains(el), "Files attached in DOM:", el.files ? el.files.length : 0);
+    }, 100);
+
     if (!files.length) {
       return;
     }
@@ -480,7 +513,7 @@ barba.init({
     },
     {
       namespace: "edit-destination",
-      beforeEnter() {
+      beforeEnter(data) {
         loader.load();
         sidemenu.active("destination");
         header.update(
@@ -490,9 +523,9 @@ barba.init({
         loader.stop();
         logCheck();
         logout();
-        const id = location.href.split("=")[1];
+        const id = getEditIdFromContext(data);
         const button = new Button($("#save_btn")[0]);
-        fetch("./action/fetchEditDestination.php?id=" + id)
+        fetch("./action/fetchEditDestination.php?id=" + (id || ''))
           .then((response) => response.json())
           .then((data) => {
             if (data.length) {
@@ -741,15 +774,15 @@ barba.init({
     },
     {
       namespace: "edit-place",
-      beforeEnter() {
+      beforeEnter(data) {
         loader.load();
         sidemenu.active("place");
         header.update("Edit Place", sidemenu.iconHtml());
         loader.stop();
         logCheck();
         logout();
-        const id = location.href.split("=")[1];
-        fetch("./action/fetchPlaceEdit.php?id=" + id)
+        const id = getEditIdFromContext(data);
+        fetch("./action/fetchPlaceEdit.php?id=" + (id || ''))
           .then((response) => response.json())
           .then((data) => {
             if (data.length) {
@@ -1023,9 +1056,9 @@ barba.init({
 
         const button = new Button($("#save_btn")[0]);
         /* ------------------------------- add package ------------------------------ */
-        $("main")
-          .off()
-          .on("submit", "#package_form", function (x) {
+        $(document)
+          .off("submit.addPackage", "#package_form")
+          .on("submit.addPackage", "#package_form", function (x) {
             x.preventDefault();
             button.load("Creating");
 
@@ -1038,9 +1071,8 @@ barba.init({
             const activities = $("#activities").val();
             const amount = $("#amount").val();
             const meta = $("#meta").val();
-            const description = $("#description").val();
-            const images = $("#images")[0].files;
-            const image_card = $("#image_card")[0].files[0];
+            const images = $("#images")[0] && $("#images")[0].files ? $("#images")[0].files : [];
+            const image_card = $("#image_card")[0] && $("#image_card")[0].files ? $("#image_card")[0].files[0] : null;
             let highlights = [];
             let includes = [];
             let excludes = [];
@@ -1068,7 +1100,7 @@ barba.init({
                 "itineary_description[]",
                 $(this).find("textarea").val()
               );
-              const imageFile = $(this).find(".iteneary_image")[0].files.length
+              const imageFile = $(this).find(".iteneary_image")[0] && $(this).find(".iteneary_image")[0].files && $(this).find(".iteneary_image")[0].files.length
                 ? $(this).find(".iteneary_image")[0].files[0]
                 : null;
               if (imageFile) {
@@ -1090,7 +1122,7 @@ barba.init({
             });
 
             fd.append("title", title);
-            fd.append("description", description);
+            fd.append("description", $("#description").val());
             fd.append("destination", destination);
             fd.append("duration", duration);
             fd.append("hotel_type", hotel_type);
@@ -1098,7 +1130,9 @@ barba.init({
             fd.append("transportation", transportation);
             fd.append("amount", amount);
             fd.append("meta", meta);
-            fd.append("image_card", image_card);
+            if (image_card) {
+              fd.append("image_card", image_card);
+            }
             fd.append("activities", activities);
             fd.append("category", $("#package_category").val());
             fd.append("fixed_departure_date", $("#fixed_departure_date").val());
@@ -1179,7 +1213,7 @@ barba.init({
     },
     {
       namespace: "edit-package",
-      beforeEnter() {
+      beforeEnter(data) {
         loader.load();
         sidemenu.active("package");
         header.update(
@@ -1192,7 +1226,7 @@ barba.init({
 
         let progressBar = new ProgressBar();
         progressBar.init();
-        const id = location.href.split("=")[1];
+        const id = getEditIdFromContext(data);
         let editorId = null;
 
         //update count
@@ -1549,9 +1583,9 @@ barba.init({
 
             const button = new Button($("#save_btn")[0]);
             /* ------------------------------- update package ------------------------------ */
-            $("main")
-              .off()
-              .on("submit", "#package_form", function (x) {
+            $(document)
+              .off("submit.editPackage", "#package_form")
+              .on("submit.editPackage", "#package_form", function (x) {
                 x.preventDefault();
                 button.load("Updating");
                 const destination = $("#destinations").val();
@@ -1564,8 +1598,8 @@ barba.init({
                 const amount = $("#amount").val();
                 const meta = $("#meta").val();
                 const description = $("#description").val();
-                const images = $("#images")[0].files;
-                const card_image = $("#image_card")[0].files[0];
+                const images = $("#images")[0] && $("#images")[0].files ? $("#images")[0].files : [];
+                const card_image = $("#image_card")[0] && $("#image_card")[0].files ? $("#image_card")[0].files[0] : null;
                 let highlights = [];
                 let includes = [];
                 let excludes = [];
@@ -1594,8 +1628,7 @@ barba.init({
                     "itineary_description[]",
                     $(this).find("textarea").val()
                   );
-                  const imageFile = $(this).find(".iteneary_image")[0].files
-                    .length
+                  const imageFile = $(this).find(".iteneary_image")[0] && $(this).find(".iteneary_image")[0].files && $(this).find(".iteneary_image")[0].files.length
                     ? $(this).find(".iteneary_image")[0].files[0]
                     : null;
                   if (imageFile) {
@@ -1998,7 +2031,7 @@ barba.init({
     },
     {
       namespace: "edit-ticket",
-      beforeEnter() {
+      beforeEnter(data) {
         loader.load();
         sidemenu.active("ticket");
         header.update("Edit Ticket", sidemenu.iconHtml());
@@ -2007,7 +2040,7 @@ barba.init({
         logout();
         let progressBar = new ProgressBar();
         progressBar.init();
-        const id = location.href.split("=")[1];
+        const id = getEditIdFromContext(data);
         let editorId = null;
         /* ------------------------- fetch all destinnations ------------------------ */
         $(".multi-inputs").each(function () {
@@ -2938,9 +2971,9 @@ barba.init({
           });
         const button = new Button($("#save_btn")[0]);
         /* ------------------------------- Edit Activity ------------------------------ */
-        $("main")
-          .off()
-          .on("submit", "#activity_form", function (x) {
+        $(document)
+          .off("submit.activity", "#activity_form")
+          .on("submit.activity", "#activity_form", function (x) {
             x.preventDefault();
             button.load("Creating");
             const destination = $("#destinations").val();

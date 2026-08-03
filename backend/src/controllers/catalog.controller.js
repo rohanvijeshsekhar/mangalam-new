@@ -17,6 +17,16 @@ class CatalogController {
     return res.json([]);
   }
 
+  // Get all packages
+  getPackages(req, res) {
+    const destId = req.query.destination_id || req.body.destination_id;
+    let list = inMemoryStore.packages.filter(p => p.status === 1);
+    if (destId) {
+      list = list.filter(p => p.destination_id == destId);
+    }
+    return res.json(list);
+  }
+
   // Get all tickets
   getTickets(req, res) {
     const destId = req.query.destination_id || req.body.destination_id;

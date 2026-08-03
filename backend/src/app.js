@@ -1,112 +1,155 @@
 const express = require('express');
-const cors = require('cors');
-const path = require('path');
+const cors    = require('cors');
+const path    = require('path');
 
-const pagesRoutes = require('./routes/pages.routes');
-const apiRoutes = require('./routes/api.routes');
+// Route modules
+const apiRoutes   = require('./routes/api.routes');
 const adminRoutes = require('./routes/admin.routes');
 
 const app = express();
 
-// View Engine Setup (EJS)
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-// Global Middlewares
+// ─── Body parsers ─────────────────────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Add CORS headers for legacy API requests
+// ─── CORS headers ────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    return res.status(200).json({});
-  }
+  if (req.method === 'OPTIONS') { res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); return res.status(200).json({}); }
   next();
 });
 
-// ─────────────────────────────────────────────
-// API & ADMIN ROUTING
-// ─────────────────────────────────────────────
-app.use('/action', apiRoutes);
+// ─── REST APIs (/api/* and legacy /action/* compat) ─────────────────────────
+app.use('/action',       apiRoutes);
 app.use('/admin/action', adminRoutes);
+app.use('/',             apiRoutes);   // exposes /api/* routes at root level
 
-// ─────────────────────────────────────────────
-// STATIC ASSET ROUTING (Registered BEFORE Page Routes)
-// ─────────────────────────────────────────────
-const imagesPath = path.join(__dirname, '../../assets/images');
-const iconsPath = path.join(__dirname, '../../assets/icons');
-const assetsPath = path.join(__dirname, '../../assets');
-const jsPath = path.join(__dirname, '../../js');
-const uploadsPath = path.join(__dirname, '../uploads');
-const adminFilesPath = path.join(__dirname, '../../admin/files');
-const adminPath = path.join(__dirname, '../../admin');
+// ─── Static assets (images, css, js, uploads) ────────────────────────────────
+const projectRoot  = path.join(__dirname, '../..');
+const uploadsPath  = path.join(__dirname, '../uploads');
+const adminPath    = path.join(projectRoot, 'admin');
 
-app.use('/uploads', express.static(uploadsPath));
-app.use('/assets/images', express.static(imagesPath));
-app.use('/assets/icons', express.static(iconsPath));
-app.use('/assets', express.static(assetsPath));
-app.use('/js', express.static(jsPath));
+app.use('/uploads',       express.static(uploadsPath));
+app.use('/assets',        express.static(path.join(projectRoot, 'assets')));
+app.use('/js',            express.static(path.join(projectRoot, 'js')));
+app.use('/css',           express.static(path.join(projectRoot, 'css')));
+app.use('/public',        express.static(path.join(projectRoot, 'public')));
 
-// Uploads subpath static routing
-app.use('/admin/files/destinations/uploads', express.static(uploadsPath));
-app.use('/admin/files/packages/uploads', express.static(uploadsPath));
-app.use('/admin/files/activities/uploads', express.static(uploadsPath));
-app.use('/admin/files/tickets/uploads', express.static(uploadsPath));
-app.use('/admin/files/place/uploads', express.static(uploadsPath));
-app.use('/admin/files/blog/uploads', express.static(uploadsPath));
-app.use('/admin/files/testimonials/uploads', express.static(uploadsPath));
-app.use('/admin/files/uploads', express.static(uploadsPath));
-
-// Unified static asset fallbacks for all admin files subpaths
-const staticAssetFallbacks = [
-  express.static(imagesPath),
-  express.static(iconsPath),
-  express.static(adminFilesPath),
-  express.static(assetsPath),
-  express.static(uploadsPath)
+// Admin uploads compat paths
+const uploadsAlias = [
+  '/admin/files/destinations/uploads', '/admin/files/packages/uploads',
+  '/admin/files/activities/uploads',   '/admin/files/tickets/uploads',
+  '/admin/files/place/uploads',        '/admin/files/blog/uploads',
+  '/admin/files/testimonials/uploads', '/admin/files/uploads',
 ];
+uploadsAlias.forEach(p => app.use(p, express.static(uploadsPath)));
 
-const registerAssetFallbacks = (routePath) => {
-  staticAssetFallbacks.forEach(middleware => app.use(routePath, middleware));
-};
+const adminFilesPath = path.join(adminPath, 'files');
+const adminAssetFallbacks = [
+  express.static(path.join(projectRoot, 'assets/images')),
+  express.static(path.join(projectRoot, 'assets/icons')),
+  express.static(adminFilesPath),
+  express.static(path.join(projectRoot, 'assets')),
+  express.static(uploadsPath),
+];
+const adminSubPaths = [
+  '/admin/files/destinations', '/admin/files/packages', '/admin/files/activities',
+  '/admin/files/tickets',      '/admin/files/place',    '/admin/files/posters',
+  '/admin/files/partners',     '/admin/files/blog',     '/admin/files/testimonials',
+  '/admin/files',              '/admin/uploads',
+];
+adminSubPaths.forEach(p => adminAssetFallbacks.forEach(mw => app.use(p, mw)));
 
-registerAssetFallbacks('/admin/files/destinations');
-registerAssetFallbacks('/admin/files/packages');
-registerAssetFallbacks('/admin/files/activities');
-registerAssetFallbacks('/admin/files/tickets');
-registerAssetFallbacks('/admin/files/place');
-registerAssetFallbacks('/admin/files/posters');
-registerAssetFallbacks('/admin/files/partners');
-registerAssetFallbacks('/admin/files/blog');
-registerAssetFallbacks('/admin/files/testimonials');
-registerAssetFallbacks('/admin/files');
-registerAssetFallbacks('/admin/uploads');
+// ─── Serve admin panel (JS SPA under /admin/) ────────────────────────────────
 app.use('/admin', express.static(adminPath));
 
-// ─────────────────────────────────────────────
-// PAGE ROUTING (Legacy PHP URLs -> Rendered Views)
-// ─────────────────────────────────────────────
-app.use('/', pagesRoutes);
+// ─── Serve public/ static HTML site ──────────────────────────────────────────
+const publicPath = path.join(projectRoot, 'public');
+app.use(express.static(publicPath));  // index.html served at /
 
-// 404 Handler
+// ─── URL -> HTML page mapping (clean URLs & legacy PHP URLs) ────────────────
+const htmlPages = {
+  '/about':                    'about.html',
+  '/packages':                 'packages.html',
+  '/package-details':          'package-details.html',
+  '/tickets':                  'tickets.html',
+  '/ticket-details':           'ticket-details.html',
+  '/activity-details':         'activity-details.html',
+  '/blog':                     'blog.html',
+  '/blog-details':             'blog-details.html',
+  '/contact':                  'contact.html',
+  '/career':                   'career.html',
+  '/cart':                     'cart.html',
+  '/thankyou':                 'thankyou.html',
+  '/privacy-policy':           'privacy-policy.html',
+  '/terms-and-conditions':     'terms-and-conditions.html',
+  '/attraction':               'attraction.html',
+  '/holiday-package':          'holiday-package.html',
+  '/flight-tickets':           'flight-tickets.html',
+  '/global-visa-services':     'global-visa-services.html',
+  '/travel-insurance':         'travel-insurance.html',
+  '/miscellaneous':            'miscellaneous.html',
+  '/mice-tourism':             'mice-tourism.html',
+  '/cruises':                  'cruises.html',
+  '/honeymoon-packages':       'honeymoon-packages.html',
+  '/fixed-departures':         'fixed-departures.html',
+  '/fixed-departure-details':  'fixed-departure-details.html',
+  '/curated-itineraries':      'curated-itineraries.html',
+  // Legacy PHP URLs -> static HTML
+  '/about.php':                'about.html',
+  '/contact.php':              'contact.html',
+  '/career.php':               'career.html',
+  '/cart.php':                 'cart.html',
+  '/package.php':              'packages.html',
+  '/attraction.php':           'attraction.html',
+  '/blog.php':                 'blog.html',
+  '/blog-details.php':         'blog-details.html',
+  '/holiday-package.php':      'holiday-package.html',
+  '/flight-tickets.php':       'flight-tickets.html',
+  '/global-visa-services.php': 'global-visa-services.html',
+  '/travel-insurance.php':     'travel-insurance.html',
+  '/miscellaneous.php':        'miscellaneous.html',
+  '/mice-tourism.php':         'mice-tourism.html',
+  '/cruises.php':              'cruises.html',
+  '/honeymoon-packages.php':   'honeymoon-packages.html',
+  '/fixed-departures.php':     'fixed-departures.html',
+  '/thankyou.php':             'thankyou.html',
+  '/privacy-policy.php':       'privacy-policy.html',
+  '/terms-and-conditions.php': 'terms-and-conditions.html',
+  '/tickets.php':              'tickets.html',
+  '/tickets-details.php':      'ticket-details.html',
+  '/package-details.php':      'package-details.html',
+  '/activity-details.php':     'activity-details.html',
+};
+
+Object.entries(htmlPages).forEach(([route, file]) => {
+  app.get(route, (req, res) => res.sendFile(path.join(publicPath, file), err => {
+    if (err) res.sendFile(path.join(publicPath, 'index.html'));
+  }));
+});
+
+// ─── Root -> index.html ────────────────────────────────────────────────────────
+app.get(['/', '/index', '/index.php'], (req, res) =>
+  res.sendFile(path.join(publicPath, 'index.html'))
+);
+
+// ─── Global Error Handler ────────────────────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error('[App Error]', err.stack || err.message || err);
+  if (req.path.startsWith('/api/') || req.path.startsWith('/action/') || req.path.startsWith('/admin/action/')) {
+    return res.status(200).json([{ status: 0, msg: err.message || 'An error occurred during process' }]);
+  }
+  res.status(500).send('Internal Server Error');
+});
+
+// ─── 404 -> index.html fallback ──────────────────────────────────────────────
 app.use((req, res) => {
-  return res.status(404).render('thankyou', {
-    pageTitle: 'Page Not Found',
-    message: 'The requested page could not be found.',
-    destinations: [],
-    tickets: [],
-    activities: [],
-    blogs: [],
-    testimonials: [],
-    posters: [],
-    partners: [],
-    latestNotice: '',
-    req
-  });
+  if (req.path.startsWith('/api/') || req.path.startsWith('/action/') || req.path.startsWith('/admin/action/')) {
+    return res.status(404).json([{ status: 0, msg: 'Endpoint not found' }]);
+  }
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 module.exports = app;

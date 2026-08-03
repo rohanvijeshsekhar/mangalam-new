@@ -256,8 +256,20 @@ class AdminController {
     return res.send('1');
   }
 
-  // ─── PACKAGES CRUD ───
-  listPackages(req, res) { return res.json(inMemoryStore.packages); }
+  listPackages(req, res) {
+    const pkgs = (inMemoryStore.packages || []).map(p => {
+      const dt = p.created_at ? new Date(p.created_at) : new Date();
+      return {
+        ...p,
+        package_id: p.package_id || p.id || 1,
+        id: p.package_id || p.id || 1,
+        package_title: p.package_title || p.title || 'Untitled Package',
+        createdDate: p.createdDate || dt.toISOString().split('T')[0],
+        createdTime: p.createdTime || dt.toTimeString().split(' ')[0]
+      };
+    });
+    return res.json(pkgs);
+  }
   fetchPackageEdit(req, res) {
     const id = extractId(req);
     const pkg = inMemoryStore.packages.find(p => p.package_id == id || p.id == id);
@@ -287,30 +299,51 @@ class AdminController {
     return res.json([resPkg]);
   }
   createPackage(req, res) {
-    const uploadedFile = getUploadedFile(req);
-    const card_image = uploadedFile ? `uploads/${uploadedFile.filename}` : 'assets/images/packages/default.jpg';
+    let card_image = 'assets/images/packages/default.jpg';
+    if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+      const cardFile = req.files.find(f => f.fieldname === 'image_card' || f.fieldname === 'card_image') || req.files[0];
+      if (cardFile) card_image = `uploads/${cardFile.filename}`;
+    } else if (req.file) {
+      card_image = `uploads/${req.file.filename}`;
+    }
+
     const title = req.body.packageTitle || req.body.title || '';
+    const destId = Number(req.body.destination) || Number(req.body.destination_id) || 1;
+
+    let highlights = [], includes = [], excludes = [], thinksToKnow = [], faqs = [];
+    try { if (req.body.highlights) highlights = typeof req.body.highlights === 'string' ? JSON.parse(req.body.highlights) : req.body.highlights; } catch(e){}
+    try { if (req.body.includes) includes = typeof req.body.includes === 'string' ? JSON.parse(req.body.includes) : req.body.includes; } catch(e){}
+    try { if (req.body.excludes) excludes = typeof req.body.excludes === 'string' ? JSON.parse(req.body.excludes) : req.body.excludes; } catch(e){}
+    try { if (req.body.thinks_to_know) thinksToKnow = typeof req.body.thinks_to_know === 'string' ? JSON.parse(req.body.thinks_to_know) : req.body.thinks_to_know; } catch(e){}
+    try { if (req.body.faq) faqs = typeof req.body.faq === 'string' ? JSON.parse(req.body.faq) : req.body.faq; } catch(e){}
+
     const newPkg = {
       package_id: getNextId(inMemoryStore.packages, 'package_id'),
       package_title: title,
       title: title,
-      destination_id: Number(req.body.destination) || Number(req.body.destination_id) || 1,
+      destination_id: destId,
       card_image: card_image,
       duration: req.body.duration || '',
       hotel_type: req.body.hotel_type || '',
       amount: Number(req.body.amount) || 0,
-      no_of_activites: Number(req.body.no_of_activites) || 0,
+      no_of_activites: Number(req.body.activities) || Number(req.body.no_of_activites) || 0,
       cancellation: req.body.cancellation || '',
       transportation: req.body.transportation || '',
       featured: Number(req.body.featured) || 0,
-      slug_url: req.body.slug_url || (title ? title.toLowerCase().replace(/\s+/g, '-') : ''),
-      description: req.body.discription || req.body.description || '',
+      slug_url: req.body.slug_url || (title ? title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : ''),
+      description: req.body.description || req.body.discription || '',
       meta: req.body.meta || '',
       category: req.body.category || 'Holiday Package',
       fixed_departure_date: req.body.fixed_departure_date || '',
       status: 1,
       created_at: new Date().toISOString(),
-      images: [], highlights: [], includes: [], excludes: [], thinksToKnow: [], itineraries: [], faqs: []
+      images: [],
+      highlights: highlights,
+      includes: includes,
+      excludes: excludes,
+      thinksToKnow: thinksToKnow,
+      itineraries: [],
+      faqs: faqs
     };
     inMemoryStore.packages.push(newPkg);
     inMemoryStore.syncPackage(newPkg);
@@ -328,12 +361,18 @@ class AdminController {
         duration: req.body.duration !== undefined ? req.body.duration : pkg.duration,
         hotel_type: req.body.hotel_type !== undefined ? req.body.hotel_type : pkg.hotel_type,
         amount: (req.body.amount !== undefined && req.body.amount !== '') ? Number(req.body.amount) : pkg.amount,
-        description: req.body.discription || req.body.description || pkg.description,
+        description: req.body.description || req.body.discription || pkg.description,
         meta: req.body.meta || pkg.meta,
         featured: req.body.featured !== undefined ? Number(req.body.featured) : pkg.featured
       });
-      const uploadedFile = getUploadedFile(req);
-      if (uploadedFile) pkg.card_image = `uploads/${uploadedFile.filename}`;
+
+      if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+        const cardFile = req.files.find(f => f.fieldname === 'image_card' || f.fieldname === 'card_image') || req.files[0];
+        if (cardFile) pkg.card_image = `uploads/${cardFile.filename}`;
+      } else if (req.file) {
+        pkg.card_image = `uploads/${req.file.filename}`;
+      }
+
       inMemoryStore.syncPackage(pkg);
     }
     return res.json([{ status: 1, msg: "Package Updated Successfully" }]);

@@ -7,7 +7,35 @@ const otpController = require('../controllers/otp.controller');
 const upload = require('../middleware/upload');
 
 // ─────────────────────────────────────────────
-// CATALOG & PUBLIC DATA ENDPOINTS
+// REST API ALIASES (/api/*)
+// ─────────────────────────────────────────────
+router.all('/api/destinations', (req, res) => catalogController.getDestinations(req, res));
+router.all('/api/packages', (req, res) => catalogController.getPackages ? catalogController.getPackages(req, res) : catalogController.getPackageDetails(req, res));
+router.all('/api/packages/:id', (req, res) => catalogController.getPackageDetails(req, res));
+router.all('/api/tickets', (req, res) => catalogController.getTickets(req, res));
+router.all('/api/tickets/:id', (req, res) => catalogController.getTicketDetails(req, res));
+router.all('/api/activities', (req, res) => catalogController.getActivities(req, res));
+router.all('/api/activities/:id', (req, res) => catalogController.getActivityDetails(req, res));
+router.all('/api/blogs', (req, res) => catalogController.getBlogs(req, res));
+router.all('/api/blogs/:id', (req, res) => catalogController.getBlogData(req, res));
+router.all('/api/testimonials', (req, res) => catalogController.getTestimonials(req, res));
+router.all('/api/partners', (req, res) => catalogController.getPartners(req, res));
+router.all('/api/posters', (req, res) => catalogController.getPosters(req, res));
+router.all('/api/notice', (req, res) => catalogController.getNotice(req, res));
+
+// Enquiry REST API aliases
+router.all('/api/enquiry/contact', (req, res) => enquiryController.submitContactEnquiry(req, res));
+router.all('/api/enquiry/package', (req, res) => enquiryController.submitPackageEnquiry(req, res));
+router.all('/api/enquiry/customize', (req, res) => enquiryController.submitCustomizationEnquiry(req, res));
+router.all('/api/enquiry/career', upload.single('resume'), (req, res) => enquiryController.submitCareerEnquiry(req, res));
+router.all('/api/enquiry/cart', (req, res) => enquiryController.submitCartEnquiry(req, res));
+
+// OTP REST API aliases
+router.all('/api/otp/send', (req, res) => otpController.sendOTP(req, res));
+router.all('/api/otp/verify', (req, res) => otpController.verifyOTP(req, res));
+
+// ─────────────────────────────────────────────
+// CATALOG & PUBLIC DATA ENDPOINTS (LEGACY PHP ACTION ALIASES)
 // ─────────────────────────────────────────────
 router.all('/allDestinations.php', (req, res) => catalogController.getDestinations(req, res));
 router.all('/allTickets.php', (req, res) => catalogController.getTickets(req, res));
@@ -39,15 +67,11 @@ router.all('/fetchRandomActivity.php', (req, res) => catalogController.getRandom
 router.all('/fetchDestinationPopup.php', (req, res) => catalogController.getDestinations(req, res));
 router.all('/fetchPlacesPopup.php', (req, res) => catalogController.getDestinations(req, res));
 
-// ─────────────────────────────────────────────
 // OTP ENDPOINTS
-// ─────────────────────────────────────────────
 router.all('/sendOTP.php', (req, res) => otpController.sendOTP(req, res));
 router.all('/verifyOTP.php', (req, res) => otpController.verifyOTP(req, res));
 
-// ─────────────────────────────────────────────
 // ENQUIRY & FORM SUBMISSION ENDPOINTS
-// ─────────────────────────────────────────────
 router.all('/submitContactEnquiry.php', (req, res) => enquiryController.submitContactEnquiry(req, res));
 router.all('/submitPackageEnquiry.php', (req, res) => enquiryController.submitPackageEnquiry(req, res));
 router.all('/submitCustomizeEnquiry.php', (req, res) => enquiryController.submitCustomizationEnquiry(req, res));
