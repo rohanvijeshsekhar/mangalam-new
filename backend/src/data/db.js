@@ -1,8 +1,19 @@
 const path = require('path');
 const fs = require('fs');
 
+function safeParseJson(val) {
+  if (!val) return [];
+  if (typeof val === 'string') {
+    try { return JSON.parse(val); } catch(e) { return []; }
+  }
+  return val;
+}
+
 let Database;
 let isNativeSqlite = false;
+
+
+
 
 try {
   Database = require('better-sqlite3');
@@ -37,8 +48,148 @@ if (isNativeSqlite) {
       status INTEGER DEFAULT 1,
       created_at TEXT
     );
+    CREATE TABLE IF NOT EXISTS packages (
+      package_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      destination_id INTEGER DEFAULT 1,
+      title TEXT,
+      package_title TEXT,
+      card_image TEXT,
+      duration TEXT,
+      hotel_type TEXT,
+      amount INTEGER DEFAULT 0,
+      no_of_activites INTEGER DEFAULT 0,
+      cancellation TEXT,
+      transportation TEXT,
+      featured INTEGER DEFAULT 0,
+      slug_url TEXT,
+      description TEXT,
+      meta TEXT,
+      category TEXT,
+      fixed_departure_date TEXT,
+      status INTEGER DEFAULT 1,
+      created_at TEXT,
+      images TEXT,
+      highlights TEXT,
+      includes TEXT,
+      excludes TEXT,
+      itineraries TEXT,
+      faqs TEXT
+    );
+    CREATE TABLE IF NOT EXISTS activities (
+      activity_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      destination_id INTEGER DEFAULT 1,
+      title TEXT,
+      short_title TEXT,
+      card_image TEXT,
+      display_amount INTEGER DEFAULT 0,
+      child_amount INTEGER DEFAULT 0,
+      discount_amount INTEGER DEFAULT 0,
+      duration TEXT,
+      featured INTEGER DEFAULT 0,
+      slug_url TEXT,
+      description TEXT,
+      meta TEXT,
+      status INTEGER DEFAULT 1,
+      created_at TEXT,
+      images TEXT,
+      highlights TEXT,
+      includes TEXT,
+      excludes TEXT,
+      faqs TEXT
+    );
+    CREATE TABLE IF NOT EXISTS tickets (
+      ticket_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      destination_id INTEGER DEFAULT 1,
+      title TEXT,
+      short_title TEXT,
+      card_image TEXT,
+      display_amount INTEGER DEFAULT 0,
+      child_amount INTEGER DEFAULT 0,
+      featured INTEGER DEFAULT 0,
+      slug_url TEXT,
+      description TEXT,
+      meta TEXT,
+      status INTEGER DEFAULT 1,
+      created_at TEXT,
+      images TEXT,
+      highlights TEXT,
+      includes TEXT,
+      excludes TEXT,
+      faqs TEXT
+    );
+    CREATE TABLE IF NOT EXISTS places (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      place_id INTEGER,
+      destination_id INTEGER DEFAULT 1,
+      place_name TEXT,
+      card_image TEXT,
+      meta TEXT,
+      description TEXT,
+      status INTEGER DEFAULT 1,
+      created_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS collections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      collection_name TEXT,
+      title TEXT,
+      destinations TEXT,
+      status INTEGER DEFAULT 1,
+      created_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS blogs (
+      blog_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT,
+      date TEXT,
+      description TEXT,
+      card_image TEXT,
+      meta TEXT,
+      status INTEGER DEFAULT 1,
+      created_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS testimonials (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      role TEXT,
+      description TEXT,
+      avatar TEXT,
+      rating INTEGER DEFAULT 5,
+      status INTEGER DEFAULT 1,
+      created_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS partners (
+      partners_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      logo TEXT,
+      status INTEGER DEFAULT 1,
+      created_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS posters (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT,
+      image TEXT,
+      link TEXT,
+      status INTEGER DEFAULT 1,
+      created_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS notices (
+      notice_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      data TEXT,
+      status INTEGER DEFAULT 1,
+      created_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS enquiries (
+      enquiry_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      email TEXT,
+      phone TEXT,
+      message TEXT,
+      type TEXT,
+      created_at TEXT
+    );
     `);
-  } catch (err) {}
+  } catch (err) {
+    console.error("DB Initialization Error:", err);
+  }
   module.exports = db;
 } else {
   // Pure JavaScript persistent JSON store surrogate (zero C++ dependencies required)
@@ -107,9 +258,11 @@ if (isNativeSqlite) {
           if (!table) return { lastInsertRowid: 1, changes: 1 };
           if (!dbState[table]) dbState[table] = [];
 
-          if (sql.startsWith('INSERT') || sql.startsWith('REPLACE')) {
+          const trimmedSql = sql.trim().toUpperCase();
+          if (trimmedSql.startsWith('INSERT') || trimmedSql.startsWith('REPLACE')) {
             const idKey = table.endsWith('s') ? table.slice(0, -1) + '_id' : 'id';
             let recordId = args[0];
+
             
             // Check if record exists for replace
             const existingIdx = dbState[table].findIndex(r => (r[idKey] && r[idKey] == recordId) || (r.id && r.id == recordId));
@@ -240,7 +393,7 @@ if (isNativeSqlite) {
             return { lastInsertRowid: recordId || 1, changes: 1 };
           }
 
-          if (sql.startsWith('DELETE')) {
+          if (trimmedSql.startsWith('DELETE')) {
             const delId = args[0];
             dbState[table] = dbState[table].filter(r => {
               return !Object.values(r).some(v => String(v) === String(delId));

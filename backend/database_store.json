@@ -1,7 +1,51 @@
 {
   "admin_users": [],
-  "destinations": [],
-  "packages": [],
+  "destinations": [
+    {
+      "destination_id": 1,
+      "destination_name": "Dubai",
+      "card_image": "uploads/destinationCardImage-1785757154365-856424720.jpg",
+      "icon": "uploads/destinationIcon-1785757154368-336903402.jpg",
+      "inner_image": "uploads/destinationInnerImage-1785757154367-122064481.jpg",
+      "featured": 0,
+      "slug_url": "dubai",
+      "meta": "",
+      "discription": "hhhhhhhhhhhhhhhhhhhhhhhhh",
+      "status": 1,
+      "created_at": "2026-08-03T11:39:14.380Z"
+    }
+  ],
+  "packages": [
+    {
+      "package_id": 1,
+      "destination_id": 1,
+      "package_title": "Test Package 500",
+      "title": "Test Package 500",
+      "card_image": "assets/images/packages/default.jpg",
+      "duration": "3 Days",
+      "hotel_type": "",
+      "amount": 5000,
+      "no_of_activites": 0,
+      "cancellation": "",
+      "transportation": "",
+      "featured": 0,
+      "slug_url": "test-package-500",
+      "description": "",
+      "meta": "",
+      "category": "Holiday Package",
+      "fixed_departure_date": "",
+      "status": 1,
+      "created_at": "2026-08-03T11:37:38.343Z",
+      "images": [],
+      "highlights": [
+        "Highlight 1"
+      ],
+      "includes": [],
+      "excludes": [],
+      "itineraries": [],
+      "faqs": []
+    }
+  ],
   "activities": [],
   "tickets": [],
   "places": [],

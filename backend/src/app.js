@@ -4,7 +4,7 @@ const path    = require('path');
 
 // Route modules
 const apiRoutes   = require('./routes/api.routes');
-const adminRoutes = require('./routes/admin.routes');
+// Admin routes removed
 
 const app = express();
 
@@ -23,13 +23,13 @@ app.use((req, res, next) => {
 
 // ─── REST APIs (/api/* and legacy /action/* compat) ─────────────────────────
 app.use('/action',       apiRoutes);
-app.use('/admin/action', adminRoutes);
+// Admin action routes removed
 app.use('/',             apiRoutes);   // exposes /api/* routes at root level
 
 // ─── Static assets (images, css, js, uploads) ────────────────────────────────
 const projectRoot  = path.join(__dirname, '../..');
 const uploadsPath  = path.join(__dirname, '../uploads');
-const adminPath    = path.join(projectRoot, 'admin');
+// Admin path removed
 
 app.use('/uploads',       express.static(uploadsPath));
 app.use('/assets',        express.static(path.join(projectRoot, 'assets')));
@@ -37,33 +37,7 @@ app.use('/js',            express.static(path.join(projectRoot, 'js')));
 app.use('/css',           express.static(path.join(projectRoot, 'css')));
 app.use('/public',        express.static(path.join(projectRoot, 'public')));
 
-// Admin uploads compat paths
-const uploadsAlias = [
-  '/admin/files/destinations/uploads', '/admin/files/packages/uploads',
-  '/admin/files/activities/uploads',   '/admin/files/tickets/uploads',
-  '/admin/files/place/uploads',        '/admin/files/blog/uploads',
-  '/admin/files/testimonials/uploads', '/admin/files/uploads',
-];
-uploadsAlias.forEach(p => app.use(p, express.static(uploadsPath)));
-
-const adminFilesPath = path.join(adminPath, 'files');
-const adminAssetFallbacks = [
-  express.static(path.join(projectRoot, 'assets/images')),
-  express.static(path.join(projectRoot, 'assets/icons')),
-  express.static(adminFilesPath),
-  express.static(path.join(projectRoot, 'assets')),
-  express.static(uploadsPath),
-];
-const adminSubPaths = [
-  '/admin/files/destinations', '/admin/files/packages', '/admin/files/activities',
-  '/admin/files/tickets',      '/admin/files/place',    '/admin/files/posters',
-  '/admin/files/partners',     '/admin/files/blog',     '/admin/files/testimonials',
-  '/admin/files',              '/admin/uploads',
-];
-adminSubPaths.forEach(p => adminAssetFallbacks.forEach(mw => app.use(p, mw)));
-
-// ─── Serve admin panel (JS SPA under /admin/) ────────────────────────────────
-app.use('/admin', express.static(adminPath));
+// Admin static routes removed
 
 // ─── Serve public/ static HTML site ──────────────────────────────────────────
 const publicPath = path.join(projectRoot, 'public');
