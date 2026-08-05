@@ -4,7 +4,7 @@ const path    = require('path');
 
 // Route modules
 const apiRoutes   = require('./routes/api.routes');
-// Admin routes removed
+const adminRoutes = require('./routes/admin.routes');
 
 const app = express();
 
@@ -23,13 +23,13 @@ app.use((req, res, next) => {
 
 // ─── REST APIs (/api/* and legacy /action/* compat) ─────────────────────────
 app.use('/action',       apiRoutes);
-// Admin action routes removed
+app.use('/api/admin',    adminRoutes);  // new React admin API
 app.use('/',             apiRoutes);   // exposes /api/* routes at root level
 
 // ─── Static assets (images, css, js, uploads) ────────────────────────────────
 const projectRoot  = path.join(__dirname, '../..');
 const uploadsPath  = path.join(__dirname, '../uploads');
-// Admin path removed
+const adminPath    = path.join(projectRoot, 'admin/dist');
 
 app.use('/uploads',       express.static(uploadsPath));
 app.use('/assets',        express.static(path.join(projectRoot, 'assets')));
@@ -37,7 +37,12 @@ app.use('/js',            express.static(path.join(projectRoot, 'js')));
 app.use('/css',           express.static(path.join(projectRoot, 'css')));
 app.use('/public',        express.static(path.join(projectRoot, 'public')));
 
-// Admin static routes removed
+// ─── Serve new React Admin Panel at /admin ──────────────────────────────────
+app.use('/admin/assets', express.static(path.join(adminPath, 'assets')));
+app.use('/admin', express.static(adminPath));
+app.get(['/admin', '/admin/*'], (req, res) =>
+  res.sendFile(path.join(adminPath, 'index.html'))
+);
 
 // ─── Serve public/ static HTML site ──────────────────────────────────────────
 const publicPath = path.join(projectRoot, 'public');

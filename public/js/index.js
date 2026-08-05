@@ -43,11 +43,11 @@ async function loadDestinations() {
     if (destList) {
       const emptySlide = `
         <li class="splide__slide">
-            <div class="relative rounded-3xl overflow-hidden h-[400px] bg-gradient-to-b from-gray-200 via-gray-400 to-gray-800">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 class="text-3xl font-bold mb-3 font-[Quicksand]">No Destinations Available</h3>
-                    <p class="text-base leading-relaxed font-dm-sans">Please check back later for exciting destinations.</p>
+            <div class="relative rounded-[32px] overflow-hidden h-[480px] lg:h-[540px]">
+                <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-6 lg:p-8 text-white text-left">
+                    <h3 class="text-3xl font-bold mb-2 font-[Quicksand] tracking-wide text-white">No Destinations Available</h3>
+                    <p class="text-sm md:text-base leading-relaxed font-dm-sans line-clamp-2 text-white/90">Please check back later for exciting destinations.</p>
                 </div>
             </div>
         </li>`;
@@ -94,13 +94,31 @@ async function loadDestinations() {
 }
 
 async function loadTickets() {
+  const section = document.getElementById('home-tickets-section');
+  const carousel = document.getElementById('ticketsCarousel');
   const list = document.querySelector('#ticketsCarousel .splide__list');
-  if (!list) return;
+  const viewAllBtn = document.getElementById('view-all-tickets-btn');
+
   const tickets = await MT.apiGet('/api/tickets');
   if (!tickets || !tickets.length) {
-    list.innerHTML = `<li class="splide__slide"><div class="rounded-3xl p-6 text-center"><p class="text-gray-600 font-dm-sans">No tickets available at the moment.</p></div></li>`;
+    if (section) section.style.display = '';
+    if (viewAllBtn) viewAllBtn.style.display = 'none';
+    if (carousel) {
+      carousel.outerHTML = `
+        <div class="flex flex-col items-center justify-center py-8 text-center" data-aos="fade-up">
+            <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+            </svg>
+            <h3 class="text-xl md:text-2xl font-bold text-slate-800 font-[Quicksand] mb-2">No Tickets Available</h3>
+            <p class="text-gray-500 font-dm-sans text-sm md:text-base">We are currently updating our tickets. Please check back later!</p>
+        </div>
+      `;
+    }
     return;
   }
+  if (!list) return;
+  if (section) section.style.display = '';
+  if (viewAllBtn) viewAllBtn.style.display = '';
   list.innerHTML = tickets.map(t => R.ticketCard(t)).join('');
 }
 
@@ -121,10 +139,31 @@ async function loadPartners() {
 }
 
 async function loadBlogs() {
+  const section = document.getElementById('home-blog-section');
+  const carousel = document.getElementById('blogCarousel');
   const list = document.querySelector('#blogCarousel .splide__list');
-  if (!list) return;
+  const viewAllBtn = document.getElementById('view-all-blogs-btn');
+
   const blogs = await MT.apiGet('/api/blogs');
-  if (!blogs || !blogs.length) return;
+  if (!blogs || !blogs.length) {
+    if (section) section.style.display = '';
+    if (viewAllBtn) viewAllBtn.style.display = 'none';
+    if (carousel) {
+      carousel.outerHTML = `
+        <div class="flex flex-col items-center justify-center py-8 text-center" data-aos="fade-up">
+            <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3 class="text-xl md:text-2xl font-bold text-slate-800 font-[Quicksand] mb-2">No Blog Posts Yet</h3>
+            <p class="text-gray-500 font-dm-sans text-sm md:text-base">Check back soon for exciting travel stories and tips!</p>
+        </div>
+      `;
+    }
+    return;
+  }
+  if (!list) return;
+  if (section) section.style.display = '';
+  if (viewAllBtn) viewAllBtn.style.display = '';
   list.innerHTML = blogs.slice(0, 6).map((b, i) => R.blogCard(b, i)).join('');
 }
 
@@ -139,7 +178,7 @@ function initCarousels() {
     const navEl = document.getElementById('destinationNavCarousel');
     if (navEl) {
       const cnt = navEl.querySelectorAll('.splide__slide').length;
-      if (cnt > 0) new Splide('#destinationNavCarousel', { autoWidth: true, gap: '2rem', pagination: false, arrows: cnt > 3 }).mount();
+      if (cnt > 0) new Splide('#destinationNavCarousel', { autoWidth: true, gap: '2rem', pagination: false, arrows: false }).mount();
     }
 
     const destEl = document.getElementById('destinationCarousel');
@@ -147,11 +186,20 @@ function initCarousels() {
       const cnt = destEl.querySelectorAll('.splide__slide').length;
       if (cnt > 0) {
         new Splide('#destinationCarousel', {
-          type: cnt > 3 ? 'loop' : 'slide',
-          perPage: Math.min(3, Math.max(1, cnt)),
+          type: cnt > 4 ? 'loop' : 'slide',
+          perPage: 4,
           gap: '1.5rem',
-          arrows: cnt > 1,
-          breakpoints: { 1024: { perPage: Math.min(2, Math.max(1, cnt)) }, 640: { perPage: 1 } }
+          arrows: true,
+          pagination: false,
+          drag: true,
+          keyboard: true,
+          autoplay: false,
+          breakpoints: {
+            1199: { perPage: 4 },
+            991: { perPage: 3 },
+            767: { perPage: 2 },
+            575: { perPage: 1 }
+          }
         }).mount();
       }
     }

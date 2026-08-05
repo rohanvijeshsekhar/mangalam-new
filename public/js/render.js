@@ -2,16 +2,16 @@
  * render.js — 100% exact DOM card render functions matching mangalamtravel.com
  */
 
-(function(window) {
-  function destinationCard(destination) {
-    const dSlug = destination.slug_url || destination.slug || '';
-    const destinationUrl = dSlug ? `/package.php?slug=${encodeURIComponent(dSlug)}&type=package` : '/curated-itineraries.php';
-    const title = destination.destination_name || destination.title || destination.name || '';
-    const rawDesc = (destination.description || '').replace(/<[^>]*>?/gm, '').trim();
-    const destImg = destination.card_image || destination.image || '';
-    const imgPath = MT.resolveImg(destImg) || './assets/images/destination-placeholder.jpg';
+(function (window) {
+    function destinationCard(destination) {
+        const dSlug = destination.slug_url || destination.slug || '';
+        const destinationUrl = dSlug ? `/package.php?slug=${encodeURIComponent(dSlug)}&type=package` : '/curated-itineraries.php';
+        const title = destination.destination_name || destination.title || destination.name || '';
+        const rawDesc = (destination.description || '').replace(/<[^>]*>?/gm, '').trim();
+        const destImg = destination.card_image || destination.image || '';
+        const imgPath = MT.resolveImg(destImg) || './assets/images/destination-placeholder.jpg';
 
-    return `
+        return `
       <a href="${destinationUrl}" class="relative rounded-3xl overflow-hidden h-[400px] block cursor-pointer group">
           <img src="${imgPath}" alt="${title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
@@ -20,17 +20,17 @@
               ${rawDesc ? `<p class="text-base leading-relaxed font-dm-sans line-clamp-2">${rawDesc}</p>` : ''}
           </div>
       </a>`;
-  }
+    }
 
-  function ticketCard(ticket) {
-    const imgFile = ticket.card_image || ticket.image || 'ticket-card-1.webp';
-    const imagePath = MT.resolveImg(imgFile) || './assets/images/logo-color.png';
-    const tktTitle = ticket.title || ticket.short_title || 'Attraction Ticket';
-    const tktAmount = ticket.display_amount || ticket.amount || ticket.adult_price || 0;
-    const destName = ticket.destination_name || ticket.destination || 'Global';
-    const detailUrl = `/tickets-details.php?id=${encodeURIComponent(ticket.ticket_id || ticket.slug_url || ticket.id || '')}`;
+    function ticketCard(ticket) {
+        const imgFile = ticket.card_image || ticket.image || 'ticket-card-1.webp';
+        const imagePath = MT.resolveImg(imgFile) || './assets/images/logo-color.png';
+        const tktTitle = ticket.title || ticket.short_title || 'Attraction Ticket';
+        const tktAmount = ticket.display_amount || ticket.amount || ticket.adult_price || 0;
+        const destName = ticket.destination_name || ticket.destination || 'Global';
+        const detailUrl = `/tickets-details.php?id=${encodeURIComponent(ticket.ticket_id || ticket.slug_url || ticket.id || '')}`;
 
-    return `
+        return `
       <li class="splide__slide">
           <a href="${detailUrl}" class="block">
               <div class="rounded-3xl cursor-pointer group">
@@ -48,16 +48,16 @@
               </div>
           </a>
       </li>`;
-  }
+    }
 
-  function blogCard(blog, index = 0) {
-    const title = blog.title || '';
-    const slug = blog.slug_url || blog.slug || '';
-    const imgStr = blog.card_image || (blog.images && blog.images.length > 0 ? (typeof blog.images[0] === 'object' ? (blog.images[0].file_name || blog.images[0].name || blog.images[0].image) : blog.images[0]) : '');
-    const blogImagePath = MT.resolveImg(imgStr) || './assets/images/logo-color.png';
-    const date = blog.date || '';
+    function blogCard(blog, index = 0) {
+        const title = blog.title || '';
+        const slug = blog.slug_url || blog.slug || '';
+        const imgStr = blog.card_image || (blog.images && blog.images.length > 0 ? (typeof blog.images[0] === 'object' ? (blog.images[0].file_name || blog.images[0].name || blog.images[0].image) : blog.images[0]) : '');
+        const blogImagePath = MT.resolveImg(imgStr) || './assets/images/logo-color.png';
+        const date = blog.date || '';
 
-    return `
+        return `
       <li class="splide__slide">
           <a href="/blog-details.php?slug=${encodeURIComponent(slug)}" class="group block">
               <div class="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-200">
@@ -81,16 +81,16 @@
               </div>
           </a>
       </li>`;
-  }
+    }
 
-  function testimonialCard(testi) {
-    const name = testi.name || 'Happy Traveller';
-    const location = testi.location || testi.country || '';
-    const text = testi.feedback || testi.review || testi.text || '';
-    const rating = Number(testi.rating || 5);
-    const stars = Array(rating).fill('<i class="fas fa-star text-yellow-400 text-sm"></i>').join('');
+    function testimonialCard(testi) {
+        const name = testi.name || 'Happy Traveller';
+        const location = testi.location || testi.country || '';
+        const text = testi.feedback || testi.review || testi.text || '';
+        const rating = Number(testi.rating || 5);
+        const stars = Array(rating).fill('<i class="fas fa-star text-yellow-400 text-sm"></i>').join('');
 
-    return `
+        return `
       <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl shadow-gray-200/50 flex flex-col justify-between">
           <div>
               <div class="flex items-center space-x-1 mb-6">${stars}</div>
@@ -106,28 +106,28 @@
               </div>
           </div>
       </div>`;
-  }
+    }
 
-  function partnerLogo(partner) {
-    const img = MT.resolveImg(partner.image || partner.logo) || './assets/images/partner-placeholder.png';
-    const name = partner.name || partner.partner_name || 'Partner';
+    function partnerLogo(partner) {
+        const img = MT.resolveImg(partner.image || partner.logo) || './assets/images/partner-placeholder.png';
+        const name = partner.name || partner.partner_name || 'Partner';
 
-    return `
+        return `
       <div class="bg-white rounded-2xl p-4 border border-gray-100 flex items-center justify-center h-20 shadow-sm hover:shadow-md transition-shadow">
           <img src="${img}" alt="${name}" class="max-h-12 max-w-full object-contain filter grayscale hover:grayscale-0 transition-all">
       </div>`;
-  }
+    }
 
-  function packageCard(pkg) {
-    const title = pkg.package_name || pkg.title || pkg.name || '';
-    const slug = pkg.slug_url || pkg.slug || '';
-    const img = MT.resolveImg(pkg.card_image || pkg.image);
-    const price = pkg.amount || pkg.price;
-    const nights = pkg.nights || '';
-    const days = pkg.days || '';
-    const url = `/package-details.php?slug=${encodeURIComponent(slug)}`;
+    function packageCard(pkg) {
+        const title = pkg.package_name || pkg.title || pkg.name || '';
+        const slug = pkg.slug_url || pkg.slug || '';
+        const img = MT.resolveImg(pkg.card_image || pkg.image);
+        const price = pkg.amount || pkg.price;
+        const nights = pkg.nights || '';
+        const days = pkg.days || '';
+        const url = `/package-details.php?slug=${encodeURIComponent(slug)}`;
 
-    return `
+        return `
       <a href="${url}" class="block group rounded-3xl overflow-hidden border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 bg-white">
           <div class="relative overflow-hidden h-64">
               <img src="${img}" alt="${title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='./assets/images/logo-color.png'">
@@ -139,14 +139,14 @@
               ${price ? `<div class="text-lg font-bold text-gray-900 font-[Quicksand] mt-4">₹ ${Number(price).toLocaleString('en-IN')} <span class="text-xs text-gray-500 font-dm-sans font-normal">/ person</span></div>` : ''}
           </div>
       </a>`;
-  }
+    }
 
-  window.R = {
-    destinationCard,
-    ticketCard,
-    blogCard,
-    testimonialCard,
-    partnerLogo,
-    packageCard
-  };
+    window.R = {
+        destinationCard,
+        ticketCard,
+        blogCard,
+        testimonialCard,
+        partnerLogo,
+        packageCard
+    };
 })(window);

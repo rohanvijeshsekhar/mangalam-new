@@ -55,7 +55,7 @@ function resolveIncludes(content, activeNav = 'home', jsScript = null) {
   let scriptComp      = fs.readFileSync(path.join(compDir, 'script.ejs'), 'utf8');
 
   if (jsScript) {
-    scriptComp += `\n<script src="./js/${jsScript}"></script>`;
+    scriptComp += `\n<script src="./js/${jsScript}?v=${Date.now()}"></script>`;
   }
 
   content = content.replace(/<%- include\('components\/head'[\s\S]*?\)\s*%>/g, getHeadHtml('Mangalam Travel & Tours'));
@@ -79,8 +79,7 @@ function resolveIncludes(content, activeNav = 'home', jsScript = null) {
 // Clean EJS control blocks & loops cleanly
 function cleanEjsBlocks(html) {
   // Strip notice block if un-evaluated
-  html = html.replace(/<% if \(typeof latestNotice !== 'undefined' && latestNotice\) \{ %>[\s\S]*?<% \} %>/g,
-    `<div id="notice-bar" class="mt-20 md:mt-24 bg-red-600 text-white text-center text-sm md:text-base font-dm-sans py-2.5 px-4 relative z-30" style="display:none !important"><span id="notice-text"></span></div>`);
+  html = html.replace(/<% if \(typeof latestNotice !== 'undefined' && latestNotice\) \{ %>[\s\S]*?<% \} %>/g, '');
 
   // Fix hero image, title, and heading span in packages/destination view
   html = html.replace(/<% if \(coverImg\) \{ %>[\s\S]*?<% \} %>/g,
