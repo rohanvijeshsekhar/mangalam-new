@@ -790,7 +790,7 @@
         .then(data => {
             if (data.success) {
                 closePopup();
-                window.location.href = './thankyou.php';
+                window.location.href = '.thankyou.html';
                 return;
             } else {
                 alert(data.message || 'An error occurred. Please try again.');

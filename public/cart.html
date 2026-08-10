@@ -962,10 +962,10 @@
             </a>
             <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-700">
                 <a href="/" class="hover:text-red-600 transition-colors">Home</a>
-                <a href="/about.php" class="hover:text-red-600 transition-colors">About Us</a>
-                <a href="/package.php" class="hover:text-red-600 transition-colors">Packages</a>
-                <a href="/contact.php" class="hover:text-red-600 transition-colors">Contact</a>
-                <a href="/cart.php" class="text-red-600 font-semibold flex items-center gap-2">
+                <a href="about.html" class="hover:text-red-600 transition-colors">About Us</a>
+                <a href="packages.html" class="hover:text-red-600 transition-colors">Packages</a>
+                <a href="contact.html" class="hover:text-red-600 transition-colors">Contact</a>
+                <a href="cart.html" class="text-red-600 font-semibold flex items-center gap-2">
                     <i class="fi fi-rr-shopping-cart"></i> Cart
                 </a>
             </nav>
@@ -1026,7 +1026,7 @@
             const items = getCartData();
             const container = document.getElementById('cartItemsContainer');
             if (items.length === 0) {
-                container.innerHTML = '<div class="text-center py-12 text-gray-500 bg-gray-50 rounded-2xl border border-gray-100">Your cart is currently empty. <a href="/package.php" class="text-red-600 font-semibold underline">Browse activities</a></div>';
+                container.innerHTML = '<div class="text-center py-12 text-gray-500 bg-gray-50 rounded-2xl border border-gray-100">Your cart is currently empty. <a href="packages.html" class="text-red-600 font-semibold underline">Browse activities</a></div>';
                 document.getElementById('cartCheckoutForm').style.display = 'none';
                 return;
             }
@@ -1066,7 +1066,7 @@
                 if (data.status) {
                     localStorage.removeItem('cartItem');
                     alert('Enquiry submitted successfully!');
-                    window.location.href = '/thankyou.php';
+                    window.location.href = 'thankyou.html';
                 } else {
                     alert(data.message || 'Failed to submit enquiry.');
                 }

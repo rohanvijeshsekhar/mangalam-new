@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — Mangalam Travel & Tours</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0f0f1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Animated background blobs */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(220,38,38,0.15) 0%, transparent 70%);
+      top: -200px; left: -200px;
+      border-radius: 50%;
+      animation: float 8s ease-in-out infinite;
+    }
+    body::after {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(220,38,38,0.1) 0%, transparent 70%);
+      bottom: -100px; right: -100px;
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite reverse;
+    }
+    @keyframes float { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,30px)} }
+
+    .login-card {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+    }
+    .logo-area {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .logo-area img {
+      height: 48px;
+      filter: brightness(0) invert(1);
+      margin-bottom: 16px;
+    }
+    .logo-area h1 {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 22px;
+      color: #fff;
+      font-weight: 700;
+    }
+    .logo-area p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.45);
+      margin-top: 4px;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 8px;
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.3);
+      font-size: 14px;
+    }
+    .form-group input {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 14px 16px 14px 44px;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .form-group input:focus {
+      border-color: #dc2626;
+      background: rgba(220,38,38,0.06);
+    }
+    .form-group input::placeholder { color: rgba(255,255,255,0.2); }
+
+    .btn-login {
+      width: 100%;
+      background: #dc2626;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 15px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      margin-top: 8px;
+      box-shadow: 0 8px 24px rgba(220,38,38,0.35);
+    }
+    .btn-login:hover { background: #b91c1c; box-shadow: 0 12px 32px rgba(220,38,38,0.45); }
+    .btn-login:active { transform: scale(0.98); }
+    .btn-login:disabled { background: #555; box-shadow: none; cursor: not-allowed; }
+
+    .error-msg {
+      background: rgba(220,38,38,0.15);
+      border: 1px solid rgba(220,38,38,0.3);
+      color: #fca5a5;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-top: 14px;
+      display: none;
+    }
+    .footer-note {
+      text-align: center;
+      color: rgba(255,255,255,0.2);
+      font-size: 11px;
+      margin-top: 28px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="logo-area">
+      <img src="../../assets/images/logo-color.png" alt="Mangalam Travel" onerror="this.style.display='none'">
+      <h1>Mangalam Admin</h1>
+      <p>Travel & Tours — Control Panel</p>
+    </div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label>Username</label>
+        <div class="input-wrap">
+          <i class="fas fa-user"></i>
+          <input type="text" id="username" placeholder="Enter username" autocomplete="username" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" required>
+        </div>
+      </div>
+      <button type="submit" class="btn-login" id="login-btn">
+        <i class="fas fa-sign-in-alt mr-2"></i> Sign In
+      </button>
+      <div class="error-msg" id="error-msg"></div>
+    </form>
+    <div class="footer-note">© 2024 Mangalam Travel & Tours. Admin Access Only.</div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:4000/api';
+
+    // If already logged in, go to dashboard
+    if (localStorage.getItem('mt_admin_token')) {
+      window.location.href = '/admin/dashboard.html';
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      const err = document.getElementById('error-msg');
+      err.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('username').value.trim(),
+            password: document.getElementById('password').value
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Login failed');
+        localStorage.setItem('mt_admin_token', data.token);
+        localStorage.setItem('mt_admin_user', data.username);
+        window.location.href = '/admin/dashboard.html';
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+      }
+    });
+  </script>
+</body>
+</html>

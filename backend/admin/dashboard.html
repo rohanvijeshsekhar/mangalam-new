@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Mangalam Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <img src="../../assets/images/logo-color.png" alt="Mangalam" onerror="this.style.display='none'">
+    <div>
+      <div class="sidebar-logo-name">Mangalam</div>
+      <div class="sidebar-logo-sub">Admin Panel</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a href="#" class="nav-item active" data-section="dashboard">
+      <i class="fas fa-th-large"></i><span>Dashboard</span>
+    </a>
+    <a href="#" class="nav-item" data-section="destinations">
+      <i class="fas fa-map-marker-alt"></i><span>Destinations</span>
+    </a>
+    <a href="#" class="nav-item" data-section="packages">
+      <i class="fas fa-suitcase"></i><span>Packages</span>
+    </a>
+    <a href="#" class="nav-item" data-section="tickets">
+      <i class="fas fa-ticket-alt"></i><span>Tickets</span>
+    </a>
+    <a href="#" class="nav-item" data-section="blogs">
+      <i class="fas fa-blog"></i><span>Blogs</span>
+    </a>
+
+    <div class="nav-section-label" style="margin-top:16px">More</div>
+    <a href="#" class="nav-item" data-section="testimonials">
+      <i class="fas fa-star"></i><span>Testimonials</span>
+    </a>
+    <a href="#" class="nav-item" data-section="partners">
+      <i class="fas fa-handshake"></i><span>Partners</span>
+    </a>
+    <a href="#" class="nav-item" data-section="settings">
+      <i class="fas fa-cog"></i><span>Settings</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebar-avatar">A</div>
+      <div>
+        <div class="sidebar-username" id="sidebar-username">Admin</div>
+        <div class="sidebar-role">Administrator</div>
+      </div>
+    </div>
+    <button class="btn-logout" id="btn-logout" title="Logout">
+      <i class="fas fa-sign-out-alt"></i>
+    </button>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════════════════════ -->
+<main class="main-content">
+  <!-- Top Header -->
+  <header class="top-header">
+    <div class="header-left">
+      <button class="btn-toggle-sidebar" id="btn-toggle-sidebar"><i class="fas fa-bars"></i></button>
+      <div>
+        <h2 class="page-title" id="page-title">Dashboard</h2>
+        <p class="page-subtitle" id="page-subtitle">Welcome back to Mangalam Admin</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <a href="http://localhost:3000" target="_blank" class="btn-view-site">
+        <i class="fas fa-external-link-alt"></i> View Website
+      </a>
+    </div>
+  </header>
+
+  <!-- ── DASHBOARD SECTION ──────────────────────────────── -->
+  <section class="content-section" id="section-dashboard">
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card" data-section="destinations">
+        <div class="stat-icon" style="background:rgba(220,38,38,0.1);color:#dc2626"><i class="fas fa-map-marker-alt"></i></div>
+        <div class="stat-info"><div class="stat-value" id="stat-destinations">—</div><div class="stat-label">Destinations</div></div>
+      </div>
+      <div class="stat-card" data-section="packages">
+        <div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-suitcase"></i></div>
+        <div class="stat-info"><div class="stat-value" id="stat-packages">—</div><div class="stat-label">Packages</div></div>
+      </div>
+      <div class="stat-card" data-section="tickets">
+        <div class="stat-icon" style="background:rgba(16,185,129,0.1);color:#10b981"><i class="fas fa-ticket-alt"></i></div>
+        <div class="stat-info"><div class="stat-value" id="stat-tickets">—</div><div class="stat-label">Tickets</div></div>
+      </div>
+      <div class="stat-card" data-section="blogs">
+        <div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-blog"></i></div>
+        <div class="stat-info"><div class="stat-value" id="stat-blogs">—</div><div class="stat-label">Blogs</div></div>
+      </div>
+      <div class="stat-card" data-section="testimonials">
+        <div class="stat-icon" style="background:rgba(139,92,246,0.1);color:#8b5cf6"><i class="fas fa-star"></i></div>
+        <div class="stat-info"><div class="stat-value" id="stat-testimonials">—</div><div class="stat-label">Testimonials</div></div>
+      </div>
+      <div class="stat-card" data-section="partners">
+        <div class="stat-icon" style="background:rgba(236,72,153,0.1);color:#ec4899"><i class="fas fa-handshake"></i></div>
+        <div class="stat-info"><div class="stat-value" id="stat-partners">—</div><div class="stat-label">Partners</div></div>
+      </div>
+    </div>
+
+    <div class="quick-links">
+      <h3 class="section-heading">Quick Actions</h3>
+      <div class="quick-grid">
+        <button class="quick-btn" data-section="destinations" data-action="add"><i class="fas fa-plus"></i> Add Destination</button>
+        <button class="quick-btn" data-section="packages" data-action="add"><i class="fas fa-plus"></i> Add Package</button>
+        <button class="quick-btn" data-section="tickets" data-action="add"><i class="fas fa-plus"></i> Add Ticket</button>
+        <button class="quick-btn" data-section="blogs" data-action="add"><i class="fas fa-plus"></i> Add Blog</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DESTINATIONS SECTION ───────────────────────────── -->
+  <section class="content-section hidden" id="section-destinations">
+    <div class="section-toolbar">
+      <h3 class="section-heading">All Destinations</h3>
+      <button class="btn-primary" id="btn-add-destination"><i class="fas fa-plus"></i> Add Destination</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="tbl-destinations">
+        <thead><tr><th>Image</th><th>Name</th><th>Slug</th><th>Description</th><th>Actions</th></tr></thead>
+        <tbody id="tbody-destinations"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── PACKAGES SECTION ───────────────────────────────── -->
+  <section class="content-section hidden" id="section-packages">
+    <div class="section-toolbar">
+      <h3 class="section-heading">All Packages</h3>
+      <button class="btn-primary" id="btn-add-package"><i class="fas fa-plus"></i> Add Package</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="tbl-packages">
+        <thead><tr><th>Image</th><th>Name</th><th>Nights/Days</th><th>Price</th><th>Type</th><th>Actions</th></tr></thead>
+        <tbody id="tbody-packages"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── TICKETS SECTION ────────────────────────────────── -->
+  <section class="content-section hidden" id="section-tickets">
+    <div class="section-toolbar">
+      <h3 class="section-heading">All Tickets</h3>
+      <button class="btn-primary" id="btn-add-ticket"><i class="fas fa-plus"></i> Add Ticket</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Image</th><th>Title</th><th>Destination</th><th>Price</th><th>Actions</th></tr></thead>
+        <tbody id="tbody-tickets"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── BLOGS SECTION ──────────────────────────────────── -->
+  <section class="content-section hidden" id="section-blogs">
+    <div class="section-toolbar">
+      <h3 class="section-heading">All Blogs</h3>
+      <button class="btn-primary" id="btn-add-blog"><i class="fas fa-plus"></i> Add Blog</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Image</th><th>Title</th><th>Slug</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody id="tbody-blogs"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── TESTIMONIALS SECTION ───────────────────────────── -->
+  <section class="content-section hidden" id="section-testimonials">
+    <div class="section-toolbar">
+      <h3 class="section-heading">All Testimonials</h3>
+      <button class="btn-primary" id="btn-add-testimonial"><i class="fas fa-plus"></i> Add Testimonial</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Location</th><th>Rating</th><th>Feedback</th><th>Actions</th></tr></thead>
+        <tbody id="tbody-testimonials"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── PARTNERS SECTION ───────────────────────────────── -->
+  <section class="content-section hidden" id="section-partners">
+    <div class="section-toolbar">
+      <h3 class="section-heading">All Partners</h3>
+      <button class="btn-primary" id="btn-add-partner"><i class="fas fa-plus"></i> Add Partner</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Logo</th><th>Name</th><th>Actions</th></tr></thead>
+        <tbody id="tbody-partners"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── SETTINGS SECTION ───────────────────────────────── -->
+  <section class="content-section hidden" id="section-settings">
+    <h3 class="section-heading" style="margin-bottom:24px">Settings</h3>
+    <div class="settings-card">
+      <h4 class="settings-group-title"><i class="fas fa-lock"></i> Change Password</h4>
+      <form id="form-change-password" class="settings-form">
+        <div class="form-row">
+          <div class="form-group"><label>Current Password</label><input type="password" id="s-cur-pass" placeholder="Current password"></div>
+        </div>
+        <div class="form-row two">
+          <div class="form-group"><label>New Password</label><input type="password" id="s-new-pass" placeholder="New password"></div>
+          <div class="form-group"><label>Confirm Password</label><input type="password" id="s-conf-pass" placeholder="Confirm new password"></div>
+        </div>
+        <button type="submit" class="btn-primary">Update Password</button>
+        <div id="settings-msg" class="settings-msg"></div>
+      </form>
+    </div>
+    <div class="settings-card" style="margin-top:20px">
+      <h4 class="settings-group-title"><i class="fas fa-info-circle"></i> API Information</h4>
+      <div class="api-info">
+        <div class="api-row"><span>Admin Panel</span><code>http://localhost:4000/admin</code></div>
+        <div class="api-row"><span>API Base URL</span><code>http://localhost:4000/api</code></div>
+        <div class="api-row"><span>Frontend URL</span><code>http://localhost:3000</code></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box" id="modal-box">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-title">Add Item</h3>
+      <button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>

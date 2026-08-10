@@ -1227,7 +1227,7 @@
      * --------------------------------------------------------------------- */
 
     function deriveNamespaceFromPath() {
-        const path = window.location.pathname.split('/').pop() || 'index.php';
+        const path = window.location.pathname.split('/').pop() || 'index.html';
         const name = path.replace('.php', '').toLowerCase();
         if (name === '' || name === 'index') return 'home';
         return name;

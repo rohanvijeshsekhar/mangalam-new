@@ -129,7 +129,7 @@ async function loadFooterDests() {
     col.innerHTML = top.slice(i * per, (i + 1) * per).map(d => {
       const name = d.destination_name || d.name || '';
       const slug = d.slug_url || d.slug || '';
-      const url = slug ? `/package.php?slug=${encodeURIComponent(slug)}&type=package` : '#';
+      const url = slug ? `packages.html?slug=${encodeURIComponent(slug)}&type=package` : '#';
       return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors">${name} Holiday Packages</a>`;
     }).join('');
   });
@@ -144,7 +144,7 @@ async function loadFooterActivities() {
   el.innerHTML = acts.slice(0, 8).map(a => {
     const name = a.title || a.name || '';
     const slug = a.slug_url || a.slug || '';
-    const url = slug ? `/activity-details.php?slug=${encodeURIComponent(slug)}` : '#';
+    const url = slug ? `activity-details.html?slug=${encodeURIComponent(slug)}` : '#';
     return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors">${name}</a>`;
   }).join('');
 }
@@ -158,7 +158,7 @@ async function loadFooterTickets() {
   el.innerHTML = tkts.slice(0, 8).map(t => {
     const name = t.title || t.name || '';
     const slug = t.slug_url || t.slug || '';
-    const url = slug ? `/tickets-details.php?slug=${encodeURIComponent(slug)}` : '#';
+    const url = slug ? `ticket-details.html?slug=${encodeURIComponent(slug)}` : '#';
     return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors">${name}</a>`;
   }).join('');
 }
