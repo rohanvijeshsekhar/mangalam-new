@@ -9,6 +9,7 @@ const map = p => ({
   package_name:  p.package_name,
   slug_url:      p.slug_url,
   card_image:    p.card_image || '',
+  banner_image:  p.banner_image || p.inner_image || p.card_image || '',
   amount:        p.amount || 0,
   nights:        p.nights || 0,
   days:          p.days || 0,
@@ -35,15 +36,15 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', verifyToken, (req, res) => {
-  const { package_name, card_image, amount, nights, days, destination_id, type, overview, itinerary, inclusions, exclusions } = req.body;
+  const { package_name, card_image, banner_image, amount, nights, days, destination_id, type, overview, itinerary, inclusions, exclusions } = req.body;
   if (!package_name) return res.status(400).json({ error: 'package_name is required' });
-  const doc = store.insert('packages', { package_name, slug_url: slugify(package_name), card_image: card_image||'', amount: Number(amount)||0, nights: Number(nights)||0, days: Number(days)||0, destination_id: destination_id||null, type: type||'package', overview: overview||'', itinerary: itinerary||'', inclusions: inclusions||'', exclusions: exclusions||'' });
+  const doc = store.insert('packages', { package_name, slug_url: slugify(package_name), card_image: card_image||'', banner_image: banner_image||'', amount: Number(amount)||0, nights: Number(nights)||0, days: Number(days)||0, destination_id: destination_id||null, type: type||'package', overview: overview||'', itinerary: itinerary||'', inclusions: inclusions||'', exclusions: exclusions||'' });
   res.status(201).json(map(doc));
 });
 
 router.put('/:id', verifyToken, (req, res) => {
-  const { package_name, card_image, amount, nights, days, destination_id, type, overview, itinerary, inclusions, exclusions } = req.body;
-  const updates = { package_name, card_image, amount: amount !== undefined ? Number(amount) : undefined, nights: nights !== undefined ? Number(nights) : undefined, days: days !== undefined ? Number(days) : undefined, destination_id, type, overview, itinerary, inclusions, exclusions };
+  const { package_name, card_image, banner_image, amount, nights, days, destination_id, type, overview, itinerary, inclusions, exclusions } = req.body;
+  const updates = { package_name, card_image, banner_image, amount: amount !== undefined ? Number(amount) : undefined, nights: nights !== undefined ? Number(nights) : undefined, days: days !== undefined ? Number(days) : undefined, destination_id, type, overview, itinerary, inclusions, exclusions };
   if (package_name) updates.slug_url = slugify(package_name);
   const doc = store.update('packages', req.params.id, updates);
   if (!doc) return res.status(404).json({ error: 'Not found' });

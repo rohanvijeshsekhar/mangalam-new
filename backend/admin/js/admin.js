@@ -299,12 +299,15 @@ function openPackageForm(p = null) {
       </div>
     </div>
     <div class="form-group"><label>Destination</label><select id="p-dest">${getDestOptions(p?.destination_id)}</select></div>
-    <div class="form-group"><label>Card Image</label>${createImageUpload('p-card', p?.card_image||'')}</div>
+    <div class="form-row-two">
+      <div class="form-group"><label>Card Image (Grid Thumbnail)</label>${createImageUpload('p-card', p?.card_image||'')}</div>
+      <div class="form-group"><label>Header Banner Image (Detail Cover)</label>${createImageUpload('p-banner', p?.banner_image||p?.inner_image||'')}</div>
+    </div>
     <div class="form-group"><label>Overview</label><textarea id="p-overview" placeholder="Package overview...">${p?.overview||''}</textarea></div>
     <div class="form-group"><label>Itinerary</label><textarea id="p-itinerary" rows="4" placeholder="Day 1: Arrival...">${p?.itinerary||''}</textarea></div>
     <div class="form-row-two">
-      <div class="form-group"><label>Inclusions</label><textarea id="p-inclusions" rows="3" placeholder="Hotel, meals...">${p?.inclusions||''}</textarea></div>
-      <div class="form-group"><label>Exclusions</label><textarea id="p-exclusions" rows="3" placeholder="Airfare, visa...">${p?.exclusions||''}</textarea></div>
+      <div class="form-group"><label>Inclusions (Features - comma or line separated)</label><textarea id="p-inclusions" rows="3" placeholder="Flight, 4-Star Hotel, Meals, Transfers, Sightseeing...">${p?.inclusions||''}</textarea></div>
+      <div class="form-group"><label>Exclusions (comma or line separated)</label><textarea id="p-exclusions" rows="3" placeholder="Personal expenses, Travel Insurance...">${p?.exclusions||''}</textarea></div>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
@@ -323,6 +326,7 @@ window.savePackage = async function(id) {
     type: document.getElementById('p-type').value,
     destination_id: document.getElementById('p-dest').value || null,
     card_image: document.getElementById('img-url-p-card').value,
+    banner_image: document.getElementById('img-url-p-banner').value,
     overview: document.getElementById('p-overview').value.trim(),
     itinerary: document.getElementById('p-itinerary').value.trim(),
     inclusions: document.getElementById('p-inclusions').value.trim(),
