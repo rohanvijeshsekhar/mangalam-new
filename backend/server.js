@@ -26,6 +26,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Serve admin panel
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
+// Serve main website static files (HTML, CSS, JS, Assets)
+app.use(express.static(path.join(__dirname, '..')));
 
 // ── API Routes ──────────────────────────────────────────────────────────────
 const { router: authRouter } = require('./routes/auth');
@@ -51,8 +53,6 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-// ── Redirect root → admin ───────────────────────────────────────────────────
-app.get('/', (req, res) => res.redirect('/admin'));
 
 // ── Start ───────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
