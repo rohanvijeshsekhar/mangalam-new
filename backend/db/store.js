@@ -19,12 +19,21 @@ COLLECTIONS.forEach(col => {
 
 // Seed default admin user
 const usersPath = path.join(DATA_DIR, 'users.json');
-const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'));
-if (!users.find(u => u.username === 'admin')) {
-  const hash = bcrypt.hashSync(process.env.ADMIN_PASS || 'mangalam@2024', 10);
+let users = [];
+try { users = JSON.parse(fs.readFileSync(usersPath, 'utf-8')); } catch { users = []; }
+
+const defaultPass = process.env.ADMIN_PASS || 'mangalam@2024';
+const hash = bcrypt.hashSync(defaultPass, 10);
+
+const adminUser = users.find(u => u.username === 'admin');
+if (!adminUser) {
   users.push({ id: 1, username: 'admin', password_hash: hash, created_at: new Date().toISOString() });
   fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
-  console.log('✅ Default admin user created: admin / mangalam@2024');
+  console.log('✅ Default admin user created: admin / ' + defaultPass);
+} else {
+  // Sync password hash to ensure login credentials match
+  adminUser.password_hash = hash;
+  fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
 }
 
 // ── Core helpers ──────────────────────────────────────────────────────────────
