@@ -21,6 +21,8 @@ app.options('*', cors()); // Handle preflight requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const fs = require('fs');
+
 // ── Static Files ────────────────────────────────────────────────────────────
 // Serve uploaded images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -28,6 +30,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 // Serve main website static files (HTML, CSS, JS, Assets)
 app.use(express.static(path.join(__dirname, '..')));
+app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ── API Routes ──────────────────────────────────────────────────────────────
 const { router: authRouter } = require('./routes/auth');
@@ -51,6 +55,38 @@ app.get('/api/stats', (req, res) => {
     testimonials: store.count('testimonials'),
     partners:     store.count('partners'),
   });
+});
+
+// ── Serve Main Website Homepage (index.html) ────────────────────────────────
+app.get('/', (req, res) => {
+  const possiblePaths = [
+    path.join(__dirname, '..', 'index.html'),
+    path.join(__dirname, '../public', 'index.html'),
+    path.join(__dirname, 'public', 'index.html'),
+    path.join(__dirname, 'index.html')
+  ];
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      return res.sendFile(p);
+    }
+  }
+  res.status(404).send('index.html not found');
+});
+
+// ── Fallback HTML Page Router ────────────────────────────────────────────────
+app.get('/:page.html', (req, res, next) => {
+  const pageName = `${req.params.page}.html`;
+  const possiblePaths = [
+    path.join(__dirname, '..', pageName),
+    path.join(__dirname, '../public', pageName),
+    path.join(__dirname, 'public', pageName)
+  ];
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      return res.sendFile(p);
+    }
+  }
+  next();
 });
 
 
