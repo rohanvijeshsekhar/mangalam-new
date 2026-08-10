@@ -1,6 +1,6 @@
 /**
  * package-details.js — Package detail page loader
- * Layout: Image at TOP (full-width cover header), Features & Content DOWN below image (no congestion)
+ * Layout: Image at TOP (full-width cover banner), Features & Content DOWN below image (no congestion)
  */
 document.addEventListener('DOMContentLoaded', async () => {
   const root = document.getElementById('package-detail-root');
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.title = `${title} | Mangalam Travel & Tours`;
 
-  // Feature / Inclusion Box Chips Renderer (Spacious Chip Grid)
+  // Feature / Inclusion Box Chips Renderer (Spacious Box Chips)
   function renderFeatureBoxes(text, type = 'inclusion') {
     if (!text) return '';
     const items = text.split(/,|\n|;/).map(s => s.trim().replace(/^[-•*]\s*/, '')).filter(Boolean);
@@ -87,34 +87,41 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   root.innerHTML = `
-    <!-- Top Full-Width Image Header Banner -->
-    <div class="container mx-auto px-4 pt-6 pb-2">
-      <div class="relative w-full h-[360px] md:h-[460px] lg:h-[520px] rounded-[32px] overflow-hidden shadow-2xl bg-slate-900">
+    <!-- TOP ROW: 100% Full-Width Image Banner (AT TOP) -->
+    <div class="w-full bg-slate-900 mb-8">
+      <div class="relative w-full h-[380px] md:h-[480px] lg:h-[540px] overflow-hidden">
         <img src="${bannerImg}" alt="${title}" class="w-full h-full object-cover object-center opacity-90 transition-transform duration-700 hover:scale-105" onerror="this.src='./assets/images/bg-img.webp'">
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
         
         <!-- Overlay Badges & Title at Bottom of Image -->
-        <div class="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white space-y-3">
-          <div class="flex flex-wrap items-center gap-3">
-            <span class="px-4 py-1.5 rounded-full bg-red-600 text-white font-bold text-xs uppercase tracking-wider font-dm-sans shadow-lg shadow-red-600/30">
-              ${pkgType}
-            </span>
-            ${nights || days ? `
-              <span class="px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white font-semibold text-xs font-dm-sans border border-white/30">
-                <i class="fa-regular fa-clock mr-1.5"></i>${nights} Nights / ${days} Days
+        <div class="absolute bottom-0 left-0 right-0 p-6 md:p-12 text-white container mx-auto">
+          <div class="max-w-4xl space-y-3">
+            <div class="flex flex-wrap items-center gap-3">
+              <span class="px-4 py-1.5 rounded-full bg-red-600 text-white font-bold text-xs uppercase tracking-wider font-dm-sans shadow-lg shadow-red-600/30">
+                ${pkgType}
               </span>
-            ` : ''}
+              ${nights || days ? `
+                <span class="px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white font-semibold text-xs font-dm-sans border border-white/30">
+                  <i class="fa-regular fa-clock mr-1.5"></i>${nights} Nights / ${days} Days
+                </span>
+              ` : ''}
+              ${price ? `
+                <span class="px-4 py-1.5 rounded-full bg-yellow-400 text-slate-900 font-extrabold text-xs font-dm-sans">
+                  ${price} / person
+                </span>
+              ` : ''}
+            </div>
+            <h1 class="text-3xl md:text-5xl font-bold font-[Quicksand] text-white leading-tight capitalize">${title}</h1>
           </div>
-          <h1 class="text-3xl md:text-5xl font-bold font-[Quicksand] text-white leading-tight capitalize">${title}</h1>
         </div>
       </div>
     </div>
 
-    <!-- Main Content DOWN Below Image (Spacious Layout, No Congestion) -->
-    <div class="container mx-auto px-4 py-8 md:py-12">
+    <!-- BOTTOM ROW: Features & Details Content (DOWN BELOW IMAGE) -->
+    <div class="container mx-auto px-4 pb-16">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
         
-        <!-- Main Column (Overview, Features/Inclusions, Exclusions, Itinerary) -->
+        <!-- Main Column (Overview, Key Features/Inclusions, Exclusions, Itinerary) -->
         <div class="lg:col-span-2 space-y-8">
           
           ${overview ? `
@@ -159,7 +166,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         </div>
 
-        <!-- Booking & Enquiry Sidebar (Clean Spacing) -->
+        <!-- Booking & Enquiry Sidebar -->
         <div class="lg:col-span-1">
           <div class="sticky top-28 bg-white rounded-[32px] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 space-y-6">
             
