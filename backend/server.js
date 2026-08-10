@@ -29,9 +29,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Serve admin panel
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 // Serve main website static files (HTML, CSS, JS, Assets)
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, '..')));
 app.use(express.static(path.join(__dirname, '../public')));
-app.use(express.static(path.join(__dirname, 'public')));
 
 // ── API Routes ──────────────────────────────────────────────────────────────
 const { router: authRouter } = require('./routes/auth');
@@ -60,9 +60,9 @@ app.get('/api/stats', (req, res) => {
 // ── Serve Main Website Homepage (index.html) ────────────────────────────────
 app.get('/', (req, res) => {
   const possiblePaths = [
+    path.join(__dirname, 'public', 'index.html'),
     path.join(__dirname, '..', 'index.html'),
     path.join(__dirname, '../public', 'index.html'),
-    path.join(__dirname, 'public', 'index.html'),
     path.join(__dirname, 'index.html')
   ];
   for (const p of possiblePaths) {
@@ -77,9 +77,9 @@ app.get('/', (req, res) => {
 app.get('/:page.html', (req, res, next) => {
   const pageName = `${req.params.page}.html`;
   const possiblePaths = [
+    path.join(__dirname, 'public', pageName),
     path.join(__dirname, '..', pageName),
-    path.join(__dirname, '../public', pageName),
-    path.join(__dirname, 'public', pageName)
+    path.join(__dirname, '../public', pageName)
   ];
   for (const p of possiblePaths) {
     if (fs.existsSync(p)) {
