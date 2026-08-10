@@ -43,6 +43,11 @@ async function uploadImage(file) {
     headers: { 'Authorization': `Bearer ${token}` },
     body: form
   });
+  if (res.status === 401) {
+    localStorage.clear();
+    window.location.href = '/admin/index.html';
+    throw new Error('Session expired. Please log in again.');
+  }
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Upload failed');
   return `${API_ORIGIN}${data.url}`;

@@ -4,6 +4,8 @@ const jwt     = require('jsonwebtoken');
 const store   = require('../db/store');
 const router  = express.Router();
 
+const JWT_SECRET = process.env.JWT_SECRET || 'mangalam_travel_tours_secret_key_2024';
+
 // POST /api/auth/login
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
@@ -11,7 +13,7 @@ router.post('/login', (req, res) => {
   const user = store.getOne('users', u => u.username === username);
   if (!user || !bcrypt.compareSync(password, user.password_hash))
     return res.status(401).json({ error: 'Invalid credentials' });
-  const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET || 'mt_secret', { expiresIn: '24h' });
+  const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
   res.json({ token, username: user.username });
 });
 
@@ -29,7 +31,7 @@ function verifyToken(req, res, next) {
   const auth = req.headers.authorization;
   if (!auth?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
   try {
-    req.user = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET || 'mt_secret');
+    req.user = jwt.verify(auth.split(' ')[1], JWT_SECRET);
     next();
   } catch {
     res.status(401).json({ error: 'Token expired or invalid' });
