@@ -5,7 +5,7 @@
 
 const API_ORIGIN = window.API_ORIGIN || (
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:4000'
+    ? (window.location.port === '3000' ? 'http://localhost:4000' : window.location.origin)
     : window.location.origin
 );
 const API = `${API_ORIGIN}/api`;
