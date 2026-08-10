@@ -3,7 +3,12 @@
  * Handles: Auth, Navigation, CRUD for all data types, Image upload, Modals
  */
 
-const API = 'http://localhost:4000/api';
+const API_ORIGIN = window.API_ORIGIN || (
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:4000'
+    : window.location.origin
+);
+const API = `${API_ORIGIN}/api`;
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 const token = localStorage.getItem('mt_admin_token');
@@ -40,7 +45,7 @@ async function uploadImage(file) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Upload failed');
-  return `http://localhost:4000${data.url}`;
+  return `${API_ORIGIN}${data.url}`;
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────

@@ -3,7 +3,11 @@
  * Returns clean empty arrays when no database is connected.
  */
 
-const API_BASE = 'http://localhost:4000';
+const API_BASE = window.API_BASE || (
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:4000'
+    : window.location.origin
+);
 
 const STATIC_DATA = {
   destinations: [],
@@ -19,7 +23,11 @@ const STATIC_DATA = {
 function resolveImg(src, fallback = './assets/images/logo-color.png') {
   if (!src) return fallback;
   if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) return src;
-  if (src.startsWith('./assets/') || src.startsWith('assets/') || src.startsWith('uploads/')) {
+  if (src.startsWith('/uploads/') || src.startsWith('uploads/')) {
+    const cleanPath = src.startsWith('/') ? src : '/' + src;
+    return API_BASE + cleanPath;
+  }
+  if (src.startsWith('./assets/') || src.startsWith('assets/')) {
     return src.startsWith('./') ? src : './' + src;
   }
   if (src.startsWith('/')) return '.' + src;
