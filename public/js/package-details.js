@@ -40,30 +40,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.title = `${title} | Mangalam Travel & Tours`;
 
-  // Feature / Inclusion Box Chips Renderer (Spacious Box Chips)
-  function renderFeatureBoxes(text, type = 'inclusion') {
-    if (!text) return '';
-    const items = text.split(/,|\n|;/).map(s => s.trim().replace(/^[-•*]\s*/, '')).filter(Boolean);
-    if (!items.length) return '';
-
-    const isInc = type === 'inclusion';
-    const bgClass = isInc 
-      ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100' 
-      : 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100';
-    const iconClass = isInc ? 'fa-circle-check text-emerald-600' : 'fa-circle-xmark text-rose-500';
-
-    return `
-      <div class="flex flex-wrap gap-3.5 pt-2">
-        ${items.map(item => `
-          <div class="inline-flex items-center gap-3 px-5 py-3 rounded-2xl border ${bgClass} shadow-sm font-dm-sans font-semibold text-sm md:text-base transition-all hover:scale-[1.02] cursor-default">
-            <i class="fa-solid ${iconClass} text-lg shrink-0"></i>
-            <span>${item}</span>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
-
   // Parse Itinerary into Structured Timeline Cards
   function renderItineraryTimeline(text) {
     if (!text) return '';
@@ -177,23 +153,60 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
           ` : ''}
 
-          ${inclusions ? `
-            <div class="bg-white p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/40 space-y-4">
-              <h2 class="text-2xl font-bold font-[Quicksand] text-gray-900 flex items-center gap-3">
-                <i class="fa-solid fa-circle-check text-emerald-600"></i> Key Features & Inclusions
-              </h2>
-              <p class="text-sm text-gray-500 font-dm-sans">Services and features included in this package:</p>
-              ${renderFeatureBoxes(inclusions, 'inclusion')}
-            </div>
-          ` : ''}
+          <!-- 2 Clean Premium Cards for Inclusions & Exclusions -->
+          ${inclusions || exclusions ? `
+            <div class="grid grid-cols-1 ${inclusions && exclusions ? 'md:grid-cols-2' : ''} gap-8">
+              
+              <!-- Card 1: What's Included -->
+              ${inclusions ? `
+                <div class="bg-gradient-to-br from-white to-emerald-50/20 p-8 rounded-[32px] border border-emerald-100 shadow-xl shadow-gray-200/40 space-y-6">
+                  <div class="flex items-center gap-3.5 border-b border-emerald-100/80 pb-4">
+                    <div class="w-11 h-11 rounded-2xl bg-emerald-100/80 text-emerald-700 flex items-center justify-center text-xl shrink-0 shadow-sm">
+                      <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div>
+                      <h2 class="text-xl font-bold font-[Quicksand] text-gray-900">What's Included</h2>
+                      <span class="text-xs text-gray-500 font-dm-sans">Services & features included in package</span>
+                    </div>
+                  </div>
+                  <ul class="space-y-3.5 font-dm-sans">
+                    ${inclusions.split(/,|\n|;/).map(s => s.trim().replace(/^[-•*]\s*/, '')).filter(Boolean).map(item => `
+                      <li class="flex items-start gap-3.5 text-gray-700 text-base leading-snug">
+                        <div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
+                          <i class="fa-solid fa-check"></i>
+                        </div>
+                        <span class="font-medium">${item}</span>
+                      </li>
+                    `).join('')}
+                  </ul>
+                </div>
+              ` : ''}
 
-          ${exclusions ? `
-            <div class="bg-white p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/40 space-y-4">
-              <h2 class="text-2xl font-bold font-[Quicksand] text-gray-900 flex items-center gap-3">
-                <i class="fa-solid fa-circle-xmark text-rose-500"></i> Exclusions
-              </h2>
-              <p class="text-sm text-gray-500 font-dm-sans">Services not included in this package:</p>
-              ${renderFeatureBoxes(exclusions, 'exclusion')}
+              <!-- Card 2: What's Excluded -->
+              ${exclusions ? `
+                <div class="bg-gradient-to-br from-white to-rose-50/20 p-8 rounded-[32px] border border-rose-100 shadow-xl shadow-gray-200/40 space-y-6">
+                  <div class="flex items-center gap-3.5 border-b border-rose-100/80 pb-4">
+                    <div class="w-11 h-11 rounded-2xl bg-rose-100/80 text-rose-600 flex items-center justify-center text-xl shrink-0 shadow-sm">
+                      <i class="fa-solid fa-circle-xmark"></i>
+                    </div>
+                    <div>
+                      <h2 class="text-xl font-bold font-[Quicksand] text-gray-900">What's Excluded</h2>
+                      <span class="text-xs text-gray-500 font-dm-sans">Services not included in package price</span>
+                    </div>
+                  </div>
+                  <ul class="space-y-3.5 font-dm-sans">
+                    ${exclusions.split(/,|\n|;/).map(s => s.trim().replace(/^[-•*]\s*/, '')).filter(Boolean).map(item => `
+                      <li class="flex items-start gap-3.5 text-gray-700 text-base leading-snug">
+                        <div class="w-5 h-5 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
+                          <i class="fa-solid fa-xmark"></i>
+                        </div>
+                        <span class="font-medium">${item}</span>
+                      </li>
+                    `).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+
             </div>
           ` : ''}
 
