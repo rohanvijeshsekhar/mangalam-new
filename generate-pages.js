@@ -59,12 +59,12 @@ function scripts(pageJs) {
     <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>window.SMS_OTP_EMAIL_REQUIRED=true;</script>
-    <script src="/js/enquiryOtp.js"></script>
-    <script src="/js/customize.js"></script>
-    <script src="/js/App.js"></script>
-    <script src="/public/js/api.js"></script>
-    <script src="/public/js/render.js"></script>
-    <script src="/public/js/${pageJs}"></script>
+    <script src="./js/enquiryOtp.js"></script>
+    <script src="./js/customize.js"></script>
+    <script src="./js/App.js"></script>
+    <script src="./js/api.js?v=20260812"></script>
+    <script src="./js/render.js?v=20260812"></script>
+    <script src="./js/${pageJs}?v=20260812"></script>
     <script>AOS.init({once:true,duration:700});if(typeof updateCartCount==='function')updateCartCount();</script>
   </body></html>`;
 }
