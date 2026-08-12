@@ -288,6 +288,10 @@ function openPackageForm(p = null) {
       <div class="form-group"><label>Days</label><input id="p-days" type="number" value="${p?.days||''}" placeholder="5"></div>
     </div>
     <div class="form-row-two">
+      <div class="form-group"><label>Hotel Type</label><input id="p-hotel" value="${p?.hotel_type||'4 Star Hotel'}" placeholder="e.g. 4 Star Hotel / 5-Star Luxury"></div>
+      <div class="form-group"><label>Number of Activities</label><input id="p-activities" value="${p?.activities_count||'5 Included'}" placeholder="e.g. 6 Activities"></div>
+    </div>
+    <div class="form-row-two">
       <div class="form-group"><label>Price (₹)</label><input id="p-amount" type="number" value="${p?.amount||''}" placeholder="25000"></div>
       <div class="form-group"><label>Type</label>
         <select id="p-type">
@@ -298,7 +302,10 @@ function openPackageForm(p = null) {
         </select>
       </div>
     </div>
-    <div class="form-group"><label>Destination</label><select id="p-dest">${getDestOptions(p?.destination_id)}</select></div>
+    <div class="form-row-two">
+      <div class="form-group"><label>Transfers Spec</label><input id="p-transfers" value="${p?.transfers||'Included'}" placeholder="e.g. Airport Transfers Included"></div>
+      <div class="form-group"><label>Destination</label><select id="p-dest">${getDestOptions(p?.destination_id)}</select></div>
+    </div>
     <div class="form-row-two">
       <div class="form-group"><label>Card Image (Grid Thumbnail)</label>${createImageUpload('p-card', p?.card_image||'')}</div>
       <div class="form-group"><label>Header Banner Image (Detail Cover)</label>${createImageUpload('p-banner', p?.banner_image||p?.inner_image||'')}</div>
@@ -322,6 +329,9 @@ window.savePackage = async function(id) {
     package_name: document.getElementById('p-name').value.trim(),
     nights: document.getElementById('p-nights').value,
     days: document.getElementById('p-days').value,
+    hotel_type: document.getElementById('p-hotel').value.trim() || '4 Star Hotel',
+    activities_count: document.getElementById('p-activities').value.trim() || '5 Included',
+    transfers: document.getElementById('p-transfers').value.trim() || 'Included',
     amount: document.getElementById('p-amount').value,
     type: document.getElementById('p-type').value,
     destination_id: document.getElementById('p-dest').value || null,

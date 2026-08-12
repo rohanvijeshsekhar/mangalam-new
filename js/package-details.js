@@ -124,6 +124,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         <!-- Main Column (Overview, Key Features/Inclusions, Exclusions, Itinerary) -->
         <div class="lg:col-span-2 space-y-8">
           
+          <!-- Small Premium Overview Boxes (Duration, Hotel Type, Activities, Transfers) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" data-aos="fade-up">
+            <div class="bg-gradient-to-br from-white to-gray-50/90 border border-gray-200/80 p-5 rounded-[24px] shadow-lg shadow-gray-200/30 flex flex-col justify-between hover:scale-[1.02] transition-transform">
+              <div class="w-11 h-11 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mb-3 text-xl shrink-0 shadow-sm shadow-red-600/10">
+                <i class="fa-regular fa-calendar-days"></i>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider font-dm-sans block mb-0.5">Duration</span>
+                <span class="text-base font-extrabold text-gray-900 font-[Quicksand]">
+                  ${days ? `${days} Days` : ''}${nights ? ` / ${nights} N` : ''}${!days && !nights ? 'Flexible' : ''}
+                </span>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-white to-gray-50/90 border border-gray-200/80 p-5 rounded-[24px] shadow-lg shadow-gray-200/30 flex flex-col justify-between hover:scale-[1.02] transition-transform">
+              <div class="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3 text-xl shrink-0 shadow-sm shadow-amber-600/10">
+                <i class="fa-solid fa-hotel"></i>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider font-dm-sans block mb-0.5">Hotel Stay</span>
+                <span class="text-base font-extrabold text-gray-900 font-[Quicksand]">
+                  ${d.hotel_type || '4 Star Hotel'}
+                </span>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-white to-gray-50/90 border border-gray-200/80 p-5 rounded-[24px] shadow-lg shadow-gray-200/30 flex flex-col justify-between hover:scale-[1.02] transition-transform">
+              <div class="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3 text-xl shrink-0 shadow-sm shadow-blue-600/10">
+                <i class="fa-solid fa-ticket-alt"></i>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider font-dm-sans block mb-0.5">Activities</span>
+                <span class="text-base font-extrabold text-gray-900 font-[Quicksand]">
+                  ${d.activities_count || '5 Included'}
+                </span>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-white to-gray-50/90 border border-gray-200/80 p-5 rounded-[24px] shadow-lg shadow-gray-200/30 flex flex-col justify-between hover:scale-[1.02] transition-transform">
+              <div class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 text-xl shrink-0 shadow-sm shadow-emerald-600/10">
+                <i class="fa-solid fa-car-side"></i>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider font-dm-sans block mb-0.5">Transfers</span>
+                <span class="text-base font-extrabold text-gray-900 font-[Quicksand]">
+                  ${d.transfers || 'Included'}
+                </span>
+              </div>
+            </div>
+          </div>
+          
           ${overview ? `
             <div class="bg-white p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/40 space-y-4">
               <h2 class="text-2xl font-bold font-[Quicksand] text-gray-900 flex items-center gap-3">
