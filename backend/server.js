@@ -38,6 +38,7 @@ const { router: authRouter } = require('./routes/auth');
 app.use('/api/auth',         authRouter);
 app.use('/api/destinations', require('./routes/destinations'));
 app.use('/api/packages',     require('./routes/packages'));
+app.use('/api/attractions',  require('./routes/attractions'));
 app.use('/api/tickets',      require('./routes/tickets'));
 app.use('/api/blogs',        require('./routes/blogs'));
 app.use('/api/testimonials', require('./routes/testimonials'));
@@ -50,6 +51,7 @@ app.get('/api/stats', (req, res) => {
   res.json({
     destinations: store.count('destinations'),
     packages:     store.count('packages'),
+    attractions:  store.count('attractions'),
     tickets:      store.count('tickets'),
     blogs:        store.count('blogs'),
     testimonials: store.count('testimonials'),

@@ -33,6 +33,9 @@
     <a href="#" class="nav-item" data-section="packages">
       <i class="fas fa-suitcase"></i><span>Packages</span>
     </a>
+    <a href="#" class="nav-item" data-section="attractions">
+      <i class="fas fa-camera"></i><span>Attractions</span>
+    </a>
     <a href="#" class="nav-item" data-section="tickets">
       <i class="fas fa-ticket-alt"></i><span>Tickets</span>
     </a>
@@ -97,8 +100,12 @@
         <div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-suitcase"></i></div>
         <div class="stat-info"><div class="stat-value" id="stat-packages">—</div><div class="stat-label">Packages</div></div>
       </div>
+      <div class="stat-card" data-section="attractions">
+        <div class="stat-icon" style="background:rgba(16,185,129,0.1);color:#10b981"><i class="fas fa-camera"></i></div>
+        <div class="stat-info"><div class="stat-value" id="stat-attractions">—</div><div class="stat-label">Attractions</div></div>
+      </div>
       <div class="stat-card" data-section="tickets">
-        <div class="stat-icon" style="background:rgba(16,185,129,0.1);color:#10b981"><i class="fas fa-ticket-alt"></i></div>
+        <div class="stat-icon" style="background:rgba(99,102,241,0.1);color:#6366f1"><i class="fas fa-ticket-alt"></i></div>
         <div class="stat-info"><div class="stat-value" id="stat-tickets">—</div><div class="stat-label">Tickets</div></div>
       </div>
       <div class="stat-card" data-section="blogs">
@@ -150,6 +157,20 @@
       <table class="data-table" id="tbl-packages">
         <thead><tr><th>Image</th><th>Name</th><th>Nights/Days</th><th>Price</th><th>Type</th><th>Actions</th></tr></thead>
         <tbody id="tbody-packages"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── ATTRACTIONS SECTION ─────────────────────────────── -->
+  <section class="content-section hidden" id="section-attractions">
+    <div class="section-toolbar">
+      <h3 class="section-heading">All Attractions</h3>
+      <button class="btn-primary" id="btn-add-attraction"><i class="fas fa-plus"></i> Add Attraction</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="tbl-attractions">
+        <thead><tr><th>Image</th><th>Name</th><th>Experience Type</th><th>Duration</th><th>Price</th><th>Actions</th></tr></thead>
+        <tbody id="tbody-attractions"></tbody>
       </table>
     </div>
   </section>

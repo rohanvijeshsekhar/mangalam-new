@@ -66,6 +66,7 @@ const sections = {
   dashboard:    { title: 'Dashboard',    subtitle: 'Overview of your website data' },
   destinations: { title: 'Destinations', subtitle: 'Manage travel destinations' },
   packages:     { title: 'Packages',     subtitle: 'Manage holiday packages' },
+  attractions:  { title: 'Attractions',  subtitle: 'Manage places and attraction experiences' },
   tickets:      { title: 'Tickets',      subtitle: 'Manage attraction tickets' },
   blogs:        { title: 'Blogs',        subtitle: 'Manage blog posts' },
   testimonials: { title: 'Testimonials', subtitle: 'Manage customer reviews' },
@@ -111,7 +112,7 @@ document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
 async function loadDashboard() {
   const stats = await api('GET', '/stats');
   if (!stats) return;
-  ['destinations','packages','tickets','blogs','testimonials','partners'].forEach(k => {
+  ['destinations','packages','attractions','tickets','blogs','testimonials','partners'].forEach(k => {
     const el = document.getElementById(`stat-${k}`);
     if (el) el.textContent = stats[k] ?? 0;
   });
@@ -727,11 +728,98 @@ document.getElementById('form-change-password')?.addEventListener('submit', asyn
   else { msg.textContent = 'Password updated successfully!'; msg.className = 'settings-msg success'; }
 });
 
+// ══════════════════════════════════════════════════════════════════════════════
+// ATTRACTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+let attractions = [];
+
+async function loadAttractions() {
+  attractions = await api('GET', '/attractions') || [];
+  const tbody = document.getElementById('tbody-attractions');
+  if (!tbody) return;
+  if (!attractions.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6"><i class="fas fa-camera" style="font-size:24px;color:#e5e7eb;display:block;margin-bottom:8px"></i>No attractions found.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = attractions.map(a => `
+    <tr>
+      <td>${imgCell(a.card_image || a.banner_image)}</td>
+      <td><strong>${a.name || a.title}</strong></td>
+      <td><span class="badge" style="background:#e0f2fe;color:#0369a1;font-weight:bold;padding:4px 10px;border-radius:12px">${a.experience_type || 'Cultural'}</span></td>
+      <td>${a.duration || '2-3 Hours'}</td>
+      <td>${a.price || a.amount ? `₹ ${Number(a.price || a.amount).toLocaleString('en-IN')}` : 'Free / Included'}</td>
+      <td><div class="table-actions">
+        <button class="btn-sm btn-edit" onclick="editAttraction(${a.attraction_id})"><i class="fas fa-pen"></i> Edit</button>
+        <button class="btn-sm btn-delete" onclick="deleteAttraction(${a.attraction_id})"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function openAttractionForm(a = null) {
+  openModal(a ? 'Edit Attraction' : 'Add Attraction', `
+    <div class="form-group"><label>Attraction Name *</label><input id="a-name" value="${a?.name||a?.title||''}" placeholder="e.g. Burj Khalifa Observation Deck & Sky Views"></div>
+    <div class="form-row-two">
+      <div class="form-group"><label>Experience Type *</label>
+        <select id="a-exp">
+          <option value="Adventure" ${a?.experience_type==='Adventure'?'selected':''}>Adventure</option>
+          <option value="Cultural" ${a?.experience_type==='Cultural'?'selected':''}>Cultural</option>
+          <option value="Luxury" ${a?.experience_type==='Luxury'?'selected':''}>Luxury</option>
+          <option value="Sightseeing" ${a?.experience_type==='Sightseeing'?'selected':''}>Sightseeing</option>
+          <option value="Nature" ${a?.experience_type==='Nature'?'selected':''}>Nature</option>
+          <option value="Family" ${a?.experience_type==='Family'?'selected':''}>Family</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Duration</label><input id="a-duration" value="${a?.duration||'2-3 Hours'}" placeholder="e.g. 2-3 Hours, Half Day, Full Day"></div>
+    </div>
+    <div class="form-row-two">
+      <div class="form-group"><label>Destination / Location</label><input id="a-dest" value="${a?.destination_name||'Dubai, UAE'}" placeholder="e.g. Dubai, UAE"></div>
+      <div class="form-group"><label>Ticket Price (₹)</label><input id="a-price" type="number" value="${a?.price||a?.amount||''}" placeholder="3500"></div>
+    </div>
+    <div class="form-group"><label>Included Items (comma or line separated)</label><textarea id="a-included" rows="2" placeholder="e.g. Timed Entry Ticket, Access to Observation Deck, Soft Drinks">${a?.included||''}</textarea></div>
+    <div class="form-group"><label>Card Image (Thumbnail)</label>${createImageUpload('a-card', a?.card_image||'')}</div>
+    <div class="form-group"><label>Banner Image (Detail Page Header Cover)</label>${createImageUpload('a-banner', a?.banner_image||a?.card_image||'')}</div>
+    <div class="form-group"><label>Description / Overview</label><textarea id="a-desc" rows="4" placeholder="Detailed description of attraction & experiences...">${a?.description||a?.overview||''}</textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveAttraction(${a?.attraction_id||'null'})"><i class="fas fa-save"></i> ${a ? 'Update' : 'Save'}</button>
+    </div>`);
+}
+
+window.editAttraction = function(id) { const a = attractions.find(x => x.attraction_id === id); if (a) openAttractionForm(a); };
+
+window.saveAttraction = async function(id) {
+  const body = {
+    name: document.getElementById('a-name').value.trim(),
+    experience_type: document.getElementById('a-exp').value,
+    duration: document.getElementById('a-duration').value.trim() || '2-3 Hours',
+    destination_name: document.getElementById('a-dest').value.trim() || '',
+    price: document.getElementById('a-price').value,
+    included: document.getElementById('a-included').value.trim(),
+    card_image: document.getElementById('img-url-a-card').value,
+    banner_image: document.getElementById('img-url-a-banner').value || document.getElementById('img-url-a-card').value,
+    description: document.getElementById('a-desc').value.trim(),
+  };
+  if (!body.name) { showToast('Attraction name required', 'error'); return; }
+  const res = id ? await api('PUT', `/attractions/${id}`, body) : await api('POST', '/attractions', body);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast(id ? 'Updated!' : 'Added!', 'success');
+  closeModal(); loadAttractions(); loadDashboard();
+};
+
+window.deleteAttraction = async function(id) {
+  if (!confirm('Delete this attraction?')) return;
+  await api('DELETE', `/attractions/${id}`);
+  showToast('Deleted', 'success'); loadAttractions(); loadDashboard();
+};
+
+document.getElementById('btn-add-attraction')?.addEventListener('click', () => openAttractionForm());
+
 // ── Section loaders map ───────────────────────────────────────────────────────
 const loaders = {
   dashboard:    loadDashboard,
   destinations: loadDestinations,
   packages:     () => { loadDestinations(); loadPackages(); },
+  attractions:  loadAttractions,
   tickets:      loadTickets,
   blogs:        loadBlogs,
   testimonials: loadTestimonials,

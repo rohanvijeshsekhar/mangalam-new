@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,user-scalable=no">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#dc2626">
+<title>Attraction Details | Mangalam Travel &amp; Tours</title>
+<meta name="description" content="Attraction & experience details, entry ticket specs and booking">
+<link rel="shortcut icon" href="./assets/images/logo/favicon.ico">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-bold-rounded/css/uicons-bold-rounded.css'>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+    <script>tailwind.config={theme:{extend:{fontFamily:{'dm-sans':['DM Sans','sans-serif']}}}}</script>
+    <style>.cart-trigger{position:relative}.cart-trigger .counter{position:absolute;top:-8px;right:-8px;background:#ef4444;color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}</style>
+</head>
+<body class="font-dm-sans bg-white">
+<header class="sticky top-0 z-50 bg-white shadow-sm">
+<nav class="container mx-auto px-4 py-3 flex items-center justify-between">
+  <a href="/"><img src="./assets/images/logo-color.png" alt="Mangalam Tours" class="h-10"></a>
+  <div class="hidden md:flex space-x-6 text-sm font-dm-sans">
+    <a href="/" class="text-gray-700 hover:text-red-600">Home</a>
+    <a href="/packages.html" class="text-gray-700 hover:text-red-600">Packages</a>
+    <a href="/attraction.html" class="text-gray-700 hover:text-red-600 font-bold text-red-600">Attractions</a>
+    <a href="/tickets.html" class="text-gray-700 hover:text-red-600">Tickets</a>
+    <a href="/about.html" class="text-gray-700 hover:text-red-600">About</a>
+    <a href="/contact.html" class="text-gray-700 hover:text-red-600">Contact</a>
+  </div>
+  <a href="/cart.html" class="cart-trigger relative p-2 border border-gray-300 rounded-lg hover:bg-gray-100 flex items-center">
+    <div class="counter">0</div>
+    <i class="fi fi-rr-shopping-cart text-gray-700 text-lg flex items-center justify-center"></i>
+  </a>
+</nav>
+</header>
+
+<div id="attraction-detail-root" class="min-h-screen">
+  <div class="container mx-auto px-4 py-20 text-center text-gray-400">Loading attraction details...</div>
+</div>
+
+<footer class="bg-black text-white py-10 mb-20 lg:mb-0">
+<div class="container mx-auto px-4">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 border-b border-gray-700 pb-8">
+    <div><h4 class="font-bold mb-3 text-white">Top Destinations</h4><div id="footer-dests-1" class="space-y-1 text-sm text-gray-300"></div></div>
+    <div><h4 class="font-bold mb-3 text-white">Top Activities</h4><div id="footer-activities" class="space-y-1 text-sm text-gray-300"></div></div>
+    <div><h4 class="font-bold mb-3 text-white">Top Tickets</h4><div id="footer-tickets" class="space-y-1 text-sm text-gray-300"></div></div>
+  </div>
+  <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+    <a href="/"><img src="./assets/images/logo.png" alt="Mangalam Tours" class="h-10"></a>
+    <p class="text-gray-400 text-sm">2026 Mangalam Travel &amp; Tours. All rights reserved.</p>
+    <div class="flex space-x-3">
+      <a href="#" class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700"><i class="fab fa-facebook-f text-white"></i></a>
+      <a href="#" class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700"><i class="fab fa-instagram text-white"></i></a>
+    </div>
+  </div>
+</div>
+</footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>window.SMS_OTP_EMAIL_REQUIRED=true;</script>
+    <script src="./js/enquiryOtp.js"></script>
+    <script src="./js/customize.js"></script>
+    <script src="./js/App.js"></script>
+    <script src="./js/api.js?v=20260812"></script>
+    <script src="./js/render.js?v=20260812"></script>
+    <script src="./js/attraction-details.js?v=20260812"></script>
+    <script>AOS.init({once:true,duration:700});if(typeof updateCartCount==='function')updateCartCount();</script>
+  </body></html>
