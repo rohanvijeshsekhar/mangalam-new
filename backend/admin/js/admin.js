@@ -327,6 +327,13 @@ function reindexItineraryDays() {
 }
 
 function openPackageForm(p = null) {
+  const bannerImgs = Array.isArray(p?.banner_images) ? p.banner_images : 
+    (typeof p?.banner_images === 'string' ? (JSON.parse(p.banner_images || '[]') || []) : []);
+  const b1 = bannerImgs[0] || p?.banner_image || p?.inner_image || p?.card_image || '';
+  const b2 = bannerImgs[1] || '';
+  const b3 = bannerImgs[2] || '';
+  const b4 = bannerImgs[3] || '';
+
   openModal(p ? 'Edit Package' : 'Add Package', `
     <div class="form-group"><label>Package Name *</label><input id="p-name" value="${p?.package_name||''}" placeholder="e.g. Extravagant Dubai Luxury Tour"></div>
     <div class="form-row-two">
@@ -352,10 +359,19 @@ function openPackageForm(p = null) {
       <div class="form-group"><label>Transfers Spec</label><input id="p-transfers" value="${p?.transfers||'Included'}" placeholder="e.g. Airport Transfers Included"></div>
       <div class="form-group"><label>Destination</label><select id="p-dest">${getDestOptions(p?.destination_id)}</select></div>
     </div>
-    <div class="form-row-two">
-      <div class="form-group"><label>Card Image (Grid Thumbnail)</label>${createImageUpload('p-card', p?.card_image||'')}</div>
-      <div class="form-group"><label>Header Banner Image (Detail Cover)</label>${createImageUpload('p-banner', p?.banner_image||p?.inner_image||'')}</div>
+    <div class="form-group"><label>Card Image (Grid Thumbnail)</label>${createImageUpload('p-card', p?.card_image||'')}</div>
+    
+    <!-- Up to 4 Banner Slider Images -->
+    <div class="form-group" style="margin-top:12px; margin-bottom:12px">
+      <label style="font-weight:bold; color:#1f2937">Banner Slider Images (Up to 4 Images - Auto slides every 2s on website)</label>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:6px">
+        <div><label style="font-size:11px; font-weight:bold; color:#4b5563">Banner 1 (Main Cover)</label>${createImageUpload('p-banner-1', b1)}</div>
+        <div><label style="font-size:11px; font-weight:bold; color:#4b5563">Banner 2 (Optional Slide 2)</label>${createImageUpload('p-banner-2', b2)}</div>
+        <div><label style="font-size:11px; font-weight:bold; color:#4b5563">Banner 3 (Optional Slide 3)</label>${createImageUpload('p-banner-3', b3)}</div>
+        <div><label style="font-size:11px; font-weight:bold; color:#4b5563">Banner 4 (Optional Slide 4)</label>${createImageUpload('p-banner-4', b4)}</div>
+      </div>
     </div>
+
     <div class="form-group"><label>Overview</label><textarea id="p-overview" placeholder="Package overview...">${p?.overview||''}</textarea></div>
     
     <!-- Multi-Day Itinerary Builder (Up to 15 Days) -->
@@ -414,6 +430,12 @@ window.savePackage = async function(id) {
     }
   });
 
+  const b1 = document.getElementById('img-url-p-banner-1')?.value || '';
+  const b2 = document.getElementById('img-url-p-banner-2')?.value || '';
+  const b3 = document.getElementById('img-url-p-banner-3')?.value || '';
+  const b4 = document.getElementById('img-url-p-banner-4')?.value || '';
+  const bannerList = [b1, b2, b3, b4].filter(Boolean);
+
   const body = {
     package_name: document.getElementById('p-name').value.trim(),
     nights: document.getElementById('p-nights').value,
@@ -425,7 +447,8 @@ window.savePackage = async function(id) {
     type: document.getElementById('p-type').value,
     destination_id: document.getElementById('p-dest').value || null,
     card_image: document.getElementById('img-url-p-card').value,
-    banner_image: document.getElementById('img-url-p-banner').value,
+    banner_image: b1,
+    banner_images: bannerList,
     overview: document.getElementById('p-overview').value.trim(),
     itinerary: JSON.stringify(itineraryDays),
     inclusions: document.getElementById('p-inclusions').value.trim(),

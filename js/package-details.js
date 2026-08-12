@@ -28,7 +28,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   const d = detail || pkg;
 
   const title      = d.package_name || d.title || d.name || '';
-  const bannerImg  = MT.resolveImg(d.banner_image || d.inner_image || d.card_image || d.image);
+  
+  // Extract banner images list (up to 4 images)
+  let rawBanners = d.banner_images || [];
+  if (typeof rawBanners === 'string') {
+    try { rawBanners = JSON.parse(rawBanners); } catch { rawBanners = [rawBanners]; }
+  }
+  let bannerList = (Array.isArray(rawBanners) ? rawBanners : []).filter(Boolean).map(img => MT.resolveImg(img));
+  if (!bannerList.length) {
+    const fallback = MT.resolveImg(d.banner_image || d.inner_image || d.card_image || d.image);
+    bannerList = [fallback];
+  }
+  bannerList = bannerList.slice(0, 4); // max 4 images
+
   const price      = d.amount || d.price ? `₹ ${Number(d.amount || d.price).toLocaleString('en-IN')}` : '';
   const nights     = d.nights || '';
   const days       = d.days || '';
@@ -56,61 +68,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.title = `${title} | Mangalam Travel & Tours`;
 
-  // Feature / Inclusion Box Chips Renderer (Spacious Box Chips)
-  function renderFeatureBoxes(text, type = 'inclusion') {
-    if (!text) return '';
-    const items = text.split(/,|\n|;/).map(s => s.trim().replace(/^[-•*]\s*/, '')).filter(Boolean);
-    if (!items.length) return '';
-
-    const isInc = type === 'inclusion';
-    const bgClass = isInc 
-      ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100' 
-      : 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100';
-    const iconClass = isInc ? 'fa-circle-check text-emerald-600' : 'fa-circle-xmark text-rose-500';
-
-    return `
-      <div class="flex flex-wrap gap-3.5 pt-2">
-        ${items.map(item => `
-          <div class="inline-flex items-center gap-3 px-5 py-3 rounded-2xl border ${bgClass} shadow-sm font-dm-sans font-semibold text-sm md:text-base transition-all hover:scale-[1.02] cursor-default">
-            <i class="fa-solid ${iconClass} text-lg shrink-0"></i>
-            <span>${item}</span>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  // Parse Itinerary into Structured Timeline Cards
-  function renderItineraryTimeline(text) {
-    if (!text) return '';
-    const lines = text.split('\n').map(s => s.trim()).filter(Boolean);
-    if (!lines.length) return '';
-
-    return `
-      <div class="space-y-4 pt-2">
-        ${lines.map((line, idx) => `
-          <div class="flex items-start gap-4 p-5 rounded-2xl bg-gray-50/80 border border-gray-100">
-            <div class="w-10 h-10 rounded-xl bg-red-600 text-white font-bold font-[Quicksand] flex items-center justify-center shrink-0 shadow-md shadow-red-600/20">
-              ${idx + 1}
-            </div>
-            <div class="font-dm-sans text-gray-700 leading-relaxed pt-1 text-base">
-              ${line}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
+  const overview   = d.overview || d.description || d.discription || '';
+  const pkgType    = (d.type || 'Holiday Package').toUpperCase();
 
   root.innerHTML = `
-    <!-- TOP ROW: 100% Full-Width Image Banner (AT TOP) -->
+    <!-- TOP ROW: 100% Full-Width Auto-Sliding Image Banner Carousel -->
     <div class="w-full bg-slate-900 mb-8">
-      <div class="relative w-full h-[380px] md:h-[480px] lg:h-[540px] overflow-hidden">
-        <img src="${bannerImg}" alt="${title}" class="w-full h-full object-cover object-center opacity-90 transition-transform duration-700 hover:scale-105" onerror="this.src='./assets/images/bg-img.webp'">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+      <div class="relative w-full h-[380px] md:h-[480px] lg:h-[540px] overflow-hidden" id="pkg-banner-slider">
+        
+        <!-- Slides -->
+        ${bannerList.map((img, idx) => `
+          <img src="${img}" alt="${title} slide ${idx + 1}" class="pkg-slide-img absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ease-in-out ${idx === 0 ? 'opacity-90 z-10' : 'opacity-0 z-0'}" onerror="this.src='./assets/images/bg-img.webp'">
+        `).join('')}
+
+        <!-- Dark Gradient Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-20 pointer-events-none"></div>
         
         <!-- Overlay Badges & Title at Bottom of Image -->
-        <div class="absolute bottom-0 left-0 right-0 p-6 md:p-12 text-white container mx-auto">
+        <div class="absolute bottom-0 left-0 right-0 p-6 md:p-12 text-white container mx-auto z-30 pointer-events-none">
           <div class="max-w-4xl space-y-3">
             <div class="flex flex-wrap items-center gap-3">
               <span class="px-4 py-1.5 rounded-full bg-red-600 text-white font-bold text-xs uppercase tracking-wider font-dm-sans shadow-lg shadow-red-600/30">
@@ -130,6 +105,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             <h1 class="text-3xl md:text-5xl font-bold font-[Quicksand] text-white leading-tight capitalize">${title}</h1>
           </div>
         </div>
+
+        <!-- Slider Dots (if > 1 image) -->
+        ${bannerList.length > 1 ? `
+          <div class="absolute bottom-6 right-6 md:right-12 z-30 flex items-center gap-2">
+            ${bannerList.map((_, idx) => `
+              <button class="pkg-slide-dot h-3 rounded-full transition-all duration-300 ${idx === 0 ? 'bg-red-600 w-7' : 'bg-white/50 hover:bg-white w-3'}" data-index="${idx}"></button>
+            `).join('')}
+          </div>
+        ` : ''}
+
       </div>
     </div>
 
@@ -345,6 +330,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       </div>
     </div>`;
+
+  // Initialize Auto-Slider for Banner Images (Every 2 seconds)
+  if (bannerList.length > 1) {
+    let currentSlide = 0;
+    const slides = root.querySelectorAll('.pkg-slide-img');
+    const dots = root.querySelectorAll('.pkg-slide-dot');
+
+    const goToSlide = (index) => {
+      slides.forEach((slide, i) => {
+        if (i === index) {
+          slide.classList.remove('opacity-0', 'z-0');
+          slide.classList.add('opacity-90', 'z-10');
+        } else {
+          slide.classList.remove('opacity-90', 'z-10');
+          slide.classList.add('opacity-0', 'z-0');
+        }
+      });
+      dots.forEach((dot, i) => {
+        if (i === index) {
+          dot.className = 'pkg-slide-dot h-3 rounded-full bg-red-600 w-7 transition-all duration-300';
+        } else {
+          dot.className = 'pkg-slide-dot h-3 rounded-full bg-white/50 hover:bg-white w-3 transition-all duration-300';
+        }
+      });
+      currentSlide = index;
+    };
+
+    setInterval(() => {
+      const nextSlide = (currentSlide + 1) % bannerList.length;
+      goToSlide(nextSlide);
+    }, 2000); // 2 seconds auto slide interval
+
+    dots.forEach((dot, idx) => {
+      dot.addEventListener('click', () => goToSlide(idx));
+    });
+  }
 
   // Handle Enquiry Form Submit
   const form = document.getElementById('pkg-enquiry-form');
