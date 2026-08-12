@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="lg:col-span-2 space-y-8">
           
           <!-- 3 Small Box Premium Specs Grid (Above Overview) -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" data-aos="fade-up">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <!-- Box 1: Duration -->
             <div class="bg-gradient-to-br from-white to-gray-50/90 border border-gray-200/80 p-5 rounded-[24px] shadow-lg shadow-gray-200/30 flex items-center gap-4 hover:scale-[1.02] transition-transform">
               <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-xl shrink-0 shadow-sm shadow-red-600/10">
