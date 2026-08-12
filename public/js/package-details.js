@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const days       = d.days || '';
   const inclusions = d.inclusions || '';
   const exclusions = d.exclusions || '';
+  const terms      = d.terms || '';
   // Extract itinerary days list
   let itineraryDays = d.itinerary_days || [];
   if (!itineraryDays.length && d.itinerary) {
@@ -122,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     <div class="container mx-auto px-4 pb-16">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
         
-        <!-- Main Column (Overview, Key Features/Inclusions, Exclusions, Itinerary) -->
+        <!-- Main Column (Overview, Key Features/Inclusions, Exclusions, Itinerary, Terms & Conditions) -->
         <div class="lg:col-span-2 space-y-8">
           
           <!-- 3 Small Box Premium Specs Grid (Above Overview) -->
@@ -153,13 +154,13 @@ document.addEventListener('DOMContentLoaded', async () => {
               </div>
             </div>
 
-            <!-- Box 3: Activities -->
+            <!-- Box 3: Sightseeing -->
             <div class="bg-gradient-to-br from-white to-gray-50/90 border border-gray-200/80 p-5 rounded-[24px] shadow-lg shadow-gray-200/30 flex items-center gap-4 hover:scale-[1.02] transition-transform">
               <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shrink-0 shadow-sm shadow-blue-600/10">
-                <i class="fa-solid fa-ticket-alt"></i>
+                <i class="fa-solid fa-camera"></i>
               </div>
               <div>
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider font-dm-sans block mb-0.5">Activities</span>
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider font-dm-sans block mb-0.5">Sightseeing</span>
                 <span class="text-base font-extrabold text-gray-900 font-[Quicksand]">
                   ${d.activities_count || '5 Included'}
                 </span>
@@ -170,7 +171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           ${overview ? `
             <div class="bg-white p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/40 space-y-4">
               <h2 class="text-2xl font-bold font-[Quicksand] text-gray-900 flex items-center gap-3">
-                <i class="fa-solid fa-circle-info text-red-600"></i> Package Overview
+                <i class="fa-solid fa-compass text-red-600"></i> Package Overview
               </h2>
               <div class="text-gray-600 font-dm-sans leading-relaxed whitespace-pre-line text-base md:text-lg">
                 ${overview}
@@ -271,6 +272,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                   `;
                 }).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Terms & Conditions Card (Down below package details) -->
+          ${terms ? `
+            <div class="bg-white p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/40 space-y-4">
+              <h2 class="text-2xl font-bold font-[Quicksand] text-gray-900 flex items-center gap-3">
+                <i class="fa-solid fa-file-contract text-red-600"></i> Terms & Conditions
+              </h2>
+              <div class="text-gray-600 font-dm-sans leading-relaxed whitespace-pre-line text-base md:text-lg">
+                ${terms}
               </div>
             </div>
           ` : ''}

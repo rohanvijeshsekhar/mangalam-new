@@ -342,7 +342,7 @@ function openPackageForm(p = null) {
     </div>
     <div class="form-row-two">
       <div class="form-group"><label>Hotel Type</label><input id="p-hotel" value="${p?.hotel_type||'4 Star Hotel'}" placeholder="e.g. 4 Star Hotel / 5-Star Luxury"></div>
-      <div class="form-group"><label>Number of Activities</label><input id="p-activities" value="${p?.activities_count||'5 Included'}" placeholder="e.g. 6 Activities"></div>
+      <div class="form-group"><label>Number of Sightseeings</label><input id="p-activities" value="${p?.activities_count||'5 Included'}" placeholder="e.g. 5 Sightseeings"></div>
     </div>
     <div class="form-row-two">
       <div class="form-group"><label>Price (₹)</label><input id="p-amount" type="number" value="${p?.amount||''}" placeholder="25000"></div>
@@ -390,6 +390,7 @@ function openPackageForm(p = null) {
       <div class="form-group"><label>Inclusions (Features - comma or line separated)</label><textarea id="p-inclusions" rows="3" placeholder="Flight, 4-Star Hotel, Meals, Transfers, Sightseeing...">${p?.inclusions||''}</textarea></div>
       <div class="form-group"><label>Exclusions (comma or line separated)</label><textarea id="p-exclusions" rows="3" placeholder="Personal expenses, Travel Insurance...">${p?.exclusions||''}</textarea></div>
     </div>
+    <div class="form-group"><label>Terms & Conditions (Booking Policy & Rules)</label><textarea id="p-terms" rows="3" placeholder="Enter terms & conditions, cancellation policy, booking rules...">${p?.terms||''}</textarea></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-primary" onclick="savePackage(${p?.package_id||'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
@@ -453,6 +454,7 @@ window.savePackage = async function(id) {
     itinerary: JSON.stringify(itineraryDays),
     inclusions: document.getElementById('p-inclusions').value.trim(),
     exclusions: document.getElementById('p-exclusions').value.trim(),
+    terms: document.getElementById('p-terms').value.trim(),
   };
   if (!body.package_name) { showToast('Package name required', 'error'); return; }
   const res = id ? await api('PUT', `/packages/${id}`, body) : await api('POST', '/packages', body);
