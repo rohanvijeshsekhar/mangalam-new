@@ -34,33 +34,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   const days       = d.days || '';
   const inclusions = d.inclusions || '';
   const exclusions = d.exclusions || '';
-  const itinerary  = d.itinerary || '';
-  const overview   = d.overview || d.description || d.discription || '';
-  const pkgType    = (d.type || 'Holiday Package').toUpperCase();
+  // Extract itinerary days list
+  let itineraryDays = d.itinerary_days || [];
+  if (!itineraryDays.length && d.itinerary) {
+    try {
+      itineraryDays = JSON.parse(d.itinerary);
+    } catch {
+      const lines = d.itinerary.split('\n').map(s => s.trim()).filter(Boolean);
+      itineraryDays = lines.map((line, idx) => {
+        const dayMatch = line.match(/^(?:Day\s*(\d+)[:\s-]*|(\d+)[\.:\s-]+)(.*)/i);
+        const dayNum = dayMatch ? (dayMatch[1] || dayMatch[2] || idx + 1) : idx + 1;
+        const rest = dayMatch && dayMatch[3] ? dayMatch[3].trim() : line;
+        return {
+          day: Number(dayNum),
+          title: line.startsWith('Day') ? line : `Day ${idx + 1}: ${rest}`,
+          description: rest || line
+        };
+      });
+    }
+  }
 
   document.title = `${title} | Mangalam Travel & Tours`;
 
-  // Parse Itinerary into Structured Timeline Cards
-  function renderItineraryTimeline(text) {
-    if (!text) return '';
-    const lines = text.split('\n').map(s => s.trim()).filter(Boolean);
-    if (!lines.length) return '';
-
-    return `
-      <div class="space-y-4 pt-2">
-        ${lines.map((line, idx) => `
-          <div class="flex items-start gap-4 p-5 rounded-2xl bg-gray-50/80 border border-gray-100">
-            <div class="w-10 h-10 rounded-xl bg-red-600 text-white font-bold font-[Quicksand] flex items-center justify-center shrink-0 shadow-md shadow-red-600/20">
-              ${idx + 1}
-            </div>
-            <div class="font-dm-sans text-gray-700 leading-relaxed pt-1 text-base">
-              ${line}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
+  const overview   = d.overview || d.description || d.discription || '';
+  const pkgType    = (d.type || 'Holiday Package').toUpperCase();
 
   root.innerHTML = `
     <!-- TOP ROW: 100% Full-Width Image Banner (AT TOP) -->
@@ -210,12 +207,43 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
           ` : ''}
 
-          ${itinerary ? `
-            <div class="bg-white p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/40 space-y-4">
-              <h2 class="text-2xl font-bold font-[Quicksand] text-gray-900 flex items-center gap-3">
-                <i class="fa-solid fa-map-location-dot text-red-600"></i> Day-by-Day Itinerary
-              </h2>
-              ${renderItineraryTimeline(itinerary)}
+          <!-- Day-by-Day Itinerary (Separate Dedicated Card for Each Day) -->
+          ${itineraryDays && itineraryDays.length ? `
+            <div class="bg-white p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/40 space-y-6">
+              <div class="flex items-center gap-3.5 border-b border-gray-100 pb-4">
+                <div class="w-11 h-11 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-xl shrink-0 shadow-sm">
+                  <i class="fa-solid fa-map-location-dot"></i>
+                </div>
+                <div>
+                  <h2 class="text-2xl font-bold font-[Quicksand] text-gray-900">Day-by-Day Itinerary</h2>
+                  <span class="text-xs text-gray-500 font-dm-sans">Detailed schedule and travel plan for your trip</span>
+                </div>
+              </div>
+
+              <!-- Separate Individual Card for Each Day -->
+              <div class="space-y-5 pt-2">
+                ${itineraryDays.map((item, idx) => {
+                  const dayNum = String(item.day || (idx + 1)).padStart(2, '0');
+                  const titleText = item.title ? item.title.replace(/^Day\s*\d+[:\s-]*/i, '') : `Day ${idx + 1}`;
+                  return `
+                    <div class="p-6 md:p-7 rounded-[24px] bg-gradient-to-br from-white to-gray-50/80 border border-gray-200/80 shadow-md shadow-gray-200/30 hover:shadow-lg transition-all space-y-3">
+                      <div class="flex flex-wrap items-center gap-3">
+                        <span class="px-3.5 py-1.5 rounded-xl bg-red-600 text-white font-extrabold text-xs uppercase tracking-wider font-dm-sans shadow-md shadow-red-600/20 shrink-0">
+                          DAY ${dayNum}
+                        </span>
+                        <h3 class="text-lg md:text-xl font-bold font-[Quicksand] text-gray-900 leading-snug">
+                          ${titleText}
+                        </h3>
+                      </div>
+                      ${item.description ? `
+                        <p class="text-gray-600 font-dm-sans leading-relaxed text-base whitespace-pre-line pt-1">
+                          ${item.description}
+                        </p>
+                      ` : ''}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
             </div>
           ` : ''}
 

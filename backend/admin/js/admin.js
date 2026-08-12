@@ -280,6 +280,52 @@ function getDestOptions(selected = null) {
   return `<option value="">— No Destination —</option>` + destinations.map(d => `<option value="${d.destination_id}" ${selected == d.destination_id ? 'selected' : ''}>${d.destination_name}</option>`).join('');
 }
 
+window.addItineraryDay = function(title = '', desc = '') {
+  const container = document.getElementById('itinerary-days-container');
+  if (!container) return;
+  const currentRows = container.querySelectorAll('.itinerary-day-row');
+  if (currentRows.length >= 15) {
+    showToast('Maximum 15 itinerary days allowed', 'error');
+    return;
+  }
+  const nextNum = currentRows.length + 1;
+  const div = document.createElement('div');
+  div.className = 'itinerary-day-row border border-gray-200 rounded-xl p-3.5 mb-3 bg-gray-50/70 relative';
+  div.innerHTML = `
+    <div class="flex items-center justify-between mb-2">
+      <span class="font-bold text-xs uppercase tracking-wider text-red-600">Day <span class="day-num">${nextNum}</span></span>
+      <button type="button" class="text-red-500 hover:text-red-700 text-xs font-bold bg-transparent border-0 cursor-pointer" onclick="removeItineraryDay(this)">
+        <i class="fas fa-trash-alt"></i> Delete
+      </button>
+    </div>
+    <div class="form-group mb-2">
+      <label class="text-xs font-bold text-gray-700">Day Title / Header</label>
+      <input class="itinerary-day-title" value="${title ? title.replace(/"/g, '&quot;') : `Day ${nextNum}: Schedule`}" placeholder="e.g. Day ${nextNum}: Arrival & Dhow Cruise">
+    </div>
+    <div class="form-group mb-0">
+      <label class="text-xs font-bold text-gray-700">Day Schedule & Details</label>
+      <textarea class="itinerary-day-desc" rows="2" placeholder="Activities, sightseeing, and schedule for Day ${nextNum}...">${desc || ''}</textarea>
+    </div>`;
+  container.appendChild(div);
+  reindexItineraryDays();
+};
+
+window.removeItineraryDay = function(btn) {
+  const row = btn.closest('.itinerary-day-row');
+  if (row) {
+    row.remove();
+    reindexItineraryDays();
+  }
+};
+
+function reindexItineraryDays() {
+  const rows = document.querySelectorAll('#itinerary-days-container .itinerary-day-row');
+  rows.forEach((r, idx) => {
+    const numSpan = r.querySelector('.day-num');
+    if (numSpan) numSpan.textContent = idx + 1;
+  });
+}
+
 function openPackageForm(p = null) {
   openModal(p ? 'Edit Package' : 'Add Package', `
     <div class="form-group"><label>Package Name *</label><input id="p-name" value="${p?.package_name||''}" placeholder="e.g. Extravagant Dubai Luxury Tour"></div>
@@ -311,7 +357,19 @@ function openPackageForm(p = null) {
       <div class="form-group"><label>Header Banner Image (Detail Cover)</label>${createImageUpload('p-banner', p?.banner_image||p?.inner_image||'')}</div>
     </div>
     <div class="form-group"><label>Overview</label><textarea id="p-overview" placeholder="Package overview...">${p?.overview||''}</textarea></div>
-    <div class="form-group"><label>Itinerary</label><textarea id="p-itinerary" rows="4" placeholder="Day 1: Arrival...">${p?.itinerary||''}</textarea></div>
+    
+    <!-- Multi-Day Itinerary Builder (Up to 15 Days) -->
+    <div class="form-group">
+      <label class="flex items-center justify-between font-bold text-gray-800 mb-1">
+        <span>Day-by-Day Itinerary (Up to 15 Days)</span>
+        <span class="text-xs text-gray-500 font-normal">Each day will display as a separate box on the website</span>
+      </label>
+      <div id="itinerary-days-container" class="mt-2"></div>
+      <button type="button" class="btn-secondary" style="width:100%; padding:10px; border:1px dashed #dc2626; color:#dc2626; background:#fef2f2; border-radius:12px; font-weight:bold; cursor:pointer; margin-top:6px" onclick="addItineraryDay()">
+        <i class="fas fa-plus-circle"></i> + Add Next Day Box (Up to 15 Days)
+      </button>
+    </div>
+
     <div class="form-row-two">
       <div class="form-group"><label>Inclusions (Features - comma or line separated)</label><textarea id="p-inclusions" rows="3" placeholder="Flight, 4-Star Hotel, Meals, Transfers, Sightseeing...">${p?.inclusions||''}</textarea></div>
       <div class="form-group"><label>Exclusions (comma or line separated)</label><textarea id="p-exclusions" rows="3" placeholder="Personal expenses, Travel Insurance...">${p?.exclusions||''}</textarea></div>
@@ -320,11 +378,42 @@ function openPackageForm(p = null) {
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-primary" onclick="savePackage(${p?.package_id||'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
     </div>`);
+
+  // Populate existing days or initial day
+  const rawItinerary = p?.itinerary;
+  let existingDays = p?.itinerary_days || [];
+  if (!existingDays.length && rawItinerary) {
+    try {
+      existingDays = JSON.parse(rawItinerary);
+    } catch {
+      const lines = rawItinerary.split('\n').map(s => s.trim()).filter(Boolean);
+      existingDays = lines.map((l, i) => ({ day: i + 1, title: l.startsWith('Day') ? l : `Day ${i + 1}`, description: l }));
+    }
+  }
+
+  if (existingDays && existingDays.length) {
+    existingDays.forEach(d => addItineraryDay(d.title || d.name, d.description || d.desc || d.text));
+  } else {
+    addItineraryDay('Day 1: Arrival & Hotel Check-in', '');
+  }
 }
 
 window.editPackage = function(id) { const p = packages.find(x => x.package_id === id); if (p) openPackageForm(p); };
 
 window.savePackage = async function(id) {
+  const itineraryDays = [];
+  document.querySelectorAll('#itinerary-days-container .itinerary-day-row').forEach((row, idx) => {
+    const title = row.querySelector('.itinerary-day-title')?.value.trim();
+    const desc = row.querySelector('.itinerary-day-desc')?.value.trim();
+    if (title || desc) {
+      itineraryDays.push({
+        day: idx + 1,
+        title: title || `Day ${idx + 1}`,
+        description: desc || ''
+      });
+    }
+  });
+
   const body = {
     package_name: document.getElementById('p-name').value.trim(),
     nights: document.getElementById('p-nights').value,
@@ -338,7 +427,7 @@ window.savePackage = async function(id) {
     card_image: document.getElementById('img-url-p-card').value,
     banner_image: document.getElementById('img-url-p-banner').value,
     overview: document.getElementById('p-overview').value.trim(),
-    itinerary: document.getElementById('p-itinerary').value.trim(),
+    itinerary: JSON.stringify(itineraryDays),
     inclusions: document.getElementById('p-inclusions').value.trim(),
     exclusions: document.getElementById('p-exclusions').value.trim(),
   };

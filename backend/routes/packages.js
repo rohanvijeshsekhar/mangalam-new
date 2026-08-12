@@ -4,6 +4,46 @@ const { verifyToken } = require('./auth');
 const router  = express.Router();
 const slugify = t => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
+function parseItineraryDays(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {}
+    
+    const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
+    const days = [];
+    let currentDay = null;
+
+    lines.forEach((line, idx) => {
+      const dayMatch = line.match(/^(?:Day\s*(\d+)[:\s-]*|(\d+)[\.:\s-]+)(.*)/i);
+      if (dayMatch) {
+        if (currentDay) days.push(currentDay);
+        const dayNum = dayMatch[1] || dayMatch[2] || (days.length + 1);
+        const rest = dayMatch[3] ? dayMatch[3].trim() : '';
+        currentDay = {
+          day: Number(dayNum),
+          title: rest ? `Day ${dayNum}: ${rest}` : line,
+          description: rest || line
+        };
+      } else if (currentDay) {
+        currentDay.description += '\n' + line;
+      } else {
+        currentDay = {
+          day: idx + 1,
+          title: `Day ${idx + 1}`,
+          description: line
+        };
+      }
+    });
+    if (currentDay) days.push(currentDay);
+    return days;
+  }
+  return [];
+}
+
 const map = p => ({
   package_id:    p.id,
   package_name:  p.package_name,
@@ -16,7 +56,8 @@ const map = p => ({
   destination_id:p.destination_id || null,
   type:          p.type || 'package',
   overview:      p.overview || '',
-  itinerary:     p.itinerary || '',
+  itinerary:     typeof p.itinerary === 'string' ? p.itinerary : JSON.stringify(p.itinerary || ''),
+  itinerary_days: parseItineraryDays(p.itinerary),
   inclusions:    p.inclusions || '',
   exclusions:    p.exclusions || '',
   hotel_type:    p.hotel_type || '4 Star Hotel',
