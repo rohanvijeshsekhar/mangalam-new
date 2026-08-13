@@ -119,22 +119,15 @@
             }
 
             try {
-                const res = await fetch('./action/sendOTP.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({ phone: normalizePhone(getPhone()), email }),
-                });
-                const data = await res.json();
-
+                const data = await MT.apiPost('/api/otp/send', { phone: normalizePhone(getPhone()), email });
                 if (requestId !== sendRequestId) return;
 
-                if (data && data.success) {
+                if (data && (data.status === 1 || data.success)) {
                     verified = false;
                     if (otpContainer) otpContainer.classList.remove('hidden');
                     if (otpInput) otpInput.value = '';
-                    setStatus(data.message || 'OTP sent. Check your SMS or email.', 'success');
-                    startCooldown(data.reused ? 10 : 30);
+                    setStatus(data.message || 'OTP sent. Check your mobile SMS.', 'success');
+                    startCooldown(30);
                 } else {
                     const errMsg = (data && data.message) || 'Failed to send OTP.';
                     setStatus(errMsg, 'error');
@@ -176,27 +169,9 @@
             }
 
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                const data = await MT.apiPost('/api/otp/verify', { phone: normalizePhone(getPhone()), otp });
 
-                const res = await fetch('./action/verifyOTP.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin',
-                    signal: controller.signal,
-                    body: JSON.stringify({ phone: normalizePhone(getPhone()), otp }),
-                });
-                clearTimeout(timeoutId);
-
-                const raw = await res.text();
-                let data;
-                try {
-                    data = JSON.parse(raw);
-                } catch (parseErr) {
-                    throw new Error('Invalid server response.');
-                }
-
-                if (data && data.success) {
+                if (data && (data.status === 1 || data.success)) {
                     markVerified();
                 } else {
                     const errMsg = (data && data.message) || 'Invalid OTP.';
@@ -204,9 +179,7 @@
                     alert(errMsg);
                 }
             } catch (err) {
-                const errMsg = err.name === 'AbortError'
-                    ? 'Verification timed out. Please try again.'
-                    : 'Verification failed. Please try again.';
+                const errMsg = 'Verification failed. Please try again.';
                 setStatus(errMsg, 'error');
                 alert(errMsg);
             } finally {
