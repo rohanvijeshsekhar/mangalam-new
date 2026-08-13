@@ -909,22 +909,9 @@
                     return;
                 }
 
-                if (destinationName && destinationName !== 'Any Destination' && slug) {
-                    fetch(`./action/getDestinationId.php?slug=${encodeURIComponent(slug)}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success && data.destination_id) {
-                                if (typeof window.openCustomizePopup === 'function') {
-                                    window.openCustomizePopup(slug, destinationName, data.destination_id);
-                                }
-                            } else {
-                                alert('Destination not found. Please select a destination.');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred. Please try again.');
-                        });
+                if (destinationName && destinationName !== 'Any Destination') {
+                    const targetSlug = slug || destinationName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                    window.location.href = `customize-trip.html?destination=${encodeURIComponent(targetSlug)}&name=${encodeURIComponent(destinationName)}`;
                 } else {
                     alert('Please select a destination first.');
                 }
@@ -979,22 +966,9 @@
                     return;
                 }
 
-                if (destinationName && destinationName !== 'Any Destination' && slug) {
-                    fetch(`./action/getDestinationId.php?slug=${encodeURIComponent(slug)}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success && data.destination_id) {
-                                if (typeof window.openCustomizePopup === 'function') {
-                                    window.openCustomizePopup(slug, destinationName, data.destination_id);
-                                }
-                            } else {
-                                alert('Destination not found. Please select a destination.');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred. Please try again.');
-                        });
+                if (destinationName && destinationName !== 'Any Destination') {
+                    const targetSlug = slug || destinationName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                    window.location.href = `customize-trip.html?destination=${encodeURIComponent(targetSlug)}&name=${encodeURIComponent(destinationName)}`;
                 } else {
                     alert('Please select a destination first.');
                 }

@@ -12,6 +12,7 @@ const map = d => ({
   card_image:       d.card_image || '',
   inner_image:      d.inner_image || '',
   description:      d.description || '',
+  places_to_visit:  Array.isArray(d.places_to_visit) ? d.places_to_visit : (typeof d.places_to_visit === 'string' ? d.places_to_visit.split('\n').map(s=>s.trim()).filter(Boolean) : []),
   created_at:       d.created_at
 });
 
@@ -23,16 +24,26 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', verifyToken, (req, res) => {
-  const { destination_name, card_image, inner_image, description } = req.body;
+  const { destination_name, card_image, inner_image, description, places_to_visit } = req.body;
   if (!destination_name) return res.status(400).json({ error: 'destination_name is required' });
-  const doc = store.insert('destinations', { destination_name, slug_url: slugify(destination_name), card_image: card_image||'', inner_image: inner_image||'', description: description||'' });
+  const doc = store.insert('destinations', { 
+    destination_name, 
+    slug_url: slugify(destination_name), 
+    card_image: card_image||'', 
+    inner_image: inner_image||'', 
+    description: description||'',
+    places_to_visit: Array.isArray(places_to_visit) ? places_to_visit : (typeof places_to_visit === 'string' ? places_to_visit.split('\n').map(s=>s.trim()).filter(Boolean) : [])
+  });
   res.status(201).json(map(doc));
 });
 
 router.put('/:id', verifyToken, (req, res) => {
-  const { destination_name, card_image, inner_image, description } = req.body;
+  const { destination_name, card_image, inner_image, description, places_to_visit } = req.body;
   const updates = { destination_name, card_image, inner_image, description };
   if (destination_name) updates.slug_url = slugify(destination_name);
+  if (places_to_visit !== undefined) {
+    updates.places_to_visit = Array.isArray(places_to_visit) ? places_to_visit : (typeof places_to_visit === 'string' ? places_to_visit.split('\n').map(s=>s.trim()).filter(Boolean) : []);
+  }
   const doc = store.update('destinations', req.params.id, updates);
   if (!doc) return res.status(404).json({ error: 'Not found' });
   res.json({ message: 'Updated', ...map(doc) });

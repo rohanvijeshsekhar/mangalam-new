@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customize Your Trip — Mangalam Travel & Tours</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Quicksand:wght@500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'DM Sans', sans-serif; background-color: #f8fafc; }
+        .heading-font { font-family: 'Quicksand', sans-serif; }
+        .brand-font { font-family: 'Outfit', sans-serif; }
+        .step-inactive { opacity: 0.4; filter: grayscale(1); }
+        .step-active { opacity: 1; border-color: #ef4444; color: #ef4444; }
+        .step-completed { background-color: #10b981; border-color: #10b981; color: white; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Top Banner / Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-3">
+                <img src="./assets/images/logo-color.png" alt="Mangalam Logo" class="h-10 w-auto object-contain" onerror="this.src='./assets/images/logo-dark.png'">
+                <span class="brand-font font-bold text-xl text-slate-900 hidden sm:inline">Mangalam <span class="text-red-500">Travels</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <span class="text-xs sm:text-sm font-medium text-slate-500"><i class="fas fa-headset text-red-500 mr-1.5"></i> Need Assistance?</span>
+                <a href="tel:+919876543210" class="text-xs sm:text-sm font-bold text-slate-800 hover:text-red-600 transition-colors">+91 98765 43210</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full">
+
+        <!-- Destination Header -->
+        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-red-950 text-white rounded-3xl p-6 sm:p-8 mb-8 shadow-xl relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 opacity-10 text-white text-9xl pointer-events-none">
+                <i class="fas fa-plane-departure"></i>
+            </div>
+            <div class="relative z-10">
+                <span class="inline-block bg-red-500/20 text-red-300 border border-red-500/30 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3">
+                    Custom Trip Booking
+                </span>
+                <h1 class="text-2xl sm:text-4xl font-bold heading-font text-white" id="dest-title-display">
+                    Customize Your Trip to <span class="text-red-400" id="dest-name-span">Destination</span>
+                </h1>
+                <p class="text-slate-300 text-sm sm:text-base mt-2 max-w-xl">
+                    Follow the simple steps below to tailor your dream itinerary. Our travel experts will curate the perfect package for you.
+                </p>
+            </div>
+        </div>
+
+        <!-- Stepper Indicator Bar -->
+        <div class="bg-white rounded-2xl p-4 sm:p-6 mb-8 shadow-sm border border-slate-200">
+            <div class="grid grid-cols-5 gap-2 text-center text-xs font-medium">
+                <!-- Step 1 Indicator -->
+                <div id="step-ind-1" class="flex flex-col items-center gap-1.5 cursor-pointer">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-red-500 bg-red-50 text-red-500 flex items-center justify-center font-bold text-sm transition-all shadow-sm">1</div>
+                    <span class="text-slate-700 font-semibold hidden sm:inline">Trip Dates</span>
+                </div>
+                <!-- Step 2 Indicator -->
+                <div id="step-ind-2" class="flex flex-col items-center gap-1.5 cursor-pointer step-inactive">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-slate-300 bg-slate-50 text-slate-500 flex items-center justify-center font-bold text-sm transition-all">2</div>
+                    <span class="text-slate-500 hidden sm:inline">Travelers</span>
+                </div>
+                <!-- Step 3 Indicator -->
+                <div id="step-ind-3" class="flex flex-col items-center gap-1.5 cursor-pointer step-inactive">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-slate-300 bg-slate-50 text-slate-500 flex items-center justify-center font-bold text-sm transition-all">3</div>
+                    <span class="text-slate-500 hidden sm:inline">Hotel Star</span>
+                </div>
+                <!-- Step 4 Indicator -->
+                <div id="step-ind-4" class="flex flex-col items-center gap-1.5 cursor-pointer step-inactive">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-slate-300 bg-slate-50 text-slate-500 flex items-center justify-center font-bold text-sm transition-all">4</div>
+                    <span class="text-slate-500 hidden sm:inline">Places</span>
+                </div>
+                <!-- Step 5 Indicator -->
+                <div id="step-ind-5" class="flex flex-col items-center gap-1.5 cursor-pointer step-inactive">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-slate-300 bg-slate-50 text-slate-500 flex items-center justify-center font-bold text-sm transition-all">5</div>
+                    <span class="text-slate-500 hidden sm:inline">Submit</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wizard Step Containers -->
+        <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-lg border border-slate-200 min-h-[420px] flex flex-col justify-between">
+            
+            <!-- STEP 1: TRIP DATES -->
+            <div id="step-content-1" class="step-panel">
+                <div class="mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold heading-font text-slate-900 flex items-center gap-2">
+                        <i class="far fa-calendar-alt text-red-500"></i> Step 1: Select Your Trip Dates
+                    </h2>
+                    <p class="text-slate-500 text-sm mt-1">Choose your preferred start date and end date of travel.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+                    <!-- Start Date -->
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 focus-within:border-red-500 focus-within:bg-white transition-all">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                            <i class="fas fa-plane-departure text-red-500 mr-1"></i> Start Date (Departure)
+                        </label>
+                        <input type="date" id="input-start-date" class="w-full bg-transparent font-bold text-lg text-slate-900 focus:outline-none cursor-pointer">
+                    </div>
+                    <!-- End Date -->
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 focus-within:border-red-500 focus-within:bg-white transition-all">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                            <i class="fas fa-plane-arrival text-emerald-500 mr-1"></i> End Date (Return)
+                        </label>
+                        <input type="date" id="input-end-date" class="w-full bg-transparent font-bold text-lg text-slate-900 focus:outline-none cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Live Duration Calculator Display -->
+                <div id="duration-badge-box" class="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center justify-between text-red-700 font-bold hidden mb-6">
+                    <span class="flex items-center gap-2 text-sm sm:text-base">
+                        <i class="fas fa-clock text-red-500"></i> Trip Duration: <span id="duration-calc-text" class="text-red-900">0 Nights / 0 Days</span>
+                    </span>
+                    <span class="text-xs bg-red-200 text-red-800 px-3 py-1 rounded-full font-semibold">Auto Calculated</span>
+                </div>
+            </div>
+
+            <!-- STEP 2: TRAVELERS (ADULTS, CHILDREN & AGES) -->
+            <div id="step-content-2" class="step-panel hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold heading-font text-slate-900 flex items-center gap-2">
+                        <i class="fas fa-users text-red-500"></i> Step 2: Choose Number of Travelers
+                    </h2>
+                    <p class="text-slate-500 text-sm mt-1">Specify how many adults and children will be traveling.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+                    <!-- Adults Selector -->
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <span class="font-bold text-slate-900 block text-lg">Adults</span>
+                            <span class="text-xs text-slate-500">Age 12+ years</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button type="button" id="btn-adult-minus" class="w-10 h-10 rounded-full bg-white border border-slate-300 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center transition-colors">-</button>
+                            <span id="adult-count" class="font-bold text-xl text-slate-900 w-8 text-center">1</span>
+                            <button type="button" id="btn-adult-plus" class="w-10 h-10 rounded-full bg-white border border-slate-300 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center transition-colors">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Children Selector -->
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <span class="font-bold text-slate-900 block text-lg">Children</span>
+                            <span class="text-xs text-slate-500">Below 12 years</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button type="button" id="btn-child-minus" class="w-10 h-10 rounded-full bg-white border border-slate-300 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center transition-colors">-</button>
+                            <span id="child-count" class="font-bold text-xl text-slate-900 w-8 text-center">0</span>
+                            <button type="button" id="btn-child-plus" class="w-10 h-10 rounded-full bg-white border border-slate-300 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center transition-colors">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Child Age Container -->
+                <div id="child-ages-container" class="bg-amber-50/60 border border-amber-200 rounded-2xl p-6 mb-6 hidden">
+                    <h4 class="font-bold text-amber-900 text-sm mb-3 flex items-center gap-2">
+                        <i class="fas fa-child text-amber-600"></i> Please specify the age of each child:
+                    </h4>
+                    <div id="child-age-inputs" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <!-- Dynamic Age Selectors Rendered via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: HOTEL STAR RATING -->
+            <div id="step-content-3" class="step-panel hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold heading-font text-slate-900 flex items-center gap-2">
+                        <i class="fas fa-hotel text-red-500"></i> Step 3: Choose Preferred Hotel Category
+                    </h2>
+                    <p class="text-slate-500 text-sm mt-1">Select your preferred hotel star rating category for stay accommodations.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 my-6">
+                    <!-- 3-Star Option -->
+                    <div class="hotel-option bg-white p-5 rounded-2xl border-2 border-slate-200 hover:border-red-500 cursor-pointer transition-all flex flex-col justify-between h-44" data-hotel="3-Star">
+                        <div>
+                            <div class="text-amber-400 text-sm mb-2"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            <h3 class="font-bold text-slate-900 text-lg">3-Star Hotel</h3>
+                            <p class="text-xs text-slate-500 mt-1">Comfortable budget stay with essential amenities.</p>
+                        </div>
+                        <div class="hotel-check text-slate-300 text-xl text-right"><i class="far fa-circle"></i></div>
+                    </div>
+
+                    <!-- 4-Star Option (Selected Default) -->
+                    <div class="hotel-option bg-white p-5 rounded-2xl border-2 border-red-500 cursor-pointer transition-all flex flex-col justify-between h-44 shadow-md bg-red-50/30" data-hotel="4-Star">
+                        <div>
+                            <div class="text-amber-400 text-sm mb-2"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            <h3 class="font-bold text-slate-900 text-lg">4-Star Hotel</h3>
+                            <p class="text-xs text-slate-500 mt-1">Premium comfort, prime location & great service.</p>
+                        </div>
+                        <div class="hotel-check text-red-500 text-xl text-right"><i class="fas fa-check-circle"></i></div>
+                    </div>
+
+                    <!-- 5-Star Option -->
+                    <div class="hotel-option bg-white p-5 rounded-2xl border-2 border-slate-200 hover:border-red-500 cursor-pointer transition-all flex flex-col justify-between h-44" data-hotel="5-Star">
+                        <div>
+                            <div class="text-amber-400 text-sm mb-2"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            <h3 class="font-bold text-slate-900 text-lg">5-Star Luxury</h3>
+                            <p class="text-xs text-slate-500 mt-1">World-class luxury, fine dining & spa facilities.</p>
+                        </div>
+                        <div class="hotel-check text-slate-300 text-xl text-right"><i class="far fa-circle"></i></div>
+                    </div>
+
+                    <!-- Resort / Villa Option -->
+                    <div class="hotel-option bg-white p-5 rounded-2xl border-2 border-slate-200 hover:border-red-500 cursor-pointer transition-all flex flex-col justify-between h-44" data-hotel="Luxury Resort / Villa">
+                        <div>
+                            <div class="text-purple-500 text-sm mb-2"><i class="fas fa-crown"></i></div>
+                            <h3 class="font-bold text-slate-900 text-lg">Resort / Villa</h3>
+                            <p class="text-xs text-slate-500 mt-1">Exclusive beach resorts or private pool villas.</p>
+                        </div>
+                        <div class="hotel-check text-slate-300 text-xl text-right"><i class="far fa-circle"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: PLACES TO VISIT FOR THIS COUNTRY -->
+            <div id="step-content-4" class="step-panel hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold heading-font text-slate-900 flex items-center gap-2">
+                        <i class="fas fa-map-marked-alt text-red-500"></i> Step 4: Places & Attractions to Visit
+                    </h2>
+                    <p class="text-slate-500 text-sm mt-1">Select the famous places and experiences you want included in your itinerary for <span id="places-country-name" class="font-bold text-slate-800">this country</span>.</p>
+                </div>
+
+                <div id="places-loading" class="text-center py-12 text-slate-400 font-medium">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2 text-red-500 block"></i> Loading attractions for this country...
+                </div>
+
+                <!-- Places Grid Selectors -->
+                <div id="places-grid-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-6 max-h-80 overflow-y-auto pr-2 hidden">
+                    <!-- Rendered dynamically by JS -->
+                </div>
+            </div>
+
+            <!-- STEP 5: REVIEW SUMMARY & CONTACT DETAILS SUBMIT -->
+            <div id="step-content-5" class="step-panel hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold heading-font text-slate-900 flex items-center gap-2">
+                        <i class="fas fa-paper-plane text-red-500"></i> Step 5: Review & Submit Enquiry
+                    </h2>
+                    <p class="text-slate-500 text-sm mt-1">Review your customized trip preferences and provide contact details to receive your customized quote.</p>
+                </div>
+
+                <!-- Trip Summary Card -->
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-6">
+                    <h3 class="font-bold text-slate-900 text-base mb-4 flex items-center gap-2 border-b border-slate-200 pb-2">
+                        <i class="fas fa-clipboard-list text-red-500"></i> Trip Summary Overview
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div><span class="text-slate-500">Destination:</span> <strong id="sum-dest" class="text-slate-900 font-bold block">Dubai</strong></div>
+                        <div><span class="text-slate-500">Dates & Duration:</span> <strong id="sum-dates" class="text-slate-900 font-bold block">Not selected</strong></div>
+                        <div><span class="text-slate-500">Travelers:</span> <strong id="sum-travelers" class="text-slate-900 font-bold block">1 Adult, 0 Children</strong></div>
+                        <div><span class="text-slate-500">Hotel Accommodation:</span> <strong id="sum-hotel" class="text-slate-900 font-bold block">4-Star Hotel</strong></div>
+                        <div class="sm:col-span-2"><span class="text-slate-500">Selected Places to Visit:</span> <strong id="sum-places" class="text-slate-900 font-bold block">None selected</strong></div>
+                    </div>
+                </div>
+
+                <!-- Contact Inputs Form -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Your Full Name *</label>
+                        <input type="text" id="contact-name" placeholder="e.g. John Doe" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none text-slate-900 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Phone Number (WhatsApp) *</label>
+                        <input type="tel" id="contact-phone" placeholder="e.g. +91 9876543210" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none text-slate-900 font-medium">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address (Optional)</label>
+                        <input type="email" id="contact-email" placeholder="e.g. john@example.com" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none text-slate-900 font-medium">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Special Requests / Notes (Optional)</label>
+                        <textarea id="contact-notes" rows="2" placeholder="Tell us if you have any special requirements, flight preferences, budget, etc." class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none text-slate-900 font-medium"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wizard Navigation Buttons Footer -->
+            <div class="border-t border-slate-200 pt-6 mt-8 flex items-center justify-between">
+                <button type="button" id="btn-wizard-prev" class="px-6 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-2 hidden">
+                    <i class="fas fa-arrow-left"></i> Previous
+                </button>
+                <div></div>
+                <button type="button" id="btn-wizard-next" class="px-8 py-3.5 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all flex items-center gap-2">
+                    Next Step <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl animate-fade-in">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+                <i class="fas fa-check"></i>
+            </div>
+            <h3 class="text-2xl font-bold heading-font text-slate-900 mb-2">Enquiry Submitted!</h3>
+            <p class="text-slate-500 text-sm mb-6">
+                Thank you for customizing your trip! Our travel specialists will craft your personalized itinerary and contact you shortly.
+            </p>
+            <a href="index.html" class="inline-block w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-colors">
+                Back to Homepage
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 text-center py-6 text-xs mt-12 border-t border-slate-800">
+        <p>© 2026 Mangalam Travel & Tours. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Wizard Logic JS Script -->
+    <script src="./js/api.js"></script>
+    <script src="./js/customize-trip.js"></script>
+</body>
+</html>

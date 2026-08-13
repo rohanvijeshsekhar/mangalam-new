@@ -215,11 +215,13 @@ async function loadDestinations() {
 }
 
 function openDestinationForm(d = null) {
+  const placesText = Array.isArray(d?.places_to_visit) ? d.places_to_visit.join('\n') : '';
   openModal(d ? 'Edit Destination' : 'Add Destination', `
-    <div class="form-group"><label>Destination Name *</label><input id="d-name" value="${d?.destination_name||''}" placeholder="e.g. Dubai"></div>
+    <div class="form-group"><label>Destination / Country Name *</label><input id="d-name" value="${d?.destination_name||''}" placeholder="e.g. Dubai"></div>
     <div class="form-group"><label>Card Image</label>${createImageUpload('d-card', d?.card_image||'')}</div>
     <div class="form-group"><label>Inner/Banner Image</label>${createImageUpload('d-inner', d?.inner_image||'')}</div>
     <div class="form-group"><label>Description</label><textarea id="d-desc" placeholder="Short destination description">${d?.description||''}</textarea></div>
+    <div class="form-group"><label>Places & Attractions to Visit (1 place per line)</label><textarea id="d-places" style="height:100px" placeholder="e.g. Burj Khalifa Observatory&#10;Desert Safari with BBQ&#10;Dubai Miracle Garden">${placesText}</textarea></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-primary" onclick="saveDestination(${d?.destination_id||'null'})"><i class="fas fa-save"></i> ${d ? 'Update' : 'Save'}</button>
@@ -232,11 +234,14 @@ window.editDestination = function(id) {
 };
 
 window.saveDestination = async function(id) {
+  const rawPlaces = document.getElementById('d-places').value;
+  const placesArr = rawPlaces.split('\n').map(s => s.trim()).filter(Boolean);
   const body = {
     destination_name: document.getElementById('d-name').value.trim(),
     card_image: document.getElementById('img-url-d-card').value,
     inner_image: document.getElementById('img-url-d-inner').value,
-    description: document.getElementById('d-desc').value.trim()
+    description: document.getElementById('d-desc').value.trim(),
+    places_to_visit: placesArr
   };
   if (!body.destination_name) { showToast('Name is required', 'error'); return; }
   const res = id ? await api('PUT', `/destinations/${id}`, body) : await api('POST', '/destinations', body);
@@ -874,6 +879,110 @@ window.deletePoster = async function(id) {
 
 document.getElementById('btn-add-poster')?.addEventListener('click', () => openPosterForm());
 
+// ══════════════════════════════════════════════════════════════════════════════
+// TRIP ENQUIRIES
+// ══════════════════════════════════════════════════════════════════════════════
+let enquiries = [];
+
+async function loadEnquiries() {
+  enquiries = await api('GET', '/enquiries') || [];
+  const tbody = document.getElementById('tbody-enquiries');
+  if (!tbody) return;
+  if (!enquiries.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7"><i class="fas fa-clipboard-list" style="font-size:24px;color:#e5e7eb;display:block;margin-bottom:8px"></i>No trip enquiries found yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = enquiries.map(e => {
+    let statusClass = 'gray';
+    if (e.status === 'New') statusClass = 'red';
+    else if (e.status === 'Contacted') statusClass = 'blue';
+    else if (e.status === 'Completed') statusClass = 'green';
+
+    const durationText = e.start_date && e.end_date ? `${e.start_date} to ${e.end_date} (${e.duration_days||0} days)` : 'Flexible Dates';
+    const passengersText = `${e.adults||1} Adult${(e.adults||1)>1?'s':''}${e.children>0?`, ${e.children} Child`:''}`;
+
+    return `
+      <tr>
+        <td><strong>${e.name}</strong><br><span style="font-size:12px;color:#6b7280">${e.phone} ${e.email ? '| '+e.email : ''}</span></td>
+        <td><strong style="color:#ef4444">${e.destination_name || e.destination || 'Custom'}</strong></td>
+        <td><span style="font-size:13px">${durationText}</span></td>
+        <td>${passengersText}</td>
+        <td><span class="badge gray">${e.hotel_rating || '3-Star'}</span></td>
+        <td>
+          <select onchange="updateEnquiryStatus(${e.enquiry_id}, this.value)" style="padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600">
+            <option value="New" ${e.status === 'New' ? 'selected' : ''}>🔴 New</option>
+            <option value="Contacted" ${e.status === 'Contacted' ? 'selected' : ''}>🔵 Contacted</option>
+            <option value="Completed" ${e.status === 'Completed' ? 'selected' : ''}>🟢 Completed</option>
+          </select>
+        </td>
+        <td><div class="table-actions">
+          <button class="btn-sm btn-edit" onclick="viewEnquiryModal(${e.enquiry_id})"><i class="fas fa-eye"></i> View</button>
+          <button class="btn-sm btn-delete" onclick="deleteEnquiry(${e.enquiry_id})"><i class="fas fa-trash"></i></button>
+        </div></td>
+      </tr>`;
+  }).join('');
+}
+
+window.viewEnquiryModal = function(id) {
+  const e = enquiries.find(x => x.enquiry_id === id);
+  if (!e) return;
+
+  const placesList = Array.isArray(e.places_to_visit) && e.places_to_visit.length > 0
+    ? e.places_to_visit.map(p => `<li style="margin-bottom:4px">📍 ${p}</li>`).join('')
+    : '<li style="color:#9ca3af">No specific places selected (Flexible)</li>';
+
+  const childAgesText = Array.isArray(e.children_ages) && e.children_ages.length > 0
+    ? e.children_ages.join(', ')
+    : 'None';
+
+  openModal(`Trip Enquiry: ${e.name}`, `
+    <div style="font-size:14px;line-height:1.6">
+      <div style="background:#f8fafc;padding:12px 16px;border-radius:8px;margin-bottom:16px">
+        <p><strong>Customer Name:</strong> ${e.name}</p>
+        <p><strong>Phone (WhatsApp):</strong> <a href="tel:${e.phone}" style="color:#ef4444">${e.phone}</a></p>
+        <p><strong>Email:</strong> ${e.email || 'Not provided'}</p>
+        <p><strong>Submitted Date:</strong> ${new Date(e.created_at).toLocaleString()}</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-weight:700;margin-bottom:6px;color:#1e293b">Trip Details</h4>
+        <p><strong>Destination:</strong> ${e.destination_name || e.destination}</p>
+        <p><strong>Travel Dates:</strong> ${e.start_date || 'N/A'} to ${e.end_date || 'N/A'} (${e.duration_days} Days)</p>
+        <p><strong>Travelers:</strong> ${e.adults} Adults, ${e.children} Children (Child Ages: ${childAgesText})</p>
+        <p><strong>Hotel Preference:</strong> ${e.hotel_rating}</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-weight:700;margin-bottom:6px;color:#1e293b">Selected Places to Visit</h4>
+        <ul style="padding-left:16px;list-style-type:none">
+          ${placesList}
+        </ul>
+      </div>
+
+      ${e.notes ? `<div style="background:#fffbeb;border:1px solid #fef3c7;padding:12px;border-radius:8px"><strong>Special Requests / Notes:</strong><p style="margin-top:4px">${e.notes}</p></div>` : ''}
+    </div>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn-cancel" onclick="closeModal()">Close</button>
+      <a href="https://wa.me/${e.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('Hello '+e.name+', regarding your customized trip request to '+e.destination_name+'...')}" target="_blank" class="btn-primary" style="background:#25D366;text-decoration:none"><i class="fab fa-whatsapp"></i> Chat on WhatsApp</a>
+    </div>
+  `);
+};
+
+window.updateEnquiryStatus = async function(id, status) {
+  const res = await api('PUT', `/enquiries/${id}`, { status });
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast('Status updated', 'success');
+  loadEnquiries(); loadDashboard();
+};
+
+window.deleteEnquiry = async function(id) {
+  if (!confirm('Delete this trip enquiry?')) return;
+  await api('DELETE', `/enquiries/${id}`);
+  showToast('Enquiry deleted', 'success');
+  loadEnquiries(); loadDashboard();
+};
+
 // ── Section loaders map ───────────────────────────────────────────────────────
 const loaders = {
   dashboard:    loadDashboard,
@@ -885,6 +994,7 @@ const loaders = {
   testimonials: loadTestimonials,
   partners:     loadPartners,
   posters:      loadPosters,
+  enquiries:    loadEnquiries,
   settings:     () => {},
 };
 

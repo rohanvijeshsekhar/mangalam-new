@@ -38,6 +38,7 @@ app.use('/api/blogs',        require('./routes/blogs'));
 app.use('/api/testimonials', require('./routes/testimonials'));
 app.use('/api/partners',     require('./routes/partners'));
 app.use('/api/posters',      require('./routes/posters'));
+app.use('/api/enquiries',    require('./routes/enquiries'));
 app.use('/api/upload',       require('./routes/upload'));
 
 // ── Static Files ────────────────────────────────────────────────────────────
@@ -62,6 +63,7 @@ app.get('/api/stats', (req, res) => {
     testimonials: store.count('testimonials'),
     partners:     store.count('partners'),
     posters:      store.count('posters'),
+    enquiries:    store.count('enquiries'),
   });
 });
 

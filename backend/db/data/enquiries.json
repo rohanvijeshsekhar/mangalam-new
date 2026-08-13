@@ -1,0 +1,26 @@
+[
+  {
+    "destination": "dubai",
+    "destination_name": "Dubai",
+    "start_date": "2026-09-01",
+    "end_date": "2026-09-06",
+    "duration_days": 5,
+    "adults": 2,
+    "children": 1,
+    "children_ages": [
+      6
+    ],
+    "hotel_rating": "4-Star",
+    "places_to_visit": [
+      "Burj Khalifa (124th & 125th Floor Observation Deck)",
+      "Desert Safari with Dune Bashing & BBQ Dinner"
+    ],
+    "name": "Rohan Sharma",
+    "email": "rohan@example.com",
+    "phone": "+91 9876543210",
+    "notes": "Looking for a private car for airport transfers",
+    "status": "New",
+    "id": 1,
+    "created_at": "2026-08-13T10:04:55.766Z"
+  }
+]

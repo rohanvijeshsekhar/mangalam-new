@@ -53,6 +53,9 @@
     <a href="#" class="nav-item" data-section="posters">
       <i class="fas fa-image"></i><span>Promos & Banners</span>
     </a>
+    <a href="#" class="nav-item" data-section="enquiries">
+      <i class="fas fa-clipboard-list"></i><span>Trip Enquiries</span>
+    </a>
     <a href="#" class="nav-item" data-section="settings">
       <i class="fas fa-cog"></i><span>Settings</span>
     </a>
@@ -126,6 +129,10 @@
       <div class="stat-card" data-section="posters">
         <div class="stat-icon" style="background:rgba(14,165,233,0.1);color:#0ea5e9"><i class="fas fa-image"></i></div>
         <div class="stat-info"><div class="stat-value" id="stat-posters">—</div><div class="stat-label">Promos & Banners</div></div>
+      </div>
+      <div class="stat-card" data-section="enquiries">
+        <div class="stat-icon" style="background:rgba(239,68,68,0.1);color:#ef4444"><i class="fas fa-clipboard-list"></i></div>
+        <div class="stat-info"><div class="stat-value" id="stat-enquiries">—</div><div class="stat-label">Trip Enquiries</div></div>
       </div>
     </div>
 
@@ -251,6 +258,22 @@
       <table class="data-table">
         <thead><tr><th>Banner Image</th><th>Title / Name</th><th>Target Link</th><th>Actions</th></tr></thead>
         <tbody id="tbody-posters"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── TRIP ENQUIRIES SECTION ───────────────────────────── -->
+  <section class="content-section hidden" id="section-enquiries">
+    <div class="section-toolbar">
+      <div>
+        <h3 class="section-heading">Custom Trip Enquiries</h3>
+        <p style="font-size:13px;color:#6b7280;margin-top:2px">Customized trip requests submitted by website visitors.</p>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Customer Details</th><th>Country / Destination</th><th>Dates & Duration</th><th>Passengers</th><th>Hotel Star</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="tbody-enquiries"></tbody>
       </table>
     </div>
   </section>
