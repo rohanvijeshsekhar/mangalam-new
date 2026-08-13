@@ -28,7 +28,7 @@ router.post('/send', async (req, res) => {
   const senderId   = process.env.SANGAMAM_SENDER_ID || 'MNGLAM';
   const templateId = process.env.SANGAMAM_TEMPLATE_ID || '1707177917343595479';
   const entityId   = process.env.SANGAMAM_ENTITY_ID || '1701177044156222476';
-  const gatewayUrl = process.env.SANGAMAM_SMS_URL || 'http://sms.sangamam.in/api/send_sms.php';
+  const gatewayUrl = process.env.SANGAMAM_SMS_URL || 'https://fastsms.sangamamonline.in/api/sms/v1.0/send-sms';
 
   // Exact DLT Approved Wording
   const msgText = `Mangalam Travel & Tours Your OTP is ${otp} for enquiry form verification. Valid for 10 minutes. Do not share this OTP with anyone. www.mangalamtravel.com`;
@@ -36,7 +36,7 @@ router.post('/send', async (req, res) => {
   console.log(`🔑 OTP generated for ${cleanPhone}: ${otp}`);
 
   if (apiKey && gatewayUrl) {
-    // Send SMS via Sangamam SMS Gateway
+    // Send SMS via Sangamam FastSMS Gateway
     try {
       const url = new URL(gatewayUrl);
       url.searchParams.append('apikey', apiKey);
