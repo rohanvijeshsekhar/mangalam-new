@@ -38,9 +38,14 @@ router.post('/send', async (req, res) => {
       const url = new URL(gatewayUrl);
       url.searchParams.append('apikey', apiKey);
       url.searchParams.append('sender', senderId);
+      url.searchParams.append('senderid', senderId);
       url.searchParams.append('mobile', cleanPhone);
+      url.searchParams.append('numbers', cleanPhone);
       url.searchParams.append('message', msgText);
-      if (templateId) url.searchParams.append('template_id', templateId);
+      if (templateId) {
+        url.searchParams.append('template_id', templateId);
+        url.searchParams.append('templateid', templateId);
+      }
 
       const client = url.protocol === 'https:' ? https : http;
       client.get(url.toString(), (smsRes) => {
