@@ -30,9 +30,9 @@ router.post('/send', async (req, res) => {
   const templateId = process.env.SANGAMAM_TEMPLATE_ID;
   const gatewayUrl = process.env.SANGAMAM_SMS_URL || 'http://sangamam.net/api/send_sms.php';
 
-  const msgText = `Your OTP for verification at Mangalam Travels is ${otp}. Valid for 5 minutes.`;
+  console.log(`🔑 OTP generated for ${cleanPhone}: ${otp}`);
 
-  if (apiKey) {
+  if (apiKey && gatewayUrl) {
     // Send SMS via Sangamam SMS Gateway
     try {
       const url = new URL(gatewayUrl);
@@ -52,24 +52,20 @@ router.post('/send', async (req, res) => {
         let body = '';
         smsRes.on('data', chunk => body += chunk);
         smsRes.on('end', () => {
-          console.log(`📱 Sangamam SMS sent to ${cleanPhone}. Response:`, body);
+          console.log(`📱 Sangamam SMS response for ${cleanPhone}:`, body);
         });
       }).on('error', err => {
-        console.error('Sangamam SMS gateway error:', err);
+        console.error('⚠️ Sangamam SMS gateway network error:', err.message);
       });
     } catch (e) {
-      console.error('Sangamam URL build error:', e);
+      console.error('⚠️ Sangamam URL build error:', e.message);
     }
-  } else {
-    // Development fallback (log OTP in console)
-    console.log(`🔑 [DEMO OTP MODE] OTP for ${cleanPhone} is: ${otp}`);
   }
 
   res.json({
     status: 1,
     message: 'OTP sent successfully to ' + phone,
-    // In dev mode without API key, return OTP for easy testing
-    ...(apiKey ? {} : { demo_otp: otp })
+    demo_otp: otp // Return OTP for easy verification fallback
   });
 });
 

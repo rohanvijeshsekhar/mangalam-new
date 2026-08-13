@@ -124,9 +124,15 @@
 
                 if (data && (data.status === 1 || data.success)) {
                     verified = false;
-                    if (otpContainer) otpContainer.classList.remove('hidden');
-                    if (otpInput) otpInput.value = '';
-                    setStatus(data.message || 'OTP sent. Check your mobile SMS.', 'success');
+                    if (otpContainer) {
+                        otpContainer.classList.remove('hidden');
+                        otpContainer.style.display = 'block';
+                    }
+                    if (otpInput) otpInput.value = data.demo_otp || '';
+                    const successMsg = data.demo_otp 
+                        ? `OTP sent! (Code: ${data.demo_otp})` 
+                        : (data.message || 'OTP sent to your mobile number.');
+                    setStatus(successMsg, 'success');
                     startCooldown(30);
                 } else {
                     const errMsg = (data && data.message) || 'Failed to send OTP.';
