@@ -19,7 +19,10 @@ async function loadPosters() {
   const list = document.getElementById('poster-list');
   if (!section || !list) return;
   const posters = await MT.apiGet('/api/posters');
-  if (!posters || !posters.length) return;
+  if (!posters || !posters.length) {
+    section.style.display = 'none';
+    return;
+  }
   list.innerHTML = posters.map(p => {
     const img = MT.resolveImg(p.image) || `./admin/files/posters/${p.image}`;
     const alt = p.alt_text || p.title || p.name || 'Special Travel Offer';

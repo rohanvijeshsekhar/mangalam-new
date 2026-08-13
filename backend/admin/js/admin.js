@@ -829,8 +829,8 @@ async function loadPosters() {
   tbody.innerHTML = posters.map(p => `
     <tr>
       <td>${imgCell(p.image)}</td>
-      <td><strong>${escapeHtml(p.title || p.name || 'Banner')}</strong></td>
-      <td><span class="badge gray">${escapeHtml(p.link || 'No Target Link')}</span></td>
+      <td><strong>${p.title || p.name || 'Banner'}</strong></td>
+      <td><span class="badge" style="background:#f3f4f6;color:#374151;font-weight:600;padding:4px 10px;border-radius:12px">${p.link || 'No Link'}</span></td>
       <td><div class="table-actions">
         <button class="btn-sm btn-edit" onclick="editPoster(${p.poster_id})"><i class="fas fa-pen"></i> Edit</button>
         <button class="btn-sm btn-delete" onclick="deletePoster(${p.poster_id})"><i class="fas fa-trash"></i></button>
@@ -849,6 +849,7 @@ function openPosterForm(p = null) {
     </div>`);
 }
 
+window.openPosterForm = openPosterForm;
 window.editPoster = function(id) { const p = posters.find(x => x.poster_id === id); if (p) openPosterForm(p); };
 
 window.savePoster = async function(id) {
