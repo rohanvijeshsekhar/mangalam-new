@@ -32,6 +32,11 @@ async function loadPosters() {
     </li>`;
   }).join('');
   section.style.display = '';
+
+  if (window.Splide && document.getElementById('posterCarousel')) {
+    const cnt = posters.length;
+    if (cnt > 0) new Splide('#posterCarousel', { type: cnt > 1 ? 'loop' : 'slide', autoplay: cnt > 1, interval: 4000, speed: 800, arrows: cnt > 1, pagination: true, perPage: 1 }).mount();
+  }
 }
 
 async function loadDestinations() {
