@@ -21,7 +21,11 @@ app.options('*', cors()); // Handle preflight requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const fs = require('fs');
+// Disable caching for HTML and dynamic assets to prevent stale browser cache
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  next();
+});
 
 // ── Static Files ────────────────────────────────────────────────────────────
 // Serve uploaded images

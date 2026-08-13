@@ -123,7 +123,7 @@ const pageConfigs = {
   'index.ejs': { file: 'index.html', nav: 'home', script: 'index.js' },
   'about.ejs': { file: 'about.html', nav: 'about', script: 'about.js' },
   'activity-details.ejs': { file: 'activity-details.html', nav: 'activity', script: 'activity-details.js' },
-  'attraction.ejs': { file: 'attraction.html', nav: 'activity', script: 'activity-details.js' },
+  'attraction.ejs': { file: 'attraction.html', nav: 'activity', script: 'attractions.js' },
   'blog-details.ejs': { file: 'blog-details.html', nav: 'blog', script: 'blog-details.js' },
   'blog.ejs': { file: 'blog.html', nav: 'blog', script: 'blog.js' },
   'career.ejs': { file: 'career.html', nav: 'career', script: 'career.js' },
