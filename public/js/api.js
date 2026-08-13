@@ -166,14 +166,25 @@ async function loadFooterTickets() {
 // ─── Destination dropdown populator (search bars on multiple pages) ───────────
 async function loadDestinationDropdowns() {
   const dests = await apiGet('/api/destinations');
-  if (!dests) return;
+  if (!dests || !Array.isArray(dests)) return;
+  const seen = new Set();
+  const uniqueDests = [];
+  dests.forEach(d => {
+    const name = (d.destination_name || d.name || d.title || '').trim();
+    const slug = (d.slug_url || d.slug || '').trim();
+    if (name && !seen.has(name.toLowerCase())) {
+      seen.add(name.toLowerCase());
+      uniqueDests.push({ name, slug });
+    }
+  });
+
+  const dropdownHTML = uniqueDests.map(d => 
+    `<div class="px-4 py-2.5 hover:bg-gray-100 cursor-pointer font-dm-sans text-sm text-gray-700 font-medium destination-menu-item transition-colors" data-value="${d.name}" data-slug="${d.slug}">${d.name}</div>`
+  ).join('');
+
   document.querySelectorAll('.destination-menu-scroll').forEach(menu => {
-    menu.innerHTML = dests.map(d => {
-      const name = d.destination_name || d.name || '';
-      const slug = d.slug_url || d.slug || '';
-      return `<div class="px-4 py-2 hover:bg-gray-100 cursor-pointer font-dm-sans text-sm destination-menu-item"
-                   data-value="${name}" data-slug="${slug}">${name}</div>`;
-    }).join('');
+    const anyDestItem = `<div class="px-4 py-2.5 hover:bg-gray-100 cursor-pointer font-dm-sans text-sm text-gray-700 font-medium destination-menu-item transition-colors" data-value="Any Destination" data-slug="">Any Destination</div>`;
+    menu.innerHTML = anyDestItem + dropdownHTML;
   });
 }
 

@@ -91,15 +91,25 @@ async function loadDestinations() {
     gridEl.innerHTML = dests.map(d => R.destinationCard(d)).join('');
   }
 
-  // Populate hero search dropdowns
-  const dropdownItems = dests.map(d => {
-    const name = d.destination_name || d.name || '';
-    const slug = d.slug_url || d.slug || '';
-    return `<div class="px-4 py-2 hover:bg-gray-100 cursor-pointer font-dm-sans text-sm destination-menu-item" data-value="${name}" data-slug="${slug}">${name}</div>`;
-  }).join('');
+  // Populate hero search dropdowns with clean deduplicated destinations
+  const seen = new Set();
+  const uniqueDests = [];
+  dests.forEach(d => {
+    const name = (d.destination_name || d.name || d.title || '').trim();
+    const slug = (d.slug_url || d.slug || '').trim();
+    if (name && !seen.has(name.toLowerCase())) {
+      seen.add(name.toLowerCase());
+      uniqueDests.push({ name, slug });
+    }
+  });
 
-  document.querySelectorAll('#destinationMenu .py-2, #destinationMenu2 .destination-menu-scroll').forEach(menu => {
-    menu.insertAdjacentHTML('beforeend', dropdownItems);
+  const dropdownHTML = uniqueDests.map(d => 
+    `<div class="px-4 py-2.5 hover:bg-gray-100 cursor-pointer font-dm-sans text-sm text-gray-700 font-medium destination-menu-item transition-colors" data-value="${d.name}" data-slug="${d.slug}">${d.name}</div>`
+  ).join('');
+
+  document.querySelectorAll('#destinationMenu .destination-menu-scroll, #destinationMenu2 .destination-menu-scroll').forEach(menu => {
+    const anyDestItem = `<div class="px-4 py-2.5 hover:bg-gray-100 cursor-pointer font-dm-sans text-sm text-gray-700 font-medium destination-menu-item transition-colors" data-value="Any Destination" data-slug="">Any Destination</div>`;
+    menu.innerHTML = anyDestItem + dropdownHTML;
   });
 }
 

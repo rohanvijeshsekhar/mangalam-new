@@ -1,37 +1,19 @@
 /**
- * api.js — Shared API Utilities for Mangalam Travel & Tours
- * Returns clean empty arrays when no database is connected.
+ * api.js — Shared API utilities for Mangalam Travel & Tours static pages
+ * All fetch() calls go to /api/* (Express REST endpoints → MySQL)
  */
 
-const API_BASE = window.API_BASE || (
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:4000'
-    : window.location.origin
-);
-
-const STATIC_DATA = {
-  destinations: [],
-  packages: [],
-  tickets: [],
-  activities: [],
-  blogs: [],
-  testimonials: [],
-  partners: []
-};
+const API_BASE = '';
 
 /** Resolve image path to a full URL */
-function resolveImg(src, fallback = './assets/images/logo-color.png') {
+function resolveImg(src, fallback = '/assets/images/logo-color.png') {
   if (!src) return fallback;
   if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) return src;
-  if (src.startsWith('/uploads/') || src.startsWith('uploads/')) {
-    const cleanPath = src.startsWith('/') ? src : '/' + src;
-    return API_BASE + cleanPath;
-  }
-  if (src.startsWith('./assets/') || src.startsWith('assets/')) {
-    return src.startsWith('./') ? src : './' + src;
-  }
-  if (src.startsWith('/')) return '.' + src;
-  return './assets/images/' + src;
+  if (src.startsWith('uploads/')) return '/' + src;
+  if (src.startsWith('/')) return src;
+  if (src.startsWith('assets/')) return '/' + src;
+  // Legacy admin file paths
+  return '/uploads/' + src;
 }
 
 /** Generic GET helper */
@@ -39,12 +21,11 @@ async function apiGet(path) {
   try {
     const res = await fetch(API_BASE + path);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (data) return data;
+    return await res.json();
   } catch (e) {
-    // Return clean empty array
+    console.warn('[API] GET failed:', path, e.message);
+    return null;
   }
-  return [];
 }
 
 /** Generic POST helper */
@@ -61,21 +42,163 @@ async function apiPost(path, body, isFormData = false) {
     const text = await res.text();
     try { return JSON.parse(text); } catch { return text; }
   } catch (e) {
-    if (path.includes('otp')) return { status: 1, message: 'OTP verified' };
-    return '1';
+    console.warn('[API] POST failed:', path, e.message);
+    return null;
   }
 }
 
-/** Show skeleton loader */
+/** Show skeleton loader in a container */
 function showSkeleton(el, count = 3, type = 'card') {
   if (!el) return;
-  el.innerHTML = '';
+  const cardSkel = `
+    <div class="rounded-2xl overflow-hidden bg-gray-100 animate-pulse">
+      <div class="h-48 bg-gray-200"></div>
+      <div class="p-4 space-y-2">
+        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+        <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+      </div>
+    </div>`;
+  el.innerHTML = Array(count).fill(cardSkel).join('');
 }
 
-/** Get URL search query param */
-function getParam(name) {
+/** Show error state */
+function showError(el, msg = 'Could not load data.') {
+  if (!el) return;
+  el.innerHTML = `<p class="text-gray-400 text-center py-8 col-span-full">${msg}</p>`;
+}
+
+/** Format price */
+function fmtPrice(amount) {
+  const n = Number(amount);
+  if (!n || isNaN(n)) return '';
+  return '₹ ' + n.toLocaleString('en-IN');
+}
+
+/** Truncate text */
+function truncate(str, len = 80) {
+  if (!str) return '';
+  return str.length > len ? str.slice(0, len) + '…' : str;
+}
+
+/** Slug from text */
+function slugify(text) {
+  return String(text || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
+
+/** Read URL query param */
+function qParam(name) {
   return new URLSearchParams(window.location.search).get(name);
 }
 
-// Global Exports
-window.MT = { resolveImg, apiGet, apiPost, showSkeleton, getParam, qParam: getParam };
+// ─── Notice bar loader (runs on every page) ──────────────────────────────────
+async function loadNotice() {
+  const bar = document.getElementById('notice-bar');
+  const txt = document.getElementById('notice-text');
+  if (!bar || !txt) return;
+  const data = await apiGet('/api/notice');
+  let msg = '';
+  if (typeof data === 'string') {
+    msg = data;
+  } else if (data && typeof data.data === 'string') {
+    msg = data.data;
+  } else if (data && typeof data.notice === 'string') {
+    msg = data.notice;
+  }
+  msg = msg.trim();
+  if (msg && msg !== '[object Object]') {
+    txt.innerHTML = msg;
+    bar.style.display = '';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+// ─── Footer destinations loader ───────────────────────────────────────────────
+async function loadFooterDests() {
+  const col1 = document.getElementById('footer-dests-1');
+  const col2 = document.getElementById('footer-dests-2');
+  const col3 = document.getElementById('footer-dests-3');
+  if (!col1 && !col2 && !col3) return;
+  const dests = await apiGet('/api/destinations');
+  if (!dests || !dests.length) return;
+  const top = dests.slice(0, 18);
+  const cols = [col1, col2, col3];
+  const per = Math.ceil(top.length / 3);
+  cols.forEach((col, i) => {
+    if (!col) return;
+    col.innerHTML = top.slice(i * per, (i + 1) * per).map(d => {
+      const name = d.destination_name || d.name || '';
+      const slug = d.slug_url || d.slug || '';
+      const url = slug ? `packages.html?slug=${encodeURIComponent(slug)}&type=package` : '#';
+      return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors">${name} Holiday Packages</a>`;
+    }).join('');
+  });
+}
+
+// ─── Footer activities loader ─────────────────────────────────────────────────
+async function loadFooterActivities() {
+  const el = document.getElementById('footer-activities');
+  if (!el) return;
+  const acts = await apiGet('/api/activities');
+  if (!acts || !acts.length) return;
+  el.innerHTML = acts.slice(0, 8).map(a => {
+    const name = a.title || a.name || '';
+    const slug = a.slug_url || a.slug || '';
+    const url = slug ? `activity-details.html?slug=${encodeURIComponent(slug)}` : '#';
+    return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors">${name}</a>`;
+  }).join('');
+}
+
+// ─── Footer tickets loader ────────────────────────────────────────────────────
+async function loadFooterTickets() {
+  const el = document.getElementById('footer-tickets');
+  if (!el) return;
+  const tkts = await apiGet('/api/tickets');
+  if (!tkts || !tkts.length) return;
+  el.innerHTML = tkts.slice(0, 8).map(t => {
+    const name = t.title || t.name || '';
+    const slug = t.slug_url || t.slug || '';
+    const url = slug ? `ticket-details.html?slug=${encodeURIComponent(slug)}` : '#';
+    return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors">${name}</a>`;
+  }).join('');
+}
+
+// ─── Destination dropdown populator (search bars on multiple pages) ───────────
+async function loadDestinationDropdowns() {
+  const dests = await apiGet('/api/destinations');
+  if (!dests || !Array.isArray(dests)) return;
+  const seen = new Set();
+  const uniqueDests = [];
+  dests.forEach(d => {
+    const name = (d.destination_name || d.name || d.title || '').trim();
+    const slug = (d.slug_url || d.slug || '').trim();
+    if (name && !seen.has(name.toLowerCase())) {
+      seen.add(name.toLowerCase());
+      uniqueDests.push({ name, slug });
+    }
+  });
+
+  const dropdownHTML = uniqueDests.map(d => 
+    `<div class="px-4 py-2.5 hover:bg-gray-100 cursor-pointer font-dm-sans text-sm text-gray-700 font-medium destination-menu-item transition-colors" data-value="${d.name}" data-slug="${d.slug}">${d.name}</div>`
+  ).join('');
+
+  document.querySelectorAll('.destination-menu-scroll').forEach(menu => {
+    const anyDestItem = `<div class="px-4 py-2.5 hover:bg-gray-100 cursor-pointer font-dm-sans text-sm text-gray-700 font-medium destination-menu-item transition-colors" data-value="Any Destination" data-slug="">Any Destination</div>`;
+    menu.innerHTML = anyDestItem + dropdownHTML;
+  });
+}
+
+// ─── Init common page elements ────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadNotice();
+  loadFooterDests();
+  loadFooterActivities();
+  loadFooterTickets();
+  loadDestinationDropdowns();
+});
+
+// Export for use in page scripts
+window.MT = {
+  apiGet, apiPost, resolveImg, showSkeleton, showError,
+  fmtPrice, truncate, slugify, qParam
+};

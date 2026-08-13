@@ -881,20 +881,21 @@
             });
         }
 
-        dropdownItems.forEach(item => {
-            item.addEventListener('click', function () {
-                const value = this.getAttribute('data-value');
-                const slug = this.getAttribute('data-slug') || '';
+        dropdownMenu?.addEventListener('click', e => {
+            const item = e.target.closest('.destination-menu-item');
+            if (item) {
+                const value = item.getAttribute('data-value');
+                const slug = item.getAttribute('data-slug') || '';
                 if (selectedDestination) {
                     selectedDestination.textContent = value;
                     selectedDestination.dataset.slug = slug;
                 }
-                dropdownMenu?.classList.add('hidden');
-            });
+                dropdownMenu.classList.add('hidden');
+            }
+            e.stopPropagation();
         });
 
         document.addEventListener('click', () => dropdownMenu?.classList.add('hidden'));
-        dropdownMenu?.addEventListener('click', e => e.stopPropagation());
 
         if (letsGoBtn) {
             letsGoBtn.addEventListener('click', () => {
@@ -949,30 +950,21 @@
                 }
             });
 
-            items2.forEach(item => {
-                item.addEventListener('click', function () {
-                    const value = this.getAttribute('data-value');
-                    const slug = this.getAttribute('data-slug') || '';
-                    selectedDestination2.textContent = value;
-                    selectedDestination2.dataset.slug = slug;
+            dropdownMenu2.addEventListener('click', e => {
+                const item = e.target.closest('.destination-menu-item');
+                if (item) {
+                    const value = item.getAttribute('data-value');
+                    const slug = item.getAttribute('data-slug') || '';
+                    if (selectedDestination2) {
+                        selectedDestination2.textContent = value;
+                        selectedDestination2.dataset.slug = slug;
+                    }
                     closeMobileDestinationMenu(dropdownMenu2);
-                });
-            });
-
-            window.addEventListener('resize', () => {
-                if (!dropdownMenu2.classList.contains('hidden') && dropdownMenu2.classList.contains('is-floating')) {
-                    positionMobileDestinationMenu(mobileMenuAnchorEl, dropdownMenu2);
                 }
+                e.stopPropagation();
             });
-
-            window.addEventListener('scroll', () => {
-                if (!dropdownMenu2.classList.contains('hidden') && dropdownMenu2.classList.contains('is-floating')) {
-                    positionMobileDestinationMenu(mobileMenuAnchorEl, dropdownMenu2);
-                }
-            }, true);
 
             document.addEventListener('click', () => closeMobileDestinationMenu(dropdownMenu2));
-            dropdownMenu2.addEventListener('click', e => e.stopPropagation());
         }
 
         if (letsGoBtn2 && selectedDestination2) {
