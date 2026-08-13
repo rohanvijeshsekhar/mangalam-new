@@ -823,12 +823,12 @@ async function loadPosters() {
   const tbody = document.getElementById('tbody-posters');
   if (!tbody) return;
   if (!posters.length) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="4"><i class="fas fa-image" style="font-size:24px;color:#e5e7eb;display:block;margin-bottom:8px"></i>No promotional banners found.</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="4"><i class="fas fa-image" style="font-size:24px;color:#e5e7eb;display:block;margin-bottom:8px"></i>No promotional banners found. Upload one to get started.</td></tr>`;
     return;
   }
   tbody.innerHTML = posters.map(p => `
     <tr>
-      <td><img src="${resolveImg(p.image)}" class="table-thumb" style="width:160px;height:55px;object-fit:cover;border-radius:8px"></td>
+      <td>${imgCell(p.image)}</td>
       <td><strong>${escapeHtml(p.title || p.name || 'Banner')}</strong></td>
       <td><span class="badge gray">${escapeHtml(p.link || 'No Target Link')}</span></td>
       <td><div class="table-actions">

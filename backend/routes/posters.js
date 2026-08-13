@@ -13,29 +13,7 @@ const map = p => ({
   created_at: p.created_at
 });
 
-function ensureSeed() {
-  const existing = store.getAll('posters');
-  if (!existing || existing.length === 0) {
-    const seeds = [
-      {
-        title: 'Exclusive Dubai Holiday Special Offer',
-        image: './assets/images/activity-banner.webp',
-        link: '/holiday-package.html',
-        alt_text: 'Exclusive Dubai Holiday Special Offer'
-      },
-      {
-        title: 'Burj Khalifa Sky Views & Entry Tickets',
-        image: './assets/images/destination-banner.webp',
-        link: '/attraction.html',
-        alt_text: 'Burj Khalifa Sky Views & Entry Tickets'
-      }
-    ];
-    seeds.forEach(s => store.insert('posters', s));
-  }
-}
-
 router.get('/', (req, res) => {
-  ensureSeed();
   res.json(store.getAll('posters').map(map));
 });
 
