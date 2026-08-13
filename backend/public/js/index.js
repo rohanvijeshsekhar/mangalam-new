@@ -22,10 +22,12 @@ async function loadPosters() {
   if (!posters || !posters.length) return;
   list.innerHTML = posters.map(p => {
     const img = MT.resolveImg(p.image) || `./admin/files/posters/${p.image}`;
-    const alt = p.alt_text || 'Special Travel Offer';
+    const alt = p.alt_text || p.title || p.name || 'Special Travel Offer';
+    const tag = p.link ? `<a href="${p.link}" class="block w-full h-full">` : `<div class="block w-full h-full">`;
+    const endTag = p.link ? `</a>` : `</div>`;
     return `<li class="splide__slide">
-      <div class="rounded-3xl overflow-hidden shadow-lg h-auto">
-        <img src="${img}" alt="${alt}" class="w-full h-auto object-cover">
+      <div class="rounded-3xl overflow-hidden shadow-lg h-auto max-h-[380px] bg-gray-900">
+        ${tag}<img src="${img}" alt="${alt}" class="w-full h-full object-cover object-center max-h-[380px]">${endTag}
       </div>
     </li>`;
   }).join('');
@@ -172,7 +174,7 @@ function initCarousels() {
     const posterEl = document.getElementById('posterCarousel');
     if (posterEl) {
       const cnt = posterEl.querySelectorAll('.splide__slide').length;
-      if (cnt > 0) new Splide('#posterCarousel', { type: cnt > 1 ? 'loop' : 'slide', autoplay: cnt > 1, interval: 4000, arrows: false, pagination: true, perPage: 1 }).mount();
+      if (cnt > 0) new Splide('#posterCarousel', { type: cnt > 1 ? 'loop' : 'slide', autoplay: cnt > 1, interval: 4000, speed: 800, arrows: cnt > 1, pagination: true, perPage: 1 }).mount();
     }
 
     const navEl = document.getElementById('destinationNavCarousel');

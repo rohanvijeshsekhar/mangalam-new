@@ -27,16 +27,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// ── Static Files ────────────────────────────────────────────────────────────
-// Serve uploaded images
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-// Serve admin panel
-app.use('/admin', express.static(path.join(__dirname, 'admin')));
-// Serve main website static files (HTML, CSS, JS, Assets)
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, '..')));
-app.use(express.static(path.join(__dirname, '../public')));
-
 // ── API Routes ──────────────────────────────────────────────────────────────
 const { router: authRouter } = require('./routes/auth');
 app.use('/api/auth',         authRouter);
@@ -47,7 +37,18 @@ app.use('/api/tickets',      require('./routes/tickets'));
 app.use('/api/blogs',        require('./routes/blogs'));
 app.use('/api/testimonials', require('./routes/testimonials'));
 app.use('/api/partners',     require('./routes/partners'));
+app.use('/api/posters',      require('./routes/posters'));
 app.use('/api/upload',       require('./routes/upload'));
+
+// ── Static Files ────────────────────────────────────────────────────────────
+// Serve uploaded images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve admin panel
+app.use('/admin', express.static(path.join(__dirname, 'admin')));
+// Serve main website static files (HTML, CSS, JS, Assets)
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '..')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // ── Stats endpoint for dashboard ───────────────────────────────────────────
 const store = require('./db/store');
@@ -60,6 +61,7 @@ app.get('/api/stats', (req, res) => {
     blogs:        store.count('blogs'),
     testimonials: store.count('testimonials'),
     partners:     store.count('partners'),
+    posters:      store.count('posters'),
   });
 });
 

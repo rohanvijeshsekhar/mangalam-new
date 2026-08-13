@@ -50,6 +50,9 @@
     <a href="#" class="nav-item" data-section="partners">
       <i class="fas fa-handshake"></i><span>Partners</span>
     </a>
+    <a href="#" class="nav-item" data-section="posters">
+      <i class="fas fa-image"></i><span>Promos & Banners</span>
+    </a>
     <a href="#" class="nav-item" data-section="settings">
       <i class="fas fa-cog"></i><span>Settings</span>
     </a>
@@ -119,6 +122,10 @@
       <div class="stat-card" data-section="partners">
         <div class="stat-icon" style="background:rgba(236,72,153,0.1);color:#ec4899"><i class="fas fa-handshake"></i></div>
         <div class="stat-info"><div class="stat-value" id="stat-partners">—</div><div class="stat-label">Partners</div></div>
+      </div>
+      <div class="stat-card" data-section="posters">
+        <div class="stat-icon" style="background:rgba(14,165,233,0.1);color:#0ea5e9"><i class="fas fa-image"></i></div>
+        <div class="stat-info"><div class="stat-value" id="stat-posters">—</div><div class="stat-label">Promos & Banners</div></div>
       </div>
     </div>
 
@@ -227,6 +234,23 @@
       <table class="data-table">
         <thead><tr><th>Logo</th><th>Name</th><th>Actions</th></tr></thead>
         <tbody id="tbody-partners"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── POSTERS SECTION ────────────────────────────────── -->
+  <section class="content-section hidden" id="section-posters">
+    <div class="section-toolbar">
+      <div>
+        <h3 class="section-heading">Promotional Banners & Posters</h3>
+        <p style="font-size:13px;color:#6b7280;margin-top:2px">Upload long promotional images. If multiple banners are uploaded, they will autoslide on the website.</p>
+      </div>
+      <button class="btn-primary" id="btn-add-poster"><i class="fas fa-plus"></i> Add Promotional Banner</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Banner Image</th><th>Title / Name</th><th>Target Link</th><th>Actions</th></tr></thead>
+        <tbody id="tbody-posters"></tbody>
       </table>
     </div>
   </section>

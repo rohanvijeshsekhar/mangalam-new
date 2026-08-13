@@ -71,6 +71,7 @@ const sections = {
   blogs:        { title: 'Blogs',        subtitle: 'Manage blog posts' },
   testimonials: { title: 'Testimonials', subtitle: 'Manage customer reviews' },
   partners:     { title: 'Partners',     subtitle: 'Manage partner logos' },
+  posters:      { title: 'Promotional Banners', subtitle: 'Manage promotional banners and slider images' },
   settings:     { title: 'Settings',     subtitle: 'Admin account & configuration' },
 };
 
@@ -112,7 +113,7 @@ document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
 async function loadDashboard() {
   const stats = await api('GET', '/stats');
   if (!stats) return;
-  ['destinations','packages','attractions','tickets','blogs','testimonials','partners'].forEach(k => {
+  ['destinations','packages','attractions','tickets','blogs','testimonials','partners','posters'].forEach(k => {
     const el = document.getElementById(`stat-${k}`);
     if (el) el.textContent = stats[k] ?? 0;
   });
@@ -814,6 +815,64 @@ window.deleteAttraction = async function(id) {
 
 document.getElementById('btn-add-attraction')?.addEventListener('click', () => openAttractionForm());
 
+// ── POSTERS ───────────────────────────────────────────────────────────────────
+let posters = [];
+
+async function loadPosters() {
+  posters = await api('GET', '/posters') || [];
+  const tbody = document.getElementById('tbody-posters');
+  if (!tbody) return;
+  if (!posters.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="4"><i class="fas fa-image" style="font-size:24px;color:#e5e7eb;display:block;margin-bottom:8px"></i>No promotional banners found.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = posters.map(p => `
+    <tr>
+      <td><img src="${resolveImg(p.image)}" class="table-thumb" style="width:160px;height:55px;object-fit:cover;border-radius:8px"></td>
+      <td><strong>${escapeHtml(p.title || p.name || 'Banner')}</strong></td>
+      <td><span class="badge gray">${escapeHtml(p.link || 'No Target Link')}</span></td>
+      <td><div class="table-actions">
+        <button class="btn-sm btn-edit" onclick="editPoster(${p.poster_id})"><i class="fas fa-pen"></i> Edit</button>
+        <button class="btn-sm btn-delete" onclick="deletePoster(${p.poster_id})"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function openPosterForm(p = null) {
+  openModal(p ? 'Edit Promotional Banner' : 'Add Promotional Banner', `
+    <div class="form-group"><label>Banner Title / Name *</label><input id="p-title" value="${p?.title||p?.name||''}" placeholder="e.g. Summer Special Holiday Discount"></div>
+    <div class="form-group"><label>Promotional Banner Image (Long Image) *</label>${createImageUpload('p-img', p?.image||'')}</div>
+    <div class="form-group"><label>Target Redirect Link (Optional)</label><input id="p-link" value="${p?.link||''}" placeholder="e.g. /holiday-package.html or /attraction.html"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="savePoster(${p?.poster_id||'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
+    </div>`);
+}
+
+window.editPoster = function(id) { const p = posters.find(x => x.poster_id === id); if (p) openPosterForm(p); };
+
+window.savePoster = async function(id) {
+  const body = {
+    title: document.getElementById('p-title').value.trim(),
+    image: document.getElementById('img-url-p-img').value,
+    link: document.getElementById('p-link').value.trim(),
+  };
+  if (!body.title) { showToast('Banner title required', 'error'); return; }
+  if (!body.image) { showToast('Banner image required', 'error'); return; }
+  const res = id ? await api('PUT', `/posters/${id}`, body) : await api('POST', '/posters', body);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast(id ? 'Updated!' : 'Banner Saved!', 'success');
+  closeModal(); loadPosters(); loadDashboard();
+};
+
+window.deletePoster = async function(id) {
+  if (!confirm('Delete this promotional banner?')) return;
+  await api('DELETE', `/posters/${id}`);
+  showToast('Deleted', 'success'); loadPosters(); loadDashboard();
+};
+
+document.getElementById('btn-add-poster')?.addEventListener('click', () => openPosterForm());
+
 // ── Section loaders map ───────────────────────────────────────────────────────
 const loaders = {
   dashboard:    loadDashboard,
@@ -824,6 +883,7 @@ const loaders = {
   blogs:        loadBlogs,
   testimonials: loadTestimonials,
   partners:     loadPartners,
+  posters:      loadPosters,
   settings:     () => {},
 };
 
