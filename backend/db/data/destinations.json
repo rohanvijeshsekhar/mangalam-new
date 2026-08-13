@@ -6,13 +6,34 @@
     "inner_image": "http://localhost:4000/uploads/1786177134803-62023.png",
     "description": "Experience luxury, futuristic architecture, desert adventures, and world-class shopping in Dubai.",
     "places_to_visit": [
-      "Burj Khalifa (124th & 125th Floor Observation Deck)",
-      "Desert Safari with Dune Bashing & BBQ Dinner",
-      "Dubai Mall & Dubai Fountain Evening Show",
-      "Museum of the Future",
-      "Marina Dhow Cruise Dinner",
-      "Dubai Miracle Garden & Butterfly Garden",
-      "Atlantis Aquaventure Waterpark"
+      {
+        "name": "Burj Khalifa (124th & 125th Floor Observation Deck)",
+        "image": "./assets/images/activity-banner.webp"
+      },
+      {
+        "name": "Desert Safari with Dune Bashing & BBQ Dinner",
+        "image": "./assets/images/res-activity-banner.webp"
+      },
+      {
+        "name": "Dubai Mall & Dubai Fountain Evening Show",
+        "image": "./assets/images/banner1.webp"
+      },
+      {
+        "name": "Museum of the Future",
+        "image": "./assets/images/banner2.webp"
+      },
+      {
+        "name": "Marina Dhow Cruise Dinner",
+        "image": "./assets/images/banner3.webp"
+      },
+      {
+        "name": "Dubai Miracle Garden & Butterfly Garden",
+        "image": "./assets/images/activity-banner.webp"
+      },
+      {
+        "name": "Atlantis Aquaventure Waterpark",
+        "image": "./assets/images/res-activity-banner.webp"
+      }
     ],
     "id": 1,
     "created_at": "2026-08-08T08:18:59.500Z"

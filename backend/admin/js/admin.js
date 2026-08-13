@@ -215,18 +215,68 @@ async function loadDestinations() {
 }
 
 function openDestinationForm(d = null) {
-  const placesText = Array.isArray(d?.places_to_visit) ? d.places_to_visit.join('\n') : '';
-  openModal(d ? 'Edit Destination' : 'Add Destination', `
+  let initialPlaces = [];
+  if (Array.isArray(d?.places_to_visit)) {
+    initialPlaces = d.places_to_visit.map(p => typeof p === 'string' ? { name: p, image: '' } : p);
+  }
+
+  const modalHtml = `
     <div class="form-group"><label>Destination / Country Name *</label><input id="d-name" value="${d?.destination_name||''}" placeholder="e.g. Dubai"></div>
     <div class="form-group"><label>Card Image</label>${createImageUpload('d-card', d?.card_image||'')}</div>
     <div class="form-group"><label>Inner/Banner Image</label>${createImageUpload('d-inner', d?.inner_image||'')}</div>
     <div class="form-group"><label>Description</label><textarea id="d-desc" placeholder="Short destination description">${d?.description||''}</textarea></div>
-    <div class="form-group"><label>Places & Attractions to Visit (1 place per line)</label><textarea id="d-places" style="height:100px" placeholder="e.g. Burj Khalifa Observatory&#10;Desert Safari with BBQ&#10;Dubai Miracle Garden">${placesText}</textarea></div>
-    <div class="modal-actions">
+    
+    <!-- Places to Visit Section -->
+    <div class="form-group" style="margin-top:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <label style="font-weight:700;margin:0">Places & Attractions to Visit (Name & Image)</label>
+        <button type="button" class="btn-sm btn-edit" onclick="addPlaceRow()"><i class="fas fa-plus"></i> Add Place</button>
+      </div>
+      <div id="places-rows-container" style="display:flex;flex-direction:column;gap:12px;max-height:220px;overflow-y:auto;padding-right:4px">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:20px">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-primary" onclick="saveDestination(${d?.destination_id||'null'})"><i class="fas fa-save"></i> ${d ? 'Update' : 'Save'}</button>
-    </div>`);
+    </div>`;
+
+  openModal(d ? 'Edit Destination' : 'Add Destination', modalHtml);
+
+  window._placesData = initialPlaces.length > 0 ? [...initialPlaces] : [{ name: '', image: '' }];
+  renderPlacesRows();
 }
+
+window.renderPlacesRows = function() {
+  const container = document.getElementById('places-rows-container');
+  if (!container) return;
+  if (!window._placesData || window._placesData.length === 0) {
+    window._placesData = [{ name: '', image: '' }];
+  }
+
+  container.innerHTML = window._placesData.map((p, idx) => `
+    <div class="place-row-item" style="background:#f8fafc;border:1px solid #e2e8f0;padding:10px;border-radius:10px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" placeholder="Place Name (e.g. Burj Khalifa)" value="${p.name||''}" onchange="window._placesData[${idx}].name=this.value.trim()" style="flex:1">
+        <button type="button" class="btn-sm btn-delete" onclick="removePlaceRow(${idx})" title="Remove Place"><i class="fas fa-trash"></i></button>
+      </div>
+      <div>
+        ${createImageUpload('place-img-' + idx, p.image||'')}
+      </div>
+    </div>
+  `).join('');
+};
+
+window.addPlaceRow = function() {
+  window._placesData.push({ name: '', image: '' });
+  renderPlacesRows();
+};
+
+window.removePlaceRow = function(idx) {
+  window._placesData.splice(idx, 1);
+  renderPlacesRows();
+};
 
 window.editDestination = function(id) {
   const d = destinations.find(x => x.destination_id === id);
@@ -234,8 +284,18 @@ window.editDestination = function(id) {
 };
 
 window.saveDestination = async function(id) {
-  const rawPlaces = document.getElementById('d-places').value;
-  const placesArr = rawPlaces.split('\n').map(s => s.trim()).filter(Boolean);
+  const placesArr = [];
+  if (window._placesData && window._placesData.length > 0) {
+    window._placesData.forEach((p, idx) => {
+      const nameVal = p.name || '';
+      const imgEl = document.getElementById('img-url-place-img-' + idx);
+      const imgVal = imgEl ? imgEl.value : p.image;
+      if (nameVal) {
+        placesArr.push({ name: nameVal, image: imgVal || '' });
+      }
+    });
+  }
+
   const body = {
     destination_name: document.getElementById('d-name').value.trim(),
     card_image: document.getElementById('img-url-d-card').value,

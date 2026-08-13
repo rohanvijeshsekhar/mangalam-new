@@ -276,20 +276,52 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    availablePlaces = places;
+    // Normalize places into { name, image } objects
+    let normalizedPlaces = places.map((p, i) => {
+      if (typeof p === 'string') {
+        const defaultImgs = [
+          './assets/images/activity-banner.webp',
+          './assets/images/res-activity-banner.webp',
+          './assets/images/banner1.webp',
+          './assets/images/banner2.webp',
+          './assets/images/banner3.webp'
+        ];
+        return { name: p, image: defaultImgs[i % defaultImgs.length] };
+      } else if (typeof p === 'object' && p !== null) {
+        return {
+          name: p.name || p.title || p.attraction_name || 'Popular Place',
+          image: p.image || p.card_image || p.inner_image || './assets/images/activity-banner.webp'
+        };
+      }
+      return { name: String(p), image: './assets/images/activity-banner.webp' };
+    });
+
+    availablePlaces = normalizedPlaces;
     placesLoading.classList.add('hidden');
     placesGrid.classList.remove('hidden');
 
-    placesGrid.innerHTML = places.map((place, idx) => `
-      <label class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-red-500 bg-white hover:bg-slate-50 cursor-pointer transition-all">
-        <input type="checkbox" value="${place}" class="place-checkbox w-5 h-5 text-red-500 rounded focus:ring-red-500 border-slate-300 cursor-pointer" ${selectedPlaces.includes(place) || idx < 3 ? 'checked' : ''}>
-        <span class="font-medium text-slate-800 text-sm">${place}</span>
-      </label>
-    `).join('');
+    placesGrid.innerHTML = normalizedPlaces.map((place, idx) => {
+      const imgUrl = MT.resolveImg(place.image) || './assets/images/activity-banner.webp';
+      const placeName = place.name;
+      const isChecked = selectedPlaces.includes(placeName) || (selectedPlaces.length === 0 && idx < 3);
+
+      return `
+        <label class="relative flex flex-col sm:flex-row items-center gap-4 p-3 sm:p-4 rounded-2xl border-2 border-slate-200 hover:border-red-500 bg-white hover:bg-slate-50 cursor-pointer transition-all shadow-sm group">
+          <img src="${imgUrl}" alt="${placeName}" class="w-full sm:w-24 h-28 sm:h-20 object-cover rounded-xl flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+          <div class="flex-1 w-full flex items-center justify-between gap-3">
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm sm:text-base leading-snug">${placeName}</h4>
+              <span class="text-xs text-slate-500 mt-1 block"><i class="fas fa-map-pin text-red-500 mr-1"></i> Popular Attraction</span>
+            </div>
+            <input type="checkbox" value="${placeName}" class="place-checkbox w-6 h-6 text-red-500 rounded-lg focus:ring-red-500 border-slate-300 cursor-pointer flex-shrink-0" ${isChecked ? 'checked' : ''}>
+          </div>
+        </label>
+      `;
+    }).join('');
 
     // Pre-populate selected
     if (selectedPlaces.length === 0) {
-      selectedPlaces = places.slice(0, 3);
+      selectedPlaces = normalizedPlaces.slice(0, 3).map(p => p.name);
     }
 
     document.querySelectorAll('.place-checkbox').forEach(cb => {
