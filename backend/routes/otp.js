@@ -24,11 +24,14 @@ router.post('/send', async (req, res) => {
 
   otpStore.set(cleanPhone, { otp, expiresAt });
 
-  // Read Sangamam SMS credentials from .env
   const apiKey     = process.env.SANGAMAM_API_KEY;
-  const senderId   = process.env.SANGAMAM_SENDER_ID || 'SANGAM';
-  const templateId = process.env.SANGAMAM_TEMPLATE_ID;
-  const gatewayUrl = process.env.SANGAMAM_SMS_URL || 'http://sangamam.net/api/send_sms.php';
+  const senderId   = process.env.SANGAMAM_SENDER_ID || 'MNGLAM';
+  const templateId = process.env.SANGAMAM_TEMPLATE_ID || '1707177917343595479';
+  const entityId   = process.env.SANGAMAM_ENTITY_ID || '1701177044156222476';
+  const gatewayUrl = process.env.SANGAMAM_SMS_URL || 'http://sms.sangamam.in/api/send_sms.php';
+
+  // Exact DLT Approved Wording
+  const msgText = `Mangalam Travel & Tours Your OTP is ${otp} for enquiry form verification. Valid for 10 minutes. Do not share this OTP with anyone. www.mangalamtravel.com`;
 
   console.log(`🔑 OTP generated for ${cleanPhone}: ${otp}`);
 
@@ -37,14 +40,20 @@ router.post('/send', async (req, res) => {
     try {
       const url = new URL(gatewayUrl);
       url.searchParams.append('apikey', apiKey);
+      url.searchParams.append('authkey', apiKey);
       url.searchParams.append('sender', senderId);
       url.searchParams.append('senderid', senderId);
       url.searchParams.append('mobile', cleanPhone);
-      url.searchParams.append('numbers', cleanPhone);
+      url.searchParams.append('mobiles', cleanPhone);
       url.searchParams.append('message', msgText);
       if (templateId) {
         url.searchParams.append('template_id', templateId);
         url.searchParams.append('templateid', templateId);
+        url.searchParams.append('DLT_TE_ID', templateId);
+      }
+      if (entityId) {
+        url.searchParams.append('entity_id', entityId);
+        url.searchParams.append('pe_id', entityId);
       }
 
       const client = url.protocol === 'https:' ? https : http;
