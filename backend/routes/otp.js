@@ -73,8 +73,7 @@ router.post('/send', async (req, res) => {
 
   res.json({
     status: 1,
-    message: 'OTP sent successfully to ' + phone,
-    demo_otp: otp // Return OTP for easy verification fallback
+    message: `OTP sent successfully to ${phone}. Please enter the code received via SMS.`
   });
 });
 

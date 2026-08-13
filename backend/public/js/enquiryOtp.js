@@ -128,10 +128,8 @@
                         otpContainer.classList.remove('hidden');
                         otpContainer.style.display = 'block';
                     }
-                    if (otpInput) otpInput.value = data.demo_otp || '';
-                    const successMsg = data.demo_otp 
-                        ? `OTP sent! (Code: ${data.demo_otp})` 
-                        : (data.message || 'OTP sent to your mobile number.');
+                    if (otpInput) otpInput.value = ''; // Always empty for user to type code from SMS
+                    const successMsg = data.message || 'OTP sent to your mobile number. Please check your SMS.';
                     setStatus(successMsg, 'success');
                     startCooldown(30);
                 } else {
