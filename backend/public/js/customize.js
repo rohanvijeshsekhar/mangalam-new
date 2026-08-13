@@ -574,17 +574,12 @@
 
         container.innerHTML = '<div class="col-span-full text-center py-8"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div></div>';
 
-        fetch(`./action/fetchPlacesPopup.php?id=${destinationId}&search=`)
-            .then(response => response.json())
+        MT.apiGet('/api/attractions')
             .then(data => {
                 container.innerHTML = '';
-                
-                if (data && data.length > 0 && (data[0].place || data[0].activity || data[0].ticket)) {
-                    const place = data[0].place || [];
-                    const activity = data[0].activity || [];
-                    const ticket = data[0].ticket || [];
-
-                    [...place, ...activity, ...ticket].forEach(item => {
+                const items = Array.isArray(data) ? data : [];
+                if (items.length > 0) {
+                    items.forEach(item => {
                         const card = document.createElement('div');
                         card.className = 'customize-experience-card customize-experience-unselected bg-white border-2 border-gray-300 rounded-xl overflow-hidden cursor-pointer hover:border-red-500 transition-all';
                         card.setAttribute('data-id', item.place_id || item.activity_id || item.ticket_id);
@@ -779,21 +774,14 @@
         }
 
         // Submit
-        fetch('./action/submitCustomizeEnquiry.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(submissionData)
-        })
-        .then(response => response.json())
+        MT.apiPost('/api/enquiries', submissionData)
         .then(data => {
-            if (data.success) {
+            if (data && (data.success || data.enquiry_id)) {
                 closePopup();
-                window.location.href = '.thankyou.html';
+                alert('Thank you! Your custom enquiry has been submitted.');
                 return;
             } else {
-                alert(data.message || 'An error occurred. Please try again.');
+                alert(data?.error || 'An error occurred. Please try again.');
                 if (nextBtn) {
                     nextBtn.disabled = false;
                     nextBtn.textContent = 'Submit';

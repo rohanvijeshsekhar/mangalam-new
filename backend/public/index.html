@@ -2747,24 +2747,25 @@
                                         btn.disabled = false;
                                         return;
                                     }
+                                    const apiPayload = {
+                                        destination: 'Other Location',
+                                        destination_name: payload.desired_destination || 'Other Location',
+                                        name: payload.customer_name,
+                                        email: payload.customer_email,
+                                        phone: payload.customer_phone,
+                                        notes: payload.message || '',
+                                        status: 'New'
+                                    };
 
-                                    fetch('/action/submitOtherLocationEnquiry.html', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json'
-                                        },
-                                        credentials: 'same-origin',
-                                        body: JSON.stringify(payload)
-                                    })
-                                        .then(response => response.json())
+                                    MT.apiPost('/api/enquiries', apiPayload)
                                         .then(result => {
-                                            if (result.success) {
+                                            if (result && (result.success || result.enquiry || result.message)) {
                                                 form.reset();
                                                 if (otherLocationOtp) otherLocationOtp.reset();
                                                 closeOtherLocationModal();
-                                                window.location.href = '/thankyou.html';
+                                                alert('Thank you! Your enquiry for ' + (payload.desired_destination || 'other location') + ' has been submitted successfully.');
                                             } else {
-                                                alert(result.message || 'Failed to send enquiry. Please try again.');
+                                                alert(result?.error || 'Failed to send enquiry. Please try again.');
                                             }
                                         })
                                         .catch(error => {

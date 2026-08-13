@@ -1047,8 +1047,7 @@
                 destinationsLoading = true;
                 list.innerHTML = '<div class="mobile-customize-dropdown-empty">Loading destinations...</div>';
 
-                fetch('./action/fetchDestinationPopup.php')
-                    .then(response => response.json())
+                MT.apiGet('/api/destinations')
                     .then(destinations => {
                         if (Array.isArray(destinations) && destinations.length > 0) {
                             renderDestinations(destinations);
@@ -1153,12 +1152,7 @@
                     this.textContent = 'Sending...';
                     this.disabled = true;
 
-                    fetch('./action/submitEnquiryCart.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(cartData)
-                    })
-                        .then(response => response.json())
+                    MT.apiPost('/api/enquiries', { destination: 'Cart Enquiry', destination_name: 'Custom Package Cart', name: 'Cart Customer', notes: JSON.stringify(cartData), status: 'New' })
                         .then(() => {
                             clearCart();
                             alert('Thank you! We will contact you soon.');
