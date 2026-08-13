@@ -36,38 +36,50 @@ router.post('/send', async (req, res) => {
   console.log(`🔑 OTP generated for ${cleanPhone}: ${otp}`);
 
   if (apiKey && gatewayUrl) {
-    // Send SMS via Sangamam FastSMS Gateway
+    // Send SMS via FastSMS Sangamam Online API (POST JSON)
     try {
-      const url = new URL(gatewayUrl);
-      url.searchParams.append('apikey', apiKey);
-      url.searchParams.append('authkey', apiKey);
-      url.searchParams.append('sender', senderId);
-      url.searchParams.append('senderid', senderId);
-      url.searchParams.append('mobile', cleanPhone);
-      url.searchParams.append('mobiles', cleanPhone);
-      url.searchParams.append('message', msgText);
-      if (templateId) {
-        url.searchParams.append('template_id', templateId);
-        url.searchParams.append('templateid', templateId);
-        url.searchParams.append('DLT_TE_ID', templateId);
-      }
-      if (entityId) {
-        url.searchParams.append('entity_id', entityId);
-        url.searchParams.append('pe_id', entityId);
-      }
+      const payload = JSON.stringify({
+        accessToken: apiKey,
+        mobile: cleanPhone,
+        mobiles: cleanPhone,
+        sender: senderId,
+        senderid: senderId,
+        entity_id: entityId,
+        pe_id: entityId,
+        template_id: templateId,
+        DLT_TE_ID: templateId,
+        message: msgText
+      });
 
-      const client = url.protocol === 'https:' ? https : http;
-      client.get(url.toString(), (smsRes) => {
+      const urlObj = new URL(gatewayUrl);
+      const reqOpts = {
+        hostname: urlObj.hostname,
+        port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
+        path: urlObj.pathname + urlObj.search,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload)
+        }
+      };
+
+      const client = urlObj.protocol === 'https:' ? https : http;
+      const smsReq = client.request(reqOpts, (smsRes) => {
         let body = '';
         smsRes.on('data', chunk => body += chunk);
         smsRes.on('end', () => {
-          console.log(`📱 Sangamam SMS response for ${cleanPhone}:`, body);
+          console.log(`📱 FastSMS Sangamam Response for ${cleanPhone}:`, body);
         });
-      }).on('error', err => {
-        console.error('⚠️ Sangamam SMS gateway network error:', err.message);
       });
+
+      smsReq.on('error', err => {
+        console.error('⚠️ FastSMS gateway network error:', err.message);
+      });
+
+      smsReq.write(payload);
+      smsReq.end();
     } catch (e) {
-      console.error('⚠️ Sangamam URL build error:', e.message);
+      console.error('⚠️ FastSMS URL build error:', e.message);
     }
   }
 
