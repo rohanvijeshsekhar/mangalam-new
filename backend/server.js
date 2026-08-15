@@ -37,13 +37,34 @@ app.use('/api/tickets',      require('./routes/tickets'));
 app.use('/api/blogs',        require('./routes/blogs'));
 app.use('/api/testimonials', require('./routes/testimonials'));
 app.use('/api/partners',     require('./routes/partners'));
-app.use('/api/posters',      require('./routes/posters'));
-app.use('/api/enquiries',    require('./routes/enquiries'));
-app.use('/api/enquiry',      require('./routes/enquiries'));
+const enquiriesRouter = require('./routes/enquiries');
+app.use('/api/enquiries',    enquiriesRouter);
+app.use('/api/enquiry',      enquiriesRouter);
 app.use('/api/collections',  require('./routes/collections'));
 app.use('/api/seo',          require('./routes/seo'));
 app.use('/api/otp',          require('./routes/otp'));
 app.use('/api/upload',       require('./routes/upload'));
+
+// ── Action / Form Submission Fallback Handlers ────────────────────────────────
+app.post(['/action/submitCareerEnquiry.html', '/action/submitCareerEnquiry'], enquiriesRouter.uploadResume.single('resume'), (req, res) => {
+  const body = { ...req.body };
+  if (req.file) {
+    body.resume_url = `/uploads/${req.file.filename}`;
+    body.resume = req.file.originalname;
+  }
+  enquiriesRouter.createEnquiryDoc(body, 'Career Application');
+  res.redirect('/thankyou.html');
+});
+
+app.post(['/action/submitContactEnquiry.html', '/action/submitContactEnquiry'], (req, res) => {
+  enquiriesRouter.createEnquiryDoc(req.body, 'Contact Message');
+  res.redirect('/thankyou.html');
+});
+
+app.post(['/action/submitTripEnquiry.html', '/action/submitTripEnquiry'], (req, res) => {
+  enquiriesRouter.createEnquiryDoc(req.body, 'Trip Enquiry');
+  res.redirect('/thankyou.html');
+});
 
 // ── Static Files ────────────────────────────────────────────────────────────
 // Serve uploaded images

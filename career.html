@@ -942,16 +942,88 @@
         </div>
     </header>
     <main class="pt-28 py-12 container mx-auto px-4 max-w-2xl">
-        <h1 class="text-3xl font-bold font-[Quicksand] mb-4 text-center">Join Our Team</h1>
-        <p class="text-gray-600 text-center mb-8">Build your career with one of the most trusted travel agencies.</p>
-        <form action="/action/submitCareerEnquiry.html" method="POST" enctype="multipart/form-data" class="bg-gray-50 p-8 rounded-2xl border border-gray-100 space-y-4">
-            <div><label class="block text-sm font-medium mb-1">Full Name</label><input type="text" name="name" required class="w-full p-3 border rounded-xl"></div>
-            <div><label class="block text-sm font-medium mb-1">Email</label><input type="email" name="email" required class="w-full p-3 border rounded-xl"></div>
-            <div><label class="block text-sm font-medium mb-1">Phone</label><input type="tel" name="phone" required class="w-full p-3 border rounded-xl"></div>
-            <div><label class="block text-sm font-medium mb-1">Position Applied For</label><input type="text" name="position" required class="w-full p-3 border rounded-xl"></div>
-            <div><label class="block text-sm font-medium mb-1">Upload Resume (PDF/Doc)</label><input type="file" name="resume" required class="w-full p-3 border rounded-xl"></div>
-            <button type="submit" class="w-full bg-red-600 text-white font-semibold py-3 rounded-xl">Submit Application</button>
+        <div class="text-center mb-8">
+            <h1 class="text-3xl lg:text-4xl font-bold font-[Quicksand] mb-3 text-gray-900">Join Our Team</h1>
+            <p class="text-gray-600 font-dm-sans max-w-lg mx-auto">Build your career with one of the most trusted and rapidly growing travel agencies in South India.</p>
+        </div>
+
+        <div id="career-alert" class="hidden mb-6 p-4 rounded-xl text-center text-sm font-medium font-dm-sans"></div>
+
+        <form id="career-form" action="/action/submitCareerEnquiry.html" method="POST" enctype="multipart/form-data" class="bg-white p-8 lg:p-10 rounded-3xl border border-gray-200 shadow-xl space-y-5">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1.5 font-dm-sans">Full Name *</label>
+                <input type="text" name="name" id="c-name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-red-500 font-dm-sans transition-colors" placeholder="e.g. Rahul Sharma">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1.5 font-dm-sans">Email Address *</label>
+                    <input type="email" name="email" id="c-email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-red-500 font-dm-sans transition-colors" placeholder="e.g. rahul@example.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1.5 font-dm-sans">Phone Number *</label>
+                    <input type="tel" name="phone" id="c-phone" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-red-500 font-dm-sans transition-colors" placeholder="e.g. +91 98765 43210">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1.5 font-dm-sans">Position Applied For *</label>
+                <input type="text" name="position" id="c-position" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-red-500 font-dm-sans transition-colors" placeholder="e.g. Tour Consultant / Operations Executive / Sales">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1.5 font-dm-sans">Upload Resume (PDF / Doc / Image) *</label>
+                <input type="file" name="resume" id="c-resume" accept=".pdf,.doc,.docx,.jpg,.png" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 focus:outline-none font-dm-sans file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 cursor-pointer">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1.5 font-dm-sans">Additional Notes / Cover Letter (Optional)</label>
+                <textarea name="notes" id="c-notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-red-500 font-dm-sans transition-colors" placeholder="Tell us briefly about your experience..."></textarea>
+            </div>
+            <button type="submit" id="career-submit-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md font-dm-sans uppercase tracking-wider text-sm flex items-center justify-center gap-2">
+                <span>Submit Application</span>
+            </button>
         </form>
     </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/App.js"></script>
+    <script>
+        document.getElementById('career-form')?.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('career-submit-btn');
+            const alertBox = document.getElementById('career-alert');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting Application...';
+
+            try {
+                const formData = new FormData(this);
+                const res = await fetch('/api/enquiry/career', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (res.ok) {
+                    if (alertBox) {
+                        alertBox.className = 'mb-6 p-4 rounded-xl text-center text-sm font-bold font-dm-sans bg-green-50 text-green-700 border border-green-200 block';
+                        alertBox.textContent = '🎉 Application submitted successfully! We will review your profile and contact you soon.';
+                    }
+                    this.reset();
+                    setTimeout(() => {
+                        window.location.href = '/thankyou.html';
+                    }, 1200);
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    if (alertBox) {
+                        alertBox.className = 'mb-6 p-4 rounded-xl text-center text-sm font-bold font-dm-sans bg-red-50 text-red-700 border border-red-200 block';
+                        alertBox.textContent = data.error || 'Failed to submit application. Please check your information and try again.';
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                // Submit form normally as fallback
+                this.submit();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Application';
+            }
+        });
+    </script>
 </body>
 </html>

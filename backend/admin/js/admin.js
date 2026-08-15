@@ -1261,15 +1261,17 @@ function renderEnquiriesTable() {
   tbody.innerHTML = filtered.map(e => {
     const rawType = (e.enquiry_type || (e.package_name ? 'Package' : (e.destination_name ? 'Destination' : 'Custom'))).toLowerCase();
     let typeBadge = '<span class="badge blue">📍 Destination</span>';
-    if (rawType.includes('package') || e.package_name) {
+    if (rawType.includes('career')) {
+      typeBadge = '<span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a">💼 Career</span>';
+    } else if (rawType.includes('package') || e.package_name) {
       typeBadge = '<span class="badge red">📦 Package</span>';
-    } else if (rawType.includes('custom') || rawType.includes('general')) {
-      typeBadge = '<span class="badge green">✨ Custom Trip</span>';
+    } else if (rawType.includes('custom') || rawType.includes('general') || rawType.includes('contact')) {
+      typeBadge = '<span class="badge green">✨ Custom / Msg</span>';
     }
 
     const destOrPkg = e.package_name || e.destination_name || e.destination || 'Custom Itinerary';
-    const durationText = e.start_date && e.end_date ? `${e.start_date} to ${e.end_date} (${e.duration_days||0}D)` : (e.duration_days ? `${e.duration_days} Days (Flexible)` : 'Flexible Dates');
-    const passengersText = `${e.adults||1} Adult${(e.adults||1)>1?'s':''}${e.children>0?`, ${e.children} Child`:''}`;
+    const durationText = e.start_date && e.end_date ? `${e.start_date} to ${e.end_date} (${e.duration_days||0}D)` : (e.duration_days ? `${e.duration_days} Days (Flexible)` : (rawType.includes('career') ? 'Job Application' : 'Flexible Dates'));
+    const passengersText = rawType.includes('career') ? '<span class="badge gray" style="font-size:10px">Applicant</span>' : `${e.adults||1} Adult${(e.adults||1)>1?'s':''}${e.children>0?`, ${e.children} Child`:''}`;
     const cleanPhone = (e.phone || '').replace(/[^0-9]/g, '');
 
     return `
@@ -1329,6 +1331,7 @@ function openEnquiryForm(e = null) {
         <option value="Package" ${e?.enquiry_type === 'Package' || e?.package_name ? 'selected' : ''}>📦 Holiday Package</option>
         <option value="Destination" ${e?.enquiry_type === 'Destination' ? 'selected' : ''}>📍 Destination Trip</option>
         <option value="Custom" ${e?.enquiry_type === 'Custom' ? 'selected' : ''}>✨ Custom Tailormade Tour</option>
+        <option value="Career" ${e?.enquiry_type === 'Career' ? 'selected' : ''}>💼 Career / Job Application</option>
       </select>
     </div>
 
@@ -1439,6 +1442,9 @@ window.viewEnquiryModal = function(id) {
   const cleanPhone = (e.phone || '').replace(/[^0-9]/g, '');
   const destOrPkg = e.package_name || e.destination_name || e.destination || 'Custom Tour';
   const typeText = e.enquiry_type || (e.package_name ? 'Package Enquiry' : 'Destination Enquiry');
+
+  // Convert any URL or uploaded file in notes into a clickable link
+  const formattedNotes = (e.notes || '').replace(/((https?:\/\/|\/uploads\/)[^\s\n\r]+)/g, '<a href="$1" target="_blank" style="color:#2563eb;text-decoration:underline;font-weight:bold"><i class="fas fa-file-download"></i> View / Download Attachment ($1)</a>');
 
   openModal(`Enquiry Details: ${e.name || 'Lead'}`, `
     <div style="font-size:14px;line-height:1.6">

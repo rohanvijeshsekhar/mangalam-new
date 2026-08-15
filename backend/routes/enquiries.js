@@ -3,6 +3,25 @@ const store   = require('../db/store');
 const { verifyToken } = require('./auth');
 const router  = express.Router();
 
+const multer = require('multer');
+const path   = require('path');
+const fs     = require('fs');
+
+const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+const resumeStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
+  filename: (req, file, cb) => {
+    const unique = Date.now() + '-' + Math.round(Math.random() * 1e5);
+    cb(null, 'resume-' + unique + path.extname(file.originalname).toLowerCase());
+  }
+});
+const uploadResume = multer({
+  storage: resumeStorage,
+  limits: { fileSize: 15 * 1024 * 1024 } // 15MB
+});
+
 // Map enquiry store object to standard API schema
 const map = e => ({
   enquiry_id:      e.id,
@@ -48,15 +67,24 @@ function createEnquiryDoc(body, defaultType = 'General') {
   const phone = body.phone || body.customer_phone || body.mobile || body.contact || '';
   const email = body.email || body.customer_email || '';
   const packageName = body.package_name || body.package_title || body.package || '';
-  const destinationName = body.destination_name || body.destination || body.target_location || packageName || '';
-  const resolvedType = body.enquiry_type || (packageName ? 'Package' : (destinationName ? 'Destination' : defaultType));
+  const position = body.position || body.job_title || body.role || '';
+  const destinationName = body.destination_name || body.destination || body.target_location || (position ? `Career: ${position}` : packageName) || (defaultType === 'Career Application' ? 'Career Application' : 'Custom Trip');
+  const resolvedType = body.enquiry_type || (position || defaultType === 'Career Application' ? 'Career Application' : (packageName ? 'Package' : (body.destination_name || body.destination ? 'Destination' : defaultType)));
+
+  let notes = body.notes || body.message || body.special_requests || body.comments || '';
+  if (position && !notes.includes('Position Applied')) {
+    notes = `Position Applied: ${position}\n${notes}`.trim();
+  }
+  if (body.resume_url || body.resume) {
+    notes = `${notes}\nResume: ${body.resume_url || body.resume}`.trim();
+  }
 
   return store.insert('enquiries', {
     enquiry_type: resolvedType,
     package_name: packageName,
     package_id: body.package_id || null,
     destination: body.destination || '',
-    destination_name: destinationName || 'Custom Trip',
+    destination_name: destinationName,
     start_date: body.start_date || body.travel_date || '',
     end_date: body.end_date || '',
     duration_days: Number(body.duration_days || body.duration || body.days) || 0,
@@ -68,21 +96,26 @@ function createEnquiryDoc(body, defaultType = 'General') {
     name,
     email,
     phone,
-    notes: body.notes || body.message || body.special_requests || body.comments || '',
+    notes,
     status: body.status || 'New'
   });
 }
 
 // POST submit new enquiry (Public or Admin)
-router.post('/', (req, res) => {
-  const name = req.body.name || req.body.customer_name || req.body.fullname;
-  const phone = req.body.phone || req.body.customer_phone || req.body.mobile;
+router.post('/', uploadResume.single('resume'), (req, res) => {
+  const body = { ...req.body };
+  if (req.file) {
+    body.resume_url = `/uploads/${req.file.filename}`;
+    body.resume = req.file.originalname;
+  }
+  const name = body.name || body.customer_name || body.fullname;
+  const phone = body.phone || body.customer_phone || body.mobile;
 
   if (!name && !phone) {
     return res.status(400).json({ error: 'Name or phone number is required.' });
   }
 
-  const doc = createEnquiryDoc(req.body);
+  const doc = createEnquiryDoc(body);
   res.status(201).json({ success: true, message: 'Enquiry submitted successfully!', enquiry: map(doc) });
 });
 
@@ -99,8 +132,16 @@ router.post('/cart', (req, res) => {
 });
 
 // POST /career
-router.post('/career', (req, res) => {
-  const doc = createEnquiryDoc(req.body, 'Career Application');
+router.post('/career', uploadResume.single('resume'), (req, res) => {
+  const body = { ...req.body };
+  if (req.file) {
+    body.resume_url = `/uploads/${req.file.filename}`;
+    body.resume = req.file.originalname;
+  }
+  const doc = createEnquiryDoc(body, 'Career Application');
+  if (req.headers['accept']?.includes('text/html') || req.headers['content-type']?.includes('multipart/form-data')) {
+    return res.redirect('/thankyou.html');
+  }
   res.status(201).json({ success: true, message: 'Application submitted successfully!', enquiry: map(doc) });
 });
 
@@ -132,5 +173,8 @@ router.delete('/:id', verifyToken, (req, res) => {
   store.remove('enquiries', req.params.id);
   res.json({ success: true, message: 'Enquiry deleted' });
 });
+
+router.createEnquiryDoc = createEnquiryDoc;
+router.uploadResume = uploadResume;
 
 module.exports = router;
