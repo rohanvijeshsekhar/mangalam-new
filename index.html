@@ -1907,6 +1907,128 @@
                                         
                                 </div>
                             </section>
+
+                            <!-- Testimonials Running Marquee Section -->
+                            <section id="home-testimonials-section" class="py-20 bg-gradient-to-b from-white to-gray-50 overflow-hidden" data-aos="fade-up">
+                                <div class="container mx-auto px-4 mb-10 text-center">
+                                    <span class="inline-block px-4 py-1.5 rounded-full bg-red-50 text-red-600 text-xs font-bold font-dm-sans tracking-wide uppercase mb-3">
+                                        ✨ Real Traveler Stories
+                                    </span>
+                                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 font-[Quicksand] mb-3">
+                                        Loved by Over <span class="text-red-600">50,000+</span> Happy Explorers
+                                    </h2>
+                                    <p class="text-gray-600 font-dm-sans max-w-2xl mx-auto text-sm md:text-base">
+                                        Read genuine reviews from guests who discovered unforgettable worldwide destinations with Mangalam Travel & Tours.
+                                    </p>
+                                </div>
+
+                                <!-- Running Marquee Wrapper (Infinite Continuous Movement with Pause on Hover) -->
+                                <div class="relative w-full overflow-hidden marquee-container py-4">
+                                    <!-- Soft Edge Gradient Fades -->
+                                    <div class="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white via-white/80 to-transparent z-10 pointer-events-none"></div>
+                                    <div class="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white via-white/80 to-transparent z-10 pointer-events-none"></div>
+
+                                    <div id="testimonials-marquee-track" class="marquee-track">
+                                        <!-- Testimonials populated dynamically by JS -->
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Travel Partners Carousel Section (5-6 visible with Left/Right Arrows) -->
+                            <section id="home-partners-section" class="py-16 bg-white border-t border-gray-100" data-aos="fade-up">
+                                <div class="container mx-auto px-4">
+                                    <div class="flex flex-col md:flex-row md:items-end justify-between mb-8">
+                                        <div>
+                                            <span class="inline-block px-3.5 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold font-dm-sans tracking-wide uppercase mb-2">
+                                                ✈️ Global Airline & Hospitality Network
+                                            </span>
+                                            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 font-[Quicksand]">
+                                                Our Trusted Travel Partners
+                                            </h2>
+                                            <p class="text-gray-500 font-dm-sans text-sm mt-1">
+                                                Authorized partner for world-class airlines, luxury hotel chains & global tourism boards.
+                                            </p>
+                                        </div>
+
+                                        <!-- Left & Right Arrow Controls -->
+                                        <div class="flex items-center gap-3 mt-4 md:mt-0">
+                                            <button id="partners-prev-btn" aria-label="Previous Partners" class="w-10 h-10 rounded-full border border-gray-300 bg-white hover:bg-gray-900 hover:text-white hover:border-gray-900 text-gray-700 flex items-center justify-center transition-all shadow-sm focus:outline-none cursor-pointer">
+                                                <i class="fas fa-chevron-left text-sm"></i>
+                                            </button>
+                                            <button id="partners-next-btn" aria-label="Next Partners" class="w-10 h-10 rounded-full border border-gray-300 bg-white hover:bg-gray-900 hover:text-white hover:border-gray-900 text-gray-700 flex items-center justify-center transition-all shadow-sm focus:outline-none cursor-pointer">
+                                                <i class="fas fa-chevron-right text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Partners Carousel Container (5-6 items per view on desktop) -->
+                                    <div id="partners-carousel" class="overflow-x-auto no-scrollbar scroll-smooth flex gap-5 pb-2" style="scrollbar-width: none; -ms-overflow-style: none;">
+                                        <!-- Populated dynamically by JS -->
+                                    </div>
+                                </div>
+                            </section>
+
+                            <style>
+                                @keyframes continuousMarquee {
+                                    0% { transform: translateX(0); }
+                                    100% { transform: translateX(-50%); }
+                                }
+                                .marquee-container {
+                                    width: 100%;
+                                }
+                                .marquee-track {
+                                    display: flex;
+                                    gap: 24px;
+                                    width: max-content;
+                                    animation: continuousMarquee 45s linear infinite;
+                                }
+                                .marquee-container:hover .marquee-track {
+                                    animation-play-state: paused;
+                                }
+                                .testimonial-card {
+                                    width: 380px;
+                                    max-width: 85vw;
+                                    flex-shrink: 0;
+                                    background: #ffffff;
+                                    border-radius: 24px;
+                                    padding: 26px;
+                                    border: 1px solid #f1f5f9;
+                                    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+                                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                                }
+                                .testimonial-card:hover {
+                                    transform: translateY(-4px);
+                                    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.09);
+                                }
+                                .partner-card {
+                                    flex: 0 0 calc(16.666% - 17px);
+                                    min-width: 175px;
+                                    height: 95px;
+                                    background: #f8fafc;
+                                    border: 1px solid #e2e8f0;
+                                    border-radius: 16px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    padding: 14px 20px;
+                                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                                }
+                                .partner-card:hover {
+                                    background: #ffffff;
+                                    border-color: #cbd5e1;
+                                    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+                                    transform: translateY(-3px);
+                                }
+                                @media (max-width: 1200px) {
+                                    .partner-card { flex: 0 0 calc(25% - 15px); min-width: 155px; }
+                                }
+                                @media (max-width: 768px) {
+                                    .partner-card { flex: 0 0 calc(33.333% - 14px); min-width: 140px; }
+                                }
+                                @media (max-width: 480px) {
+                                    .partner-card { flex: 0 0 calc(50% - 10px); min-width: 130px; }
+                                }
+                            </style>
         </main>
 
         <footer class="mb-20 lg:mb-0">

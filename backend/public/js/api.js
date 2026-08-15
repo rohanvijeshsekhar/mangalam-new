@@ -354,6 +354,123 @@ function injectMobileNavStyles() {
   document.head.appendChild(style);
 }
 
+// ─── Home Page Testimonials Running Marquee ──────────────────────────────────
+async function loadHomeTestimonials() {
+  const track = document.getElementById('testimonials-marquee-track');
+  if (!track) return;
+
+  try {
+    let list = await apiGet('/api/testimonials');
+    if (!Array.isArray(list) || !list.length) {
+      list = [
+        { name: 'Arun & Sneha Krishnan', location: 'Dubai Luxury Tour (5N/6D)', feedback: 'Mangalam Tours made our honeymoon to Dubai unforgettable! From the private yacht cruise to the desert safari, everything was planned to perfection.', rating: 5 },
+        { name: 'Dr. Ramesh Nair & Family', location: 'Switzerland & Paris Tour', feedback: 'Exceptional service from the Trivandrum team. All alpine excursions, train passes, and hotel bookings were flawless. Highly recommended!', rating: 5 },
+        { name: 'Ananya Menon', location: 'Bali Tropical Paradise', feedback: 'Booking through Mangalam was the best travel decision! The private pool villa in Ubud and sunrise volcano tour were breathtaking. 10/10 hospitality.', rating: 5 },
+        { name: 'Vishnu & Divya Pillai', location: 'Singapore & Malaysia Tour', feedback: 'We were amazed by the attention to detail. Every day itinerary was smoothly coordinated with private chauffeurs and priority entry passes.', rating: 5 },
+        { name: 'Capt. Joseph Thomas', location: 'Vietnam & Cambodia Discovery', feedback: 'Flawless visa assistance, fantastic local guides, and top-tier 5-star accommodations throughout Hanoi and Siem Reap.', rating: 5 },
+        { name: 'Meera Balakrishnan', location: 'Thailand Island Hopping', feedback: 'Super responsive team! They customized our Phuket and Krabi itinerary within hours and gave us the best price guarantee.', rating: 5 }
+      ];
+    }
+
+    const renderCard = (t) => {
+      const rating = Number(t.rating) || 5;
+      const stars = '★'.repeat(rating) + '☆'.repeat(Math.max(0, 5 - rating));
+      const initials = (t.name || 'Traveler').split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'TT';
+      const colors = ['bg-rose-500', 'bg-blue-600', 'bg-emerald-600', 'bg-amber-500', 'bg-purple-600', 'bg-indigo-600'];
+      const bgCol = colors[Math.abs((t.name || '').charCodeAt(0) || 0) % colors.length];
+
+      return `
+        <div class="testimonial-card flex flex-col justify-between flex-shrink-0">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-amber-400 text-sm tracking-widest">${stars}</div>
+              <div class="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-xs shadow-sm">
+                <i class="fas fa-quote-right"></i>
+              </div>
+            </div>
+            <p class="text-gray-700 font-dm-sans text-sm leading-relaxed mb-5 italic">
+              "${t.feedback || 'Outstanding experience with Mangalam Travel & Tours!'}"
+            </p>
+          </div>
+          <div class="flex items-center gap-3 pt-3 border-t border-gray-100">
+            <div class="w-10 h-10 rounded-full ${bgCol} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
+              ${initials}
+            </div>
+            <div class="overflow-hidden">
+              <h4 class="font-bold text-gray-900 font-dm-sans text-sm truncate">${t.name || 'Happy Traveler'}</h4>
+              <p class="text-gray-500 font-dm-sans text-xs truncate flex items-center gap-1">
+                <i class="fas fa-map-marker-alt text-red-500 text-[10px]"></i> ${t.location || 'Verified Traveler'}
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+    };
+
+    // Duplicate list 3 times so the marquee loop is completely seamless and infinite
+    const itemsHTML = list.map(renderCard).join('');
+    track.innerHTML = itemsHTML + itemsHTML + itemsHTML;
+  } catch (err) {
+    console.warn('[Testimonials] Load error:', err);
+  }
+}
+
+// ─── Home Page Partners Carousel (5-6 visible + Left/Right arrows) ────────────
+async function loadHomePartners() {
+  const container = document.getElementById('partners-carousel');
+  if (!container) return;
+
+  try {
+    let list = await apiGet('/api/partners');
+    if (!Array.isArray(list) || !list.length) {
+      list = [
+        { name: 'Emirates Airlines', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Emirates_logo.svg/320px-Emirates_logo.svg.png' },
+        { name: 'Singapore Airlines', image: 'https://upload.wikimedia.org/wikipedia/en/thumb/6/6b/Singapore_Airlines_Logo_2.svg/320px-Singapore_Airlines_Logo_2.svg.png' },
+        { name: 'Qatar Airways', image: 'https://upload.wikimedia.org/wikipedia/en/thumb/9/9b/Qatar_Airways_Logo.svg/320px-Qatar_Airways_Logo.svg.png' },
+        { name: 'Marriott Bonvoy', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Marriott_Logo.svg/320px-Marriott_Logo.svg.png' },
+        { name: 'Air India', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Air_India_2023.svg/320px-Air_India_2023.svg.png' },
+        { name: 'Etihad Airways', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Etihad_Airways_Logo.svg/320px-Etihad_Airways_Logo.svg.png' },
+        { name: 'Hilton Hotels', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Hilton_Hotels_%26_Resorts_logo.svg/320px-Hilton_Hotels_%26_Resorts_logo.svg.png' },
+        { name: 'Taj Hotels & Resorts', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Taj_Hotels_logo.svg/320px-Taj_Hotels_logo.svg.png' }
+      ];
+    }
+
+    container.innerHTML = list.map(p => {
+      const imgUrl = resolveImg(p.image);
+      return `
+        <div class="partner-card flex-shrink-0" title="${p.name || 'Partner'}">
+          ${imgUrl 
+            ? `<img src="${imgUrl}" alt="${p.name || 'Partner'}" class="max-h-12 max-w-[125px] w-auto object-contain transition-transform duration-300 hover:scale-105" loading="lazy" onerror="this.outerHTML='<span class=\\'font-bold text-gray-700 text-xs text-center font-dm-sans\\'>${p.name || 'Partner'}</span>'">`
+            : `<span class="font-bold text-gray-700 text-xs text-center font-dm-sans">${p.name || 'Partner'}</span>`
+          }
+        </div>
+      `;
+    }).join('');
+
+    // Setup arrow button scroll handlers
+    const prevBtn = document.getElementById('partners-prev-btn');
+    const nextBtn = document.getElementById('partners-next-btn');
+
+    if (prevBtn && !prevBtn._attached) {
+      prevBtn._attached = true;
+      prevBtn.addEventListener('click', () => {
+        const cardWidth = container.querySelector('.partner-card')?.offsetWidth || 180;
+        container.scrollBy({ left: -(cardWidth * 2 + 20), behavior: 'smooth' });
+      });
+    }
+
+    if (nextBtn && !nextBtn._attached) {
+      nextBtn._attached = true;
+      nextBtn.addEventListener('click', () => {
+        const cardWidth = container.querySelector('.partner-card')?.offsetWidth || 180;
+        container.scrollBy({ left: (cardWidth * 2 + 20), behavior: 'smooth' });
+      });
+    }
+  } catch (err) {
+    console.warn('[Partners] Load error:', err);
+  }
+}
+
 // ─── Init common page elements ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   injectMobileNavStyles();
@@ -361,15 +478,21 @@ document.addEventListener('DOMContentLoaded', () => {
   loadNotice();
   loadFooterLinks();
   loadDestinationDropdowns();
+  loadHomeTestimonials();
+  loadHomePartners();
 });
 
 // Also run immediately if DOM is ready
 if (document.readyState !== 'loading') {
   injectMobileNavStyles();
+  loadHomeTestimonials();
+  loadHomePartners();
 }
 
 // Export for use in page scripts
 window.MT = {
   apiGet, apiPost, resolveImg, showSkeleton, showError,
-  fmtPrice, truncate, slugify, qParam
+  fmtPrice, truncate, slugify, qParam,
+  loadHomeTestimonials, loadHomePartners
 };
+

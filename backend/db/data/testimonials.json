@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "id": 1,
+    "name": "Arun & Sneha Krishnan",
+    "location": "Dubai Luxury Extravaganza (5N/6D)",
+    "feedback": "Mangalam Tours made our honeymoon to Dubai unforgettable! From the private luxury yacht marina cruise to the helicopter tour and desert safari, everything was planned to absolute perfection.",
+    "rating": 5,
+    "created_at": "2026-08-10T10:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Dr. Ramesh Nair & Family",
+    "location": "Switzerland & Paris Family Tour",
+    "feedback": "Exceptional service from the Trivandrum team. All train passes, alpine excursions, and hotel bookings were flawless. Highly recommended for international family vacations!",
+    "rating": 5,
+    "created_at": "2026-08-11T12:30:00.000Z"
+  },
+  {
+    "id": 3,
+    "name": "Ananya Menon",
+    "location": "Bali Tropical Paradise",
+    "feedback": "Booking through Mangalam was the best travel decision! The private pool villa in Ubud, sunrise volcano tour, and airport transfers were seamless. 10/10 hospitality.",
+    "rating": 5,
+    "created_at": "2026-08-12T14:15:00.000Z"
+  },
+  {
+    "id": 4,
+    "name": "Vishnu & Divya Pillai",
+    "location": "Singapore & Malaysia Highlights",
+    "feedback": "We were amazed by the attention to detail. Every day itinerary was smoothly coordinated with private chauffeurs and priority entry tickets to Universal Studios.",
+    "rating": 5,
+    "created_at": "2026-08-13T09:45:00.000Z"
+  },
+  {
+    "id": 5,
+    "name": "Capt. Joseph Thomas",
+    "location": "Vietnam & Cambodia Cultural Discovery",
+    "feedback": "Flawless visa assistance, fantastic local guides, and top-tier 5-star accommodations throughout Hanoi and Siem Reap. Mangalam is truly the gold standard in travel!",
+    "rating": 5,
+    "created_at": "2026-08-14T16:20:00.000Z"
+  },
+  {
+    "id": 6,
+    "name": "Meera Balakrishnan",
+    "location": "Thailand Island Hopping",
+    "feedback": "Super responsive team! They customized our Phuket and Krabi itinerary within hours and gave us the best price guarantee. Will always choose Mangalam Tours!",
+    "rating": 5,
+    "created_at": "2026-08-15T07:10:00.000Z"
+  }
+]

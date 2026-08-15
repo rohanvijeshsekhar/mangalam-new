@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "id": 1,
+    "name": "Emirates Airlines",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Emirates_logo.svg/320px-Emirates_logo.svg.png",
+    "created_at": "2026-08-10T10:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Singapore Airlines",
+    "image": "https://upload.wikimedia.org/wikipedia/en/thumb/6/6b/Singapore_Airlines_Logo_2.svg/320px-Singapore_Airlines_Logo_2.svg.png",
+    "created_at": "2026-08-11T11:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "name": "Qatar Airways",
+    "image": "https://upload.wikimedia.org/wikipedia/en/thumb/9/9b/Qatar_Airways_Logo.svg/320px-Qatar_Airways_Logo.svg.png",
+    "created_at": "2026-08-12T12:00:00.000Z"
+  },
+  {
+    "id": 4,
+    "name": "Marriott Bonvoy",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Marriott_Logo.svg/320px-Marriott_Logo.svg.png",
+    "created_at": "2026-08-13T13:00:00.000Z"
+  },
+  {
+    "id": 5,
+    "name": "Air India",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Air_India_2023.svg/320px-Air_India_2023.svg.png",
+    "created_at": "2026-08-14T14:00:00.000Z"
+  },
+  {
+    "id": 6,
+    "name": "Etihad Airways",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Etihad_Airways_Logo.svg/320px-Etihad_Airways_Logo.svg.png",
+    "created_at": "2026-08-14T15:00:00.000Z"
+  },
+  {
+    "id": 7,
+    "name": "Hilton Hotels",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Hilton_Hotels_%26_Resorts_logo.svg/320px-Hilton_Hotels_%26_Resorts_logo.svg.png",
+    "created_at": "2026-08-15T08:00:00.000Z"
+  },
+  {
+    "id": 8,
+    "name": "Taj Hotels & Resorts",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Taj_Hotels_logo.svg/320px-Taj_Hotels_logo.svg.png",
+    "created_at": "2026-08-15T09:00:00.000Z"
+  }
+]
