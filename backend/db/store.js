@@ -1,91 +1,134 @@
 /**
- * db/store.js — Zero-dependency JSON file database
- * No native compilation. Stores data as flat JSON files.
+ * db/store.js — Asynchronous MySQL Persistence Store for Mangalam Travel & Tours
+ * Replaces JSON flat files with Hostinger MySQL Database queries.
  */
-const fs   = require('fs');
-const path = require('path');
-const bcrypt = require('bcryptjs');
+const { query } = require('./mysql');
 
-const DATA_DIR = path.join(__dirname, 'data');
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+// JSON columns that require serialization when saving and parsing when fetching
+const JSON_COLUMNS = {
+  destinations: ['places_to_visit'],
+  packages: ['banner_images'],
+  collections: ['package_ids'],
+  enquiries: ['children_ages', 'places_to_visit']
+};
 
-const COLLECTIONS = ['destinations', 'packages', 'attractions', 'tickets', 'blogs', 'testimonials', 'partners', 'users', 'collections', 'posters', 'enquiries', 'seo'];
+function formatFromDb(table, row) {
+  if (!row) return null;
+  const copy = { ...row };
+  const jsonCols = JSON_COLUMNS[table] || [];
 
-// Initialize empty collection files if they don't exist
-COLLECTIONS.forEach(col => {
-  const fp = path.join(DATA_DIR, `${col}.json`);
-  if (!fs.existsSync(fp)) fs.writeFileSync(fp, '[]', 'utf-8');
-});
-
-// Seed default admin user
-const usersPath = path.join(DATA_DIR, 'users.json');
-let users = [];
-try { users = JSON.parse(fs.readFileSync(usersPath, 'utf-8')); } catch { users = []; }
-
-const defaultPass = process.env.ADMIN_PASS || 'mangalam@2024';
-const hash = bcrypt.hashSync(defaultPass, 10);
-
-const adminUser = users.find(u => u.username === 'admin');
-if (!adminUser) {
-  users.push({ id: 1, username: 'admin', password_hash: hash, created_at: new Date().toISOString() });
-  fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
-  console.log('✅ Default admin user created: admin / ' + defaultPass);
-} else {
-  // Sync password hash to ensure login credentials match
-  adminUser.password_hash = hash;
-  fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
+  for (const col of jsonCols) {
+    if (copy[col] !== undefined && copy[col] !== null) {
+      if (typeof copy[col] === 'string') {
+        try {
+          copy[col] = JSON.parse(copy[col]);
+        } catch {
+          copy[col] = [];
+        }
+      }
+    }
+  }
+  return copy;
 }
 
-// ── Core helpers ──────────────────────────────────────────────────────────────
-function read(col) {
-  const fp = path.join(DATA_DIR, `${col}.json`);
-  if (!fs.existsSync(fp)) return [];
-  try { return JSON.parse(fs.readFileSync(fp, 'utf-8')); } catch { return []; }
-}
-function write(col, data) {
-  fs.writeFileSync(path.join(DATA_DIR, `${col}.json`), JSON.stringify(data, null, 2));
-}
-function nextId(arr) {
-  return arr.length === 0 ? 1 : Math.max(...arr.map(x => x.id || 0)) + 1;
+function formatForDb(table, doc) {
+  const clean = { ...doc };
+  delete clean.id; // Don't overwrite auto-increment primary key on insert/update
+  const jsonCols = JSON_COLUMNS[table] || [];
+
+  for (const col of jsonCols) {
+    if (clean[col] !== undefined && clean[col] !== null) {
+      if (typeof clean[col] !== 'string') {
+        clean[col] = JSON.stringify(clean[col]);
+      }
+    }
+  }
+  return clean;
 }
 
-// ── Store API ─────────────────────────────────────────────────────────────────
 const store = {
-  getAll(col, filter = null) {
-    const all = read(col);
-    if (!filter) return all;
-    return all.filter(filter);
+  /**
+   * Fetch all records from a table
+   * @param {string} table
+   * @param {string} [whereSql] e.g. "WHERE destination_id = ? AND type = ?"
+   * @param {Array} [params]
+   * @param {string} [orderBy] e.g. "ORDER BY id DESC"
+   */
+  async getAll(table, whereSql = '', params = [], orderBy = 'ORDER BY id DESC') {
+    const sql = `SELECT * FROM \`${table}\` ${whereSql} ${orderBy}`;
+    const rows = await query(sql, params);
+    return rows.map(r => formatFromDb(table, r));
   },
 
-  getOne(col, pred) {
-    return read(col).find(pred) || null;
+  /**
+   * Fetch a single record by primary key id
+   */
+  async getById(table, id) {
+    const rows = await query(`SELECT * FROM \`${table}\` WHERE id = ? LIMIT 1`, [Number(id)]);
+    if (!rows || rows.length === 0) return null;
+    return formatFromDb(table, rows[0]);
   },
 
-  insert(col, doc) {
-    const all = read(col);
-    const newDoc = { ...doc, id: nextId(all), created_at: new Date().toISOString() };
-    all.unshift(newDoc); // newest first
-    write(col, all);
-    return newDoc;
+  /**
+   * Fetch a single record by custom WHERE clause
+   */
+  async getOne(table, whereSql = '', params = []) {
+    const sql = `SELECT * FROM \`${table}\` ${whereSql} LIMIT 1`;
+    const rows = await query(sql, params);
+    if (!rows || rows.length === 0) return null;
+    return formatFromDb(table, rows[0]);
   },
 
-  update(col, id, updates) {
-    const all = read(col);
-    const idx = all.findIndex(x => x.id === Number(id));
-    if (idx === -1) return null;
-    const clean = Object.fromEntries(Object.entries(updates).filter(([, v]) => v !== undefined && v !== null));
-    all[idx] = { ...all[idx], ...clean };
-    write(col, all);
-    return all[idx];
+  /**
+   * Insert a new record into table and return the inserted doc
+   */
+  async insert(table, doc) {
+    const data = formatForDb(table, doc);
+    const keys = Object.keys(data).filter(k => data[k] !== undefined);
+    const values = keys.map(k => data[k]);
+    const placeholders = keys.map(() => '?').join(', ');
+    const columns = keys.map(k => `\`${k}\``).join(', ');
+
+    const sql = `INSERT INTO \`${table}\` (${columns}) VALUES (${placeholders})`;
+    const result = await query(sql, values);
+    const insertedId = result.insertId;
+
+    return await this.getById(table, insertedId);
   },
 
-  remove(col, id) {
-    const all = read(col).filter(x => x.id !== Number(id));
-    write(col, all);
+  /**
+   * Update an existing record by id and return the updated doc
+   */
+  async update(table, id, updates) {
+    const data = formatForDb(table, updates);
+    const keys = Object.keys(data).filter(k => data[k] !== undefined);
+    if (keys.length === 0) return await this.getById(table, id);
+
+    const setClauses = keys.map(k => `\`${k}\` = ?`).join(', ');
+    const values = keys.map(k => data[k]);
+    values.push(Number(id));
+
+    const sql = `UPDATE \`${table}\` SET ${setClauses} WHERE id = ?`;
+    await query(sql, values);
+
+    return await this.getById(table, id);
   },
 
-  count(col) {
-    return read(col).length;
+  /**
+   * Delete a record by id
+   */
+  async remove(table, id) {
+    await query(`DELETE FROM \`${table}\` WHERE id = ?`, [Number(id)]);
+    return true;
+  },
+
+  /**
+   * Count records in table
+   */
+  async count(table, whereSql = '', params = []) {
+    const sql = `SELECT COUNT(*) as total FROM \`${table}\` ${whereSql}`;
+    const rows = await query(sql, params);
+    return rows && rows[0] ? Number(rows[0].total) : 0;
   }
 };
 

@@ -2,7 +2,7 @@ const express = require('express');
 const store   = require('../db/store');
 const { verifyToken } = require('./auth');
 const router  = express.Router();
-const slugify = t => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+const slugify = t => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
 function parseItineraryDays(raw) {
   if (!raw) return [];
@@ -71,9 +71,9 @@ const map = p => ({
   card_image:    p.card_image || '',
   banner_image:  p.banner_image || p.inner_image || p.card_image || '',
   banner_images: parseBannerImages(p),
-  amount:        p.amount || 0,
-  nights:        p.nights || 0,
-  days:          p.days || 0,
+  amount:        Number(p.amount) || 0,
+  nights:        Number(p.nights) || 0,
+  days:          Number(p.days) || 0,
   destination_id:p.destination_id || null,
   type:          p.type || 'package',
   overview:      p.overview || '',
@@ -88,77 +88,111 @@ const map = p => ({
   created_at:    p.created_at
 });
 
-router.get('/', (req, res) => {
-  let items = store.getAll('packages');
-  if (req.query.destination_id) items = items.filter(p => String(p.destination_id) === String(req.query.destination_id));
-  if (req.query.type)           items = items.filter(p => p.type === req.query.type);
-  res.json(items.map(map));
+router.get('/', async (req, res) => {
+  try {
+    let whereClauses = [];
+    let params = [];
+
+    if (req.query.destination_id) {
+      whereClauses.push('destination_id = ?');
+      params.push(req.query.destination_id);
+    }
+    if (req.query.type) {
+      whereClauses.push('type = ?');
+      params.push(req.query.type);
+    }
+
+    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+    const items = await store.getAll('packages', whereSql, params);
+    res.json(items.map(map));
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to fetch packages' });
+  }
 });
 
-router.get('/:id', (req, res) => {
-  const p = store.getOne('packages', x => x.id === Number(req.params.id) || x.slug_url === req.params.id);
-  if (!p) return res.status(404).json({ error: 'Not found' });
-  res.json(map(p));
+router.get('/:id', async (req, res) => {
+  try {
+    const isNum = !isNaN(Number(req.params.id));
+    const p = isNum
+      ? await store.getById('packages', req.params.id)
+      : await store.getOne('packages', 'WHERE slug_url = ?', [req.params.id]);
+    if (!p) return res.status(404).json({ error: 'Not found' });
+    res.json(map(p));
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to fetch package' });
+  }
 });
 
-router.post('/', verifyToken, (req, res) => {
-  const { package_name, footer_title, card_image, banner_image, banner_images, amount, nights, days, destination_id, type, overview, itinerary, inclusions, exclusions, terms, hotel_type, activities_count, transfers } = req.body;
-  if (!package_name) return res.status(400).json({ error: 'package_name is required' });
-  const doc = store.insert('packages', { 
-    package_name, 
-    footer_title: footer_title || '',
-    slug_url: slugify(package_name), 
-    card_image: card_image||'', 
-    banner_image: banner_image||'', 
-    banner_images: banner_images||[], 
-    amount: Number(amount)||0, 
-    nights: Number(nights)||0, 
-    days: Number(days)||0, 
-    destination_id: destination_id||null, 
-    type: type||'package', 
-    overview: overview||'', 
-    itinerary: itinerary||'', 
-    inclusions: inclusions||'', 
-    exclusions: exclusions||'', 
-    terms: terms||'', 
-    hotel_type: hotel_type||'4 Star Hotel', 
-    activities_count: activities_count||'5 Included', 
-    transfers: transfers||'Included' 
-  });
-  res.status(201).json(map(doc));
+router.post('/', verifyToken, async (req, res) => {
+  try {
+    const { package_name, footer_title, card_image, banner_image, banner_images, amount, nights, days, destination_id, type, overview, itinerary, inclusions, exclusions, terms, hotel_type, activities_count, transfers } = req.body;
+    if (!package_name) return res.status(400).json({ error: 'package_name is required' });
+    const doc = await store.insert('packages', { 
+      package_name, 
+      footer_title: footer_title || '',
+      slug_url: slugify(package_name), 
+      card_image: card_image||'', 
+      banner_image: banner_image||'', 
+      banner_images: banner_images||[], 
+      amount: Number(amount)||0, 
+      nights: Number(nights)||0, 
+      days: Number(days)||0, 
+      destination_id: destination_id||null, 
+      type: type||'package', 
+      overview: overview||'', 
+      itinerary: itinerary||'', 
+      inclusions: inclusions||'', 
+      exclusions: exclusions||'', 
+      terms: terms||'', 
+      hotel_type: hotel_type||'4 Star Hotel', 
+      activities_count: activities_count||'5 Included', 
+      transfers: transfers||'Included' 
+    });
+    res.status(201).json(map(doc));
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to create package' });
+  }
 });
 
-router.put('/:id', verifyToken, (req, res) => {
-  const { package_name, footer_title, card_image, banner_image, banner_images, amount, nights, days, destination_id, type, overview, itinerary, inclusions, exclusions, terms, hotel_type, activities_count, transfers } = req.body;
-  const updates = { 
-    package_name, 
-    footer_title: footer_title !== undefined ? footer_title : '',
-    card_image, 
-    banner_image, 
-    banner_images, 
-    amount: amount !== undefined ? Number(amount) : undefined, 
-    nights: nights !== undefined ? Number(nights) : undefined, 
-    days: days !== undefined ? Number(days) : undefined, 
-    destination_id, 
-    type, 
-    overview, 
-    itinerary, 
-    inclusions, 
-    exclusions, 
-    terms, 
-    hotel_type, 
-    activities_count, 
-    transfers 
-  };
-  if (package_name) updates.slug_url = slugify(package_name);
-  const doc = store.update('packages', req.params.id, updates);
-  if (!doc) return res.status(404).json({ error: 'Not found' });
-  res.json({ message: 'Updated', ...map(doc) });
+router.put('/:id', verifyToken, async (req, res) => {
+  try {
+    const { package_name, footer_title, card_image, banner_image, banner_images, amount, nights, days, destination_id, type, overview, itinerary, inclusions, exclusions, terms, hotel_type, activities_count, transfers } = req.body;
+    const updates = { 
+      package_name, 
+      footer_title: footer_title !== undefined ? footer_title : '',
+      card_image, 
+      banner_image, 
+      banner_images, 
+      amount: amount !== undefined ? Number(amount) : undefined, 
+      nights: nights !== undefined ? Number(nights) : undefined, 
+      days: days !== undefined ? Number(days) : undefined, 
+      destination_id, 
+      type, 
+      overview, 
+      itinerary, 
+      inclusions, 
+      exclusions, 
+      terms, 
+      hotel_type, 
+      activities_count, 
+      transfers 
+    };
+    if (package_name) updates.slug_url = slugify(package_name);
+    const doc = await store.update('packages', req.params.id, updates);
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+    res.json({ message: 'Updated', ...map(doc) });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to update package' });
+  }
 });
 
-router.delete('/:id', verifyToken, (req, res) => {
-  store.remove('packages', req.params.id);
-  res.json({ message: 'Deleted' });
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    await store.remove('packages', req.params.id);
+    res.json({ message: 'Deleted' });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to delete package' });
+  }
 });
 
 module.exports = router;

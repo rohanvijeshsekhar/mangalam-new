@@ -2,7 +2,7 @@ const express = require('express');
 const store   = require('../db/store');
 const { verifyToken } = require('./auth');
 const router  = express.Router();
-const slugify = t => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+const slugify = t => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
 const map = b => {
   const plainText = b.content ? b.content.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim() : '';
@@ -23,48 +23,72 @@ const map = b => {
   };
 };
 
-router.get('/', (req, res) => {
-  const blogs = store.getAll('blogs').map(map);
-  res.json(blogs);
-});
-
-router.get('/:id', (req, res) => {
-  const param = req.params.id;
-  const numId = Number(param);
-  const b = store.getOne('blogs', x => (numId && x.id === numId) || x.slug_url === param || x.slug === param);
-  if (!b) return res.status(404).json({ error: 'Not found' });
-  res.json(map(b));
-});
-
-router.post('/', verifyToken, (req, res) => {
-  const { title, card_image, banner_image, date, content, author, category, description } = req.body;
-  if (!title) return res.status(400).json({ error: 'title is required' });
-  const doc = store.insert('blogs', {
-    title,
-    slug_url: slugify(title),
-    card_image: card_image || '',
-    banner_image: banner_image || card_image || '',
-    date: date || new Date().toISOString().split('T')[0],
-    content: content || '',
-    author: author || 'Mangalam Editorial',
-    category: category || 'Travel Guide',
-    description: description || ''
-  });
-  res.status(201).json(map(doc));
-});
-
-router.put('/:id', verifyToken, (req, res) => {
-  const { title, card_image, banner_image, date, content, author, category, description } = req.body;
-  const updates = { card_image, banner_image, date, content, author, category, description };
-  if (title) {
-    updates.title = title;
-    updates.slug_url = slugify(title);
+router.get('/', async (req, res) => {
+  try {
+    const items = await store.getAll('blogs');
+    res.json(items.map(map));
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to fetch blogs' });
   }
-  const doc = store.update('blogs', req.params.id, updates);
-  if (!doc) return res.status(404).json({ error: 'Not found' });
-  res.json({ message: 'Updated', ...map(doc) });
 });
 
-router.delete('/:id', verifyToken, (req, res) => { store.remove('blogs', req.params.id); res.json({ message: 'Deleted' }); });
+router.get('/:id', async (req, res) => {
+  try {
+    const isNum = !isNaN(Number(req.params.id));
+    const b = isNum
+      ? await store.getById('blogs', req.params.id)
+      : await store.getOne('blogs', 'WHERE slug_url = ?', [req.params.id]);
+    if (!b) return res.status(404).json({ error: 'Not found' });
+    res.json(map(b));
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to fetch blog' });
+  }
+});
+
+router.post('/', verifyToken, async (req, res) => {
+  try {
+    const { title, card_image, banner_image, date, content, author, category, description } = req.body;
+    if (!title) return res.status(400).json({ error: 'title is required' });
+    const doc = await store.insert('blogs', {
+      title,
+      slug_url: slugify(title),
+      card_image: card_image || '',
+      banner_image: banner_image || card_image || '',
+      date: date || new Date().toISOString().split('T')[0],
+      content: content || '',
+      author: author || 'Mangalam Editorial',
+      category: category || 'Travel Guide',
+      description: description || ''
+    });
+    res.status(201).json(map(doc));
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to create blog' });
+  }
+});
+
+router.put('/:id', verifyToken, async (req, res) => {
+  try {
+    const { title, card_image, banner_image, date, content, author, category, description } = req.body;
+    const updates = { card_image, banner_image, date, content, author, category, description };
+    if (title) {
+      updates.title = title;
+      updates.slug_url = slugify(title);
+    }
+    const doc = await store.update('blogs', req.params.id, updates);
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+    res.json({ message: 'Updated', ...map(doc) });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to update blog' });
+  }
+});
+
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    await store.remove('blogs', req.params.id);
+    res.json({ message: 'Deleted' });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to delete blog' });
+  }
+});
 
 module.exports = router;

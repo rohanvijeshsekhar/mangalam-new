@@ -22,7 +22,6 @@ const uploadResume = multer({
   limits: { fileSize: 15 * 1024 * 1024 } // 15MB
 });
 
-// Map enquiry store object to standard API schema
 const map = e => ({
   enquiry_id:      e.id,
   enquiry_type:    e.enquiry_type || (e.package_name ? 'Package' : (e.destination_name || e.destination ? 'Destination' : 'General')),
@@ -32,12 +31,12 @@ const map = e => ({
   destination_name:e.destination_name || e.destination || e.package_name || 'Custom Trip',
   start_date:      e.start_date || '',
   end_date:        e.end_date || '',
-  duration_days:   e.duration_days || 0,
-  adults:          e.adults || 1,
-  children:        e.children || 0,
-  children_ages:   e.children_ages || [],
+  duration_days:   Number(e.duration_days) || 0,
+  adults:          Number(e.adults) || 1,
+  children:        Number(e.children) || 0,
+  children_ages:   Array.isArray(e.children_ages) ? e.children_ages : [],
   hotel_rating:    e.hotel_rating || '3-Star',
-  places_to_visit: e.places_to_visit || [],
+  places_to_visit: Array.isArray(e.places_to_visit) ? e.places_to_visit : [],
   name:            e.name || '',
   email:           e.email || '',
   phone:           e.phone || '',
@@ -47,22 +46,28 @@ const map = e => ({
 });
 
 // GET all enquiries (Admin)
-router.get('/', (req, res) => {
-  const all = store.getAll('enquiries').map(map);
-  // Return newest first
-  all.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-  res.json(all);
+router.get('/', async (req, res) => {
+  try {
+    const all = await store.getAll('enquiries', '', [], 'ORDER BY id DESC');
+    res.json(all.map(map));
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to fetch enquiries' });
+  }
 });
 
 // GET single enquiry
-router.get('/:id', (req, res) => {
-  const item = store.getOne('enquiries', x => x.id === Number(req.params.id));
-  if (!item) return res.status(404).json({ error: 'Enquiry not found' });
-  res.json(map(item));
+router.get('/:id', async (req, res) => {
+  try {
+    const item = await store.getById('enquiries', req.params.id);
+    if (!item) return res.status(404).json({ error: 'Enquiry not found' });
+    res.json(map(item));
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to fetch enquiry' });
+  }
 });
 
 // Helper to extract and insert enquiry
-function createEnquiryDoc(body, defaultType = 'General') {
+async function createEnquiryDoc(body, defaultType = 'General') {
   const name = body.name || body.customer_name || body.fullname || body.applicant_name || 'Anonymous';
   const phone = body.phone || body.customer_phone || body.mobile || body.contact || '';
   const email = body.email || body.customer_email || '';
@@ -79,7 +84,7 @@ function createEnquiryDoc(body, defaultType = 'General') {
     notes = `${notes}\nResume: ${body.resume_url || body.resume}`.trim();
   }
 
-  return store.insert('enquiries', {
+  return await store.insert('enquiries', {
     enquiry_type: resolvedType,
     package_name: packageName,
     package_id: body.package_id || null,
@@ -101,77 +106,101 @@ function createEnquiryDoc(body, defaultType = 'General') {
   });
 }
 
-// POST submit new enquiry (Public or Admin)
-router.post('/', uploadResume.single('resume'), (req, res) => {
-  const body = { ...req.body };
-  if (req.file) {
-    body.resume_url = `/uploads/${req.file.filename}`;
-    body.resume = req.file.originalname;
-  }
-  const name = body.name || body.customer_name || body.fullname;
-  const phone = body.phone || body.customer_phone || body.mobile;
+// POST submit new enquiry
+router.post('/', uploadResume.single('resume'), async (req, res) => {
+  try {
+    const body = { ...req.body };
+    if (req.file) {
+      body.resume_url = `/uploads/${req.file.filename}`;
+      body.resume = req.file.originalname;
+    }
+    const name = body.name || body.customer_name || body.fullname;
+    const phone = body.phone || body.customer_phone || body.mobile;
 
-  if (!name && !phone) {
-    return res.status(400).json({ error: 'Name or phone number is required.' });
-  }
+    if (!name && !phone) {
+      return res.status(400).json({ error: 'Name or phone number is required.' });
+    }
 
-  const doc = createEnquiryDoc(body);
-  res.status(201).json({ success: true, message: 'Enquiry submitted successfully!', enquiry: map(doc) });
+    const doc = await createEnquiryDoc(body);
+    res.status(201).json({ success: true, message: 'Enquiry submitted successfully!', enquiry: map(doc) });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to submit enquiry' });
+  }
 });
 
 // POST /contact
-router.post('/contact', (req, res) => {
-  const doc = createEnquiryDoc(req.body, 'Contact Message');
-  res.status(201).json({ success: true, message: 'Thank you for reaching out! We will contact you shortly.', enquiry: map(doc) });
+router.post('/contact', async (req, res) => {
+  try {
+    const doc = await createEnquiryDoc(req.body, 'Contact Message');
+    res.status(201).json({ success: true, message: 'Thank you for reaching out! We will contact you shortly.', enquiry: map(doc) });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to submit contact message' });
+  }
 });
 
 // POST /cart
-router.post('/cart', (req, res) => {
-  const doc = createEnquiryDoc(req.body, 'Cart / Activity Booking');
-  res.status(201).json({ success: true, message: 'Booking enquiry submitted successfully!', enquiry: map(doc) });
+router.post('/cart', async (req, res) => {
+  try {
+    const doc = await createEnquiryDoc(req.body, 'Cart / Activity Booking');
+    res.status(201).json({ success: true, message: 'Booking enquiry submitted successfully!', enquiry: map(doc) });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to submit booking' });
+  }
 });
 
 // POST /career
-router.post('/career', uploadResume.single('resume'), (req, res) => {
-  const body = { ...req.body };
-  if (req.file) {
-    body.resume_url = `/uploads/${req.file.filename}`;
-    body.resume = req.file.originalname;
+router.post('/career', uploadResume.single('resume'), async (req, res) => {
+  try {
+    const body = { ...req.body };
+    if (req.file) {
+      body.resume_url = `/uploads/${req.file.filename}`;
+      body.resume = req.file.originalname;
+    }
+    const doc = await createEnquiryDoc(body, 'Career Application');
+    if (req.headers['accept']?.includes('text/html') || req.headers['content-type']?.includes('multipart/form-data')) {
+      return res.redirect('/thankyou.html');
+    }
+    res.status(201).json({ success: true, message: 'Application submitted successfully!', enquiry: map(doc) });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to submit application' });
   }
-  const doc = createEnquiryDoc(body, 'Career Application');
-  if (req.headers['accept']?.includes('text/html') || req.headers['content-type']?.includes('multipart/form-data')) {
-    return res.redirect('/thankyou.html');
-  }
-  res.status(201).json({ success: true, message: 'Application submitted successfully!', enquiry: map(doc) });
 });
 
 // PUT update status & details (Admin)
-router.put('/:id', verifyToken, (req, res) => {
-  const updates = {};
-  if (req.body.status !== undefined) updates.status = req.body.status;
-  if (req.body.enquiry_type !== undefined) updates.enquiry_type = req.body.enquiry_type;
-  if (req.body.destination_name !== undefined) updates.destination_name = req.body.destination_name;
-  if (req.body.package_name !== undefined) updates.package_name = req.body.package_name;
-  if (req.body.name !== undefined) updates.name = req.body.name;
-  if (req.body.phone !== undefined) updates.phone = req.body.phone;
-  if (req.body.email !== undefined) updates.email = req.body.email;
-  if (req.body.hotel_rating !== undefined) updates.hotel_rating = req.body.hotel_rating;
-  if (req.body.start_date !== undefined) updates.start_date = req.body.start_date;
-  if (req.body.end_date !== undefined) updates.end_date = req.body.end_date;
-  if (req.body.adults !== undefined) updates.adults = Number(req.body.adults);
-  if (req.body.children !== undefined) updates.children = Number(req.body.children);
-  if (req.body.duration_days !== undefined) updates.duration_days = Number(req.body.duration_days);
-  if (req.body.notes !== undefined) updates.notes = req.body.notes;
+router.put('/:id', verifyToken, async (req, res) => {
+  try {
+    const updates = {};
+    if (req.body.status !== undefined) updates.status = req.body.status;
+    if (req.body.enquiry_type !== undefined) updates.enquiry_type = req.body.enquiry_type;
+    if (req.body.destination_name !== undefined) updates.destination_name = req.body.destination_name;
+    if (req.body.package_name !== undefined) updates.package_name = req.body.package_name;
+    if (req.body.name !== undefined) updates.name = req.body.name;
+    if (req.body.phone !== undefined) updates.phone = req.body.phone;
+    if (req.body.email !== undefined) updates.email = req.body.email;
+    if (req.body.hotel_rating !== undefined) updates.hotel_rating = req.body.hotel_rating;
+    if (req.body.start_date !== undefined) updates.start_date = req.body.start_date;
+    if (req.body.end_date !== undefined) updates.end_date = req.body.end_date;
+    if (req.body.adults !== undefined) updates.adults = Number(req.body.adults);
+    if (req.body.children !== undefined) updates.children = Number(req.body.children);
+    if (req.body.duration_days !== undefined) updates.duration_days = Number(req.body.duration_days);
+    if (req.body.notes !== undefined) updates.notes = req.body.notes;
 
-  const doc = store.update('enquiries', req.params.id, updates);
-  if (!doc) return res.status(404).json({ error: 'Enquiry not found' });
-  res.json({ success: true, message: 'Enquiry updated', enquiry: map(doc) });
+    const doc = await store.update('enquiries', req.params.id, updates);
+    if (!doc) return res.status(404).json({ error: 'Enquiry not found' });
+    res.json({ success: true, message: 'Enquiry updated', enquiry: map(doc) });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to update enquiry' });
+  }
 });
 
 // DELETE enquiry (Admin)
-router.delete('/:id', verifyToken, (req, res) => {
-  store.remove('enquiries', req.params.id);
-  res.json({ success: true, message: 'Enquiry deleted' });
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    await store.remove('enquiries', req.params.id);
+    res.json({ success: true, message: 'Enquiry deleted' });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to delete enquiry' });
+  }
 });
 
 router.createEnquiryDoc = createEnquiryDoc;

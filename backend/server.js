@@ -1,12 +1,16 @@
 /**
  * server.js — Mangalam Travel & Tours Admin Backend
- * Node.js + Express + SQLite
+ * Node.js + Express + Hostinger MySQL
  * Port: 4000
  */
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+const { testConnection } = require('./db/mysql');
+const { runMigrations } = require('./db/migrate');
+const store = require('./db/store');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -21,7 +25,7 @@ app.options('*', cors()); // Handle preflight requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Disable caching for HTML and dynamic assets to prevent stale browser cache
+// Disable caching for dynamic assets
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   next();
@@ -48,24 +52,36 @@ app.use('/api/otp',          require('./routes/otp'));
 app.use('/api/upload',       require('./routes/upload'));
 
 // ── Action / Form Submission Fallback Handlers ────────────────────────────────
-app.post(['/action/submitCareerEnquiry.html', '/action/submitCareerEnquiry'], enquiriesRouter.uploadResume.single('resume'), (req, res) => {
-  const body = { ...req.body };
-  if (req.file) {
-    body.resume_url = `/uploads/${req.file.filename}`;
-    body.resume = req.file.originalname;
+app.post(['/action/submitCareerEnquiry.html', '/action/submitCareerEnquiry'], enquiriesRouter.uploadResume.single('resume'), async (req, res) => {
+  try {
+    const body = { ...req.body };
+    if (req.file) {
+      body.resume_url = `/uploads/${req.file.filename}`;
+      body.resume = req.file.originalname;
+    }
+    await enquiriesRouter.createEnquiryDoc(body, 'Career Application');
+    res.redirect('/thankyou.html');
+  } catch (e) {
+    res.redirect('/thankyou.html');
   }
-  enquiriesRouter.createEnquiryDoc(body, 'Career Application');
-  res.redirect('/thankyou.html');
 });
 
-app.post(['/action/submitContactEnquiry.html', '/action/submitContactEnquiry'], (req, res) => {
-  enquiriesRouter.createEnquiryDoc(req.body, 'Contact Message');
-  res.redirect('/thankyou.html');
+app.post(['/action/submitContactEnquiry.html', '/action/submitContactEnquiry'], async (req, res) => {
+  try {
+    await enquiriesRouter.createEnquiryDoc(req.body, 'Contact Message');
+    res.redirect('/thankyou.html');
+  } catch (e) {
+    res.redirect('/thankyou.html');
+  }
 });
 
-app.post(['/action/submitTripEnquiry.html', '/action/submitTripEnquiry'], (req, res) => {
-  enquiriesRouter.createEnquiryDoc(req.body, 'Trip Enquiry');
-  res.redirect('/thankyou.html');
+app.post(['/action/submitTripEnquiry.html', '/action/submitTripEnquiry'], async (req, res) => {
+  try {
+    await enquiriesRouter.createEnquiryDoc(req.body, 'Trip Enquiry');
+    res.redirect('/thankyou.html');
+  } catch (e) {
+    res.redirect('/thankyou.html');
+  }
 });
 
 // ── Static Files ────────────────────────────────────────────────────────────
@@ -79,21 +95,50 @@ app.use(express.static(path.join(__dirname, '..')));
 app.use(express.static(path.join(__dirname, '../public')));
 
 // ── Stats endpoint for dashboard ───────────────────────────────────────────
-const store = require('./db/store');
-app.get('/api/stats', (req, res) => {
-  res.json({
-    destinations: store.count('destinations'),
-    packages:     store.count('packages'),
-    collections:  store.count('collections'),
-    attractions:  store.count('attractions'),
-    tickets:      store.count('tickets'),
-    blogs:        store.count('blogs'),
-    testimonials: store.count('testimonials'),
-    partners:     store.count('partners'),
-    posters:      store.count('posters'),
-    enquiries:    store.count('enquiries'),
-    seo:          store.count('seo'),
-  });
+app.get('/api/stats', async (req, res) => {
+  try {
+    const [
+      destinations,
+      packages,
+      collections,
+      attractions,
+      tickets,
+      blogs,
+      testimonials,
+      partners,
+      posters,
+      enquiries,
+      seo
+    ] = await Promise.all([
+      store.count('destinations'),
+      store.count('packages'),
+      store.count('collections'),
+      store.count('attractions'),
+      store.count('tickets'),
+      store.count('blogs'),
+      store.count('testimonials'),
+      store.count('partners'),
+      store.count('posters'),
+      store.count('enquiries'),
+      store.count('seo')
+    ]);
+
+    res.json({
+      destinations,
+      packages,
+      collections,
+      attractions,
+      tickets,
+      blogs,
+      testimonials,
+      partners,
+      posters,
+      enquiries,
+      seo
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve stats' });
+  }
 });
 
 // ── Serve Main Website Homepage (index.html) ────────────────────────────────
@@ -128,10 +173,18 @@ app.get('/:page.html', (req, res, next) => {
   next();
 });
 
+// ── Start Server & Initialize Database ──────────────────────────────────────
+async function start() {
+  await testConnection();
+  await runMigrations();
 
-// ── Start ───────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n🚀 Mangalam Admin Backend running at http://localhost:${PORT}`);
-  console.log(`📊 Admin Panel: http://localhost:${PORT}/admin`);
-  console.log(`🔗 API Base:    http://localhost:${PORT}/api\n`);
+  app.listen(PORT, () => {
+    console.log(`\n🚀 Mangalam Admin Backend running at http://localhost:${PORT}`);
+    console.log(`📊 Admin Panel: http://localhost:${PORT}/admin`);
+    console.log(`🔗 API Base:    http://localhost:${PORT}/api\n`);
+  });
+}
+
+start().catch(err => {
+  console.error('❌ Server startup failure:', err.message);
 });

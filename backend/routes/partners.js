@@ -3,19 +3,50 @@ const store   = require('../db/store');
 const { verifyToken } = require('./auth');
 const router  = express.Router();
 
-const map = p => ({ partner_id: p.id, name: p.name, image: p.image||'', created_at: p.created_at });
+const map = p => ({
+  partner_id: p.id,
+  name: p.name,
+  image: p.image || '',
+  created_at: p.created_at
+});
 
-router.get('/', (req, res) => res.json(store.getAll('partners').map(map)));
-router.post('/', verifyToken, (req, res) => {
-  const { name, image } = req.body;
-  if (!name) return res.status(400).json({ error: 'name is required' });
-  const doc = store.insert('partners', { name, image: image||'' });
-  res.status(201).json(map(doc));
+router.get('/', async (req, res) => {
+  try {
+    const items = await store.getAll('partners');
+    res.json(items.map(map));
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to fetch partners' });
+  }
 });
-router.put('/:id', verifyToken, (req, res) => {
-  const doc = store.update('partners', req.params.id, { name: req.body.name, image: req.body.image });
-  if (!doc) return res.status(404).json({ error: 'Not found' }); res.json({ message: 'Updated', ...map(doc) });
+
+router.post('/', verifyToken, async (req, res) => {
+  try {
+    const { name, image } = req.body;
+    if (!name) return res.status(400).json({ error: 'name is required' });
+    const doc = await store.insert('partners', { name, image: image || '' });
+    res.status(201).json(map(doc));
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to create partner' });
+  }
 });
-router.delete('/:id', verifyToken, (req, res) => { store.remove('partners', req.params.id); res.json({ message: 'Deleted' }); });
+
+router.put('/:id', verifyToken, async (req, res) => {
+  try {
+    const doc = await store.update('partners', req.params.id, { name: req.body.name, image: req.body.image });
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+    res.json({ message: 'Updated', ...map(doc) });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to update partner' });
+  }
+});
+
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    await store.remove('partners', req.params.id);
+    res.json({ message: 'Deleted' });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to delete partner' });
+  }
+});
 
 module.exports = router;

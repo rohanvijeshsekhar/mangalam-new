@@ -12,6 +12,10 @@ backend/*.db
 
 # Environment variables
 .env
+.env.*
+*.env
+backend/.env
+backend/.env.*
 .env.local
 .env.production
 

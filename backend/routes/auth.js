@@ -7,24 +7,41 @@ const router  = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'mangalam_travel_tours_secret_key_2024';
 
 // POST /api/auth/login
-router.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
-  const user = store.getOne('users', u => u.username === username);
-  if (!user || !bcrypt.compareSync(password, user.password_hash))
-    return res.status(401).json({ error: 'Invalid credentials' });
-  const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token, username: user.username });
+router.post('/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+
+    const user = await store.getOne('users', 'WHERE username = ?', [username]);
+    if (!user || !bcrypt.compareSync(password, user.password_hash)) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, username: user.username });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // POST /api/auth/change-password (protected)
-router.post('/change-password', verifyToken, (req, res) => {
-  const { currentPassword, newPassword } = req.body;
-  const user = store.getOne('users', u => u.id === req.user.id);
-  if (!bcrypt.compareSync(currentPassword, user.password_hash))
-    return res.status(401).json({ error: 'Current password is incorrect' });
-  store.update('users', user.id, { password_hash: bcrypt.hashSync(newPassword, 10) });
-  res.json({ message: 'Password updated successfully' });
+router.post('/change-password', verifyToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+
+    const user = await store.getById('users', req.user.id);
+    if (!user || !bcrypt.compareSync(currentPassword, user.password_hash)) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+
+    await store.update('users', user.id, { password_hash: bcrypt.hashSync(newPassword, 10) });
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update password' });
+  }
 });
 
 function verifyToken(req, res, next) {
