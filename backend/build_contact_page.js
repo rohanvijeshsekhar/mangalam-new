@@ -106,7 +106,6 @@ const contactHtml = `<!DOCTYPE html>
                         </div>
                     </div>
                     <a href="/attraction.html" class="text-gray-600 hover:text-gray-900 font-dm-sans transition-colors">Attractions</a>
-                    <a href="https://agents.mangalamtravel.com/Config/Login/Agent" target="_blank" class="text-gray-600 hover:text-gray-900 font-dm-sans transition-colors">Agent Login</a>
                 </nav>
             </div>
         </div>
