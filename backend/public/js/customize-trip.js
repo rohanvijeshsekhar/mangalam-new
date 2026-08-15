@@ -253,47 +253,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       } catch (e) { console.warn('Attractions fetch error:', e); }
     }
 
-    // 3. Fallback defaults if empty
+    // 3. Fallback: If no places added in admin panel, show empty state instead of hardcoded dummy places
     if (!places || places.length === 0) {
-      if (destSlug.toLowerCase().includes('dubai')) {
-        places = [
-          "Burj Khalifa (124th & 125th Floor Observation Deck)",
-          "Desert Safari with Dune Bashing & BBQ Dinner",
-          "Dubai Mall & Dubai Fountain Evening Show",
-          "Museum of the Future",
-          "Marina Dhow Cruise Dinner",
-          "Dubai Miracle Garden & Butterfly Garden",
-          "Atlantis Aquaventure Waterpark"
-        ];
-      } else {
-        places = [
-          `Top Famous Landmarks of ${destName}`,
-          `Guided City Sightseeing Tour of ${destName}`,
-          `Cultural & Heritage Experience in ${destName}`,
-          `Local Food & Evening Cruise Experience`,
-          `Adventure & Shopping Excursion in ${destName}`
-        ];
-      }
+      placesLoading.classList.add('hidden');
+      placesGrid.classList.remove('hidden');
+      placesGrid.innerHTML = `
+        <div class="col-span-full text-center py-8 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
+          <i class="fas fa-map-marker-alt text-3xl text-slate-400 mb-2 block"></i>
+          <p class="font-semibold text-slate-700 text-base">No specific places listed for ${destName} yet.</p>
+          <p class="text-xs text-slate-400 mt-1">You can skip this step or specify any custom places in the notes box below.</p>
+        </div>
+      `;
+      availablePlaces = [];
+      selectedPlaces = [];
+      return;
     }
 
     // Normalize places into { name, image } objects
-    let normalizedPlaces = places.map((p, i) => {
+    let normalizedPlaces = places.map((p) => {
       if (typeof p === 'string') {
-        const defaultImgs = [
-          './assets/images/activity-banner.webp',
-          './assets/images/res-activity-banner.webp',
-          './assets/images/banner1.webp',
-          './assets/images/banner2.webp',
-          './assets/images/banner3.webp'
-        ];
-        return { name: p, image: defaultImgs[i % defaultImgs.length] };
+        return { name: p, image: '' };
       } else if (typeof p === 'object' && p !== null) {
         return {
           name: p.name || p.title || p.attraction_name || 'Popular Place',
-          image: p.image || p.card_image || p.inner_image || './assets/images/activity-banner.webp'
+          image: p.image || p.card_image || p.banner_image || p.inner_image || ''
         };
       }
-      return { name: String(p), image: './assets/images/activity-banner.webp' };
+      return { name: String(p), image: '' };
     });
 
     availablePlaces = normalizedPlaces;
@@ -301,13 +287,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     placesGrid.classList.remove('hidden');
 
     placesGrid.innerHTML = normalizedPlaces.map((place, idx) => {
-      const imgUrl = MT.resolveImg(place.image) || './assets/images/activity-banner.webp';
+      const imgUrl = place.image ? MT.resolveImg(place.image) : '';
       const placeName = place.name;
       const isChecked = selectedPlaces.includes(placeName) || (selectedPlaces.length === 0 && idx < 3);
 
+      const imgHtml = imgUrl 
+        ? `<img src="${imgUrl}" alt="${placeName}" class="w-full sm:w-24 h-28 sm:h-20 object-cover rounded-xl flex-shrink-0 group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full sm:w-24 h-28 sm:h-20 bg-slate-100 rounded-xl flex-shrink-0 flex items-center justify-center text-slate-400\\'><i class=\\'fas fa-map-marked-alt text-xl\\'></i></div>';">`
+        : `<div class="w-full sm:w-24 h-28 sm:h-20 bg-slate-100 rounded-xl flex-shrink-0 flex items-center justify-center text-slate-400"><i class="fas fa-map-marked-alt text-xl"></i></div>`;
+
       return `
         <label class="relative flex flex-col sm:flex-row items-center gap-4 p-3 sm:p-4 rounded-2xl border-2 border-slate-200 hover:border-red-500 bg-white hover:bg-slate-50 cursor-pointer transition-all shadow-sm group">
-          <img src="${imgUrl}" alt="${placeName}" class="w-full sm:w-24 h-28 sm:h-20 object-cover rounded-xl flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+          ${imgHtml}
           <div class="flex-1 w-full flex items-center justify-between gap-3">
             <div>
               <h4 class="font-bold text-slate-900 text-sm sm:text-base leading-snug">${placeName}</h4>
