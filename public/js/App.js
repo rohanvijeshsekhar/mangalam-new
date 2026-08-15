@@ -932,6 +932,8 @@
         };
 
         const openDropdown = () => {
+            const headerEl = dropdown.querySelector('.mobile-customize-dropdown-header');
+            if (headerEl) headerEl.textContent = 'Destinations';
             dropdown.classList.add('mobile-customize-dropdown-visible');
             dropdown.setAttribute('aria-hidden', 'false');
             trigger.setAttribute('aria-expanded', 'true');
@@ -958,11 +960,9 @@
                     e.stopPropagation();
                     closeDropdown();
 
-                    if (typeof window.openCustomizePopup === 'function' && document.getElementById('customizePopup')) {
-                        window.openCustomizePopup(slug, name, id);
-                    } else {
-                        window.location.href = `customize-trip.html?destination=${encodeURIComponent(slug)}&name=${encodeURIComponent(name)}`;
-                    }
+                    // Redirect directly to the destination packages / details page
+                    const destinationUrl = slug ? `packages.html?slug=${encodeURIComponent(slug)}&type=package` : 'packages.html';
+                    window.location.href = destinationUrl;
                 });
 
                 list.appendChild(button);
