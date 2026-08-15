@@ -67,11 +67,9 @@ async function loadPosters() {
 async function loadDestinations() {
   const gridEl = document.getElementById('destinations-grid');
   const destList = document.querySelector('#destinationCarousel .splide__list');
-  const navCarousel = document.getElementById('destinationNavCarousel');
   const dests = await MT.apiGet('/api/destinations');
 
   if (!dests || !dests.length) {
-    if (navCarousel) navCarousel.style.display = 'none';
     if (destList) {
       const emptySlide = `
         <li class="splide__slide">
@@ -88,22 +86,6 @@ async function loadDestinations() {
       gridEl.innerHTML = '<p class="col-span-full text-center text-gray-400 py-16">No destinations available at the moment.</p>';
     }
     return;
-  }
-
-  // Icon strip
-  const navList = document.querySelector('#destinationNavCarousel .splide__list');
-  if (navList) {
-    navList.innerHTML = dests.map(d => {
-      const dName = d.destination_name || d.name || d.title || '';
-      const dSlug = d.slug_url || d.slug || '';
-      const url = `packages.html?slug=${encodeURIComponent(dSlug)}&type=package`;
-      return `<li class="splide__slide">
-        <a href="${url}" class="flex flex-col items-center max-w-7xl cursor-pointer relative">
-          <span class="text-xs font-dm-sans text-gray-600 font-bold hover:text-red-500 transition-colors duration-300 uppercase">${dName}</span>
-        </a>
-      </li>`;
-    }).join('');
-    if (navCarousel) navCarousel.style.display = '';
   }
 
   // Cards carousel / grid
@@ -187,12 +169,6 @@ function initCarousels() {
     if (posterEl) {
       const cnt = posterEl.querySelectorAll('.splide__slide').length;
       if (cnt > 0) new Splide('#posterCarousel', { type: cnt > 1 ? 'loop' : 'slide', autoplay: cnt > 1, interval: 4000, speed: 800, arrows: cnt > 1, pagination: true, perPage: 1 }).mount();
-    }
-
-    const navEl = document.getElementById('destinationNavCarousel');
-    if (navEl) {
-      const cnt = navEl.querySelectorAll('.splide__slide').length;
-      if (cnt > 0) new Splide('#destinationNavCarousel', { autoWidth: true, gap: '2rem', pagination: false, arrows: false }).mount();
     }
 
     const destEl = document.getElementById('destinationCarousel');
