@@ -822,142 +822,98 @@
         });
     }
 
-    const mobileMenuAnchor = { parent: null, nextSibling: null };
-
-    function positionMobileDestinationMenu(anchor, menu) {
-        if (!anchor || !menu) return;
-        const rect = anchor.getBoundingClientRect();
-        menu.style.position = 'fixed';
-        menu.style.top = `${Math.round(rect.bottom + 4)}px`;
-        menu.style.left = `${Math.round(rect.left)}px`;
-        menu.style.width = `${Math.round(rect.width)}px`;
-        menu.style.zIndex = '10050';
-    }
-
-    function openMobileDestinationMenu(button, menu) {
-        if (!button || !menu) return;
-        const anchor = button.closest('.flex-1') || button.parentElement;
-        if (!mobileMenuAnchor.parent) {
-            mobileMenuAnchor.parent = menu.parentNode;
-            mobileMenuAnchor.nextSibling = menu.nextSibling;
-        }
-        document.body.appendChild(menu);
-        menu.classList.remove('hidden');
-        menu.classList.add('is-floating');
-        positionMobileDestinationMenu(anchor, menu);
-    }
-
-    function closeMobileDestinationMenu(menu) {
-        if (!menu) return;
-        menu.classList.add('hidden');
-        menu.classList.remove('is-floating');
-        menu.style.position = '';
-        menu.style.top = '';
-        menu.style.left = '';
-        menu.style.width = '';
-        menu.style.zIndex = '';
-        if (mobileMenuAnchor.parent) {
-            if (mobileMenuAnchor.nextSibling && mobileMenuAnchor.nextSibling.parentNode === mobileMenuAnchor.parent) {
-                mobileMenuAnchor.parent.insertBefore(menu, mobileMenuAnchor.nextSibling);
-            } else {
-                mobileMenuAnchor.parent.appendChild(menu);
-            }
-            mobileMenuAnchor.parent = null;
-            mobileMenuAnchor.nextSibling = null;
-        }
-    }
-
     function initDestinationDropdowns() {
         const dropdownButton = document.getElementById('destinationDropdown');
         const dropdownMenu = document.getElementById('destinationMenu');
         const selectedDestination = document.getElementById('selectedDestination');
-        const dropdownItems = dropdownMenu ? dropdownMenu.querySelectorAll('[data-value]') : [];
         const letsGoBtn = document.getElementById('letsGoBtn');
-
-        if (dropdownButton && dropdownMenu) {
-            dropdownButton.addEventListener('click', e => {
-                e.stopPropagation();
-                dropdownMenu.classList.toggle('hidden');
-            });
-        }
-
-        dropdownMenu?.addEventListener('click', e => {
-            const item = e.target.closest('.destination-menu-item');
-            if (item) {
-                const value = item.getAttribute('data-value');
-                const slug = item.getAttribute('data-slug') || '';
-                if (selectedDestination) {
-                    selectedDestination.textContent = value;
-                    selectedDestination.dataset.slug = slug;
-                }
-                dropdownMenu.classList.add('hidden');
-            }
-            e.stopPropagation();
-        });
-
-        document.addEventListener('click', () => dropdownMenu?.classList.add('hidden'));
-
-        if (letsGoBtn) {
-            letsGoBtn.addEventListener('click', () => {
-                const destinationName = selectedDestination ? selectedDestination.textContent.trim() : '';
-                const slug = selectedDestination?.dataset?.slug || '';
-
-                if (destinationName === 'Other Location' || slug === 'other-location') {
-                    if (typeof window.openOtherLocationModal === 'function') {
-                        window.openOtherLocationModal();
-                    }
-                    return;
-                }
-
-                if (destinationName && destinationName !== 'Any Destination') {
-                    const targetSlug = slug || destinationName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                    window.location.href = `customize-trip.html?destination=${encodeURIComponent(targetSlug)}&name=${encodeURIComponent(destinationName)}`;
-                } else {
-                    alert('Please select a destination first.');
-                }
-            });
-        }
 
         const dropdownButton2 = document.getElementById('destinationDropdown2');
         const dropdownMenu2 = document.getElementById('destinationMenu2');
         const selectedDestination2 = document.getElementById('selectedDestination2');
         const letsGoBtn2 = document.getElementById('letsGoBtn2');
 
-        if (dropdownButton2 && dropdownMenu2 && selectedDestination2) {
-            const items2 = dropdownMenu2.querySelectorAll('[data-value]');
-            const mobileMenuAnchorEl = dropdownButton2.closest('.flex-1') || dropdownButton2.parentElement;
-
-            dropdownButton2.addEventListener('click', e => {
+        // Toggle Desktop dropdown
+        if (dropdownButton && dropdownMenu) {
+            dropdownButton.addEventListener('click', e => {
                 e.stopPropagation();
-                const isOpen = !dropdownMenu2.classList.contains('hidden');
-                if (isOpen) {
-                    closeMobileDestinationMenu(dropdownMenu2);
-                } else {
-                    openMobileDestinationMenu(dropdownButton2, dropdownMenu2);
-                }
+                dropdownMenu.classList.toggle('hidden');
+                if (dropdownMenu2) dropdownMenu2.classList.add('hidden');
             });
-
-            dropdownMenu2.addEventListener('click', e => {
-                const item = e.target.closest('.destination-menu-item');
-                if (item) {
-                    const value = item.getAttribute('data-value');
-                    const slug = item.getAttribute('data-slug') || '';
-                    if (selectedDestination2) {
-                        selectedDestination2.textContent = value;
-                        selectedDestination2.dataset.slug = slug;
-                    }
-                    closeMobileDestinationMenu(dropdownMenu2);
-                }
-                e.stopPropagation();
-            });
-
-            document.addEventListener('click', () => closeMobileDestinationMenu(dropdownMenu2));
         }
 
-        if (letsGoBtn2 && selectedDestination2) {
-            letsGoBtn2.addEventListener('click', () => {
-                const destinationName = selectedDestination2.textContent.trim();
-                const slug = selectedDestination2.dataset.slug || '';
+        // Toggle Mobile dropdown
+        if (dropdownButton2 && dropdownMenu2) {
+            dropdownButton2.addEventListener('click', e => {
+                e.stopPropagation();
+                dropdownMenu2.classList.toggle('hidden');
+                if (dropdownMenu) dropdownMenu.classList.add('hidden');
+            });
+        }
+
+        // Handle item selection across all destination dropdowns
+        function handleItemSelect(item) {
+            const value = item.getAttribute('data-value') || item.textContent.trim();
+            const slug = item.getAttribute('data-slug') || '';
+
+            if (selectedDestination) {
+                selectedDestination.textContent = value;
+                selectedDestination.dataset.slug = slug;
+            }
+            if (selectedDestination2) {
+                selectedDestination2.textContent = value;
+                selectedDestination2.dataset.slug = slug;
+            }
+
+            if (dropdownMenu) dropdownMenu.classList.add('hidden');
+            if (dropdownMenu2) dropdownMenu2.classList.add('hidden');
+        }
+
+        // Event delegation for clicks on destination items
+        document.addEventListener('click', e => {
+            const item = e.target.closest('.destination-menu-item');
+            if (item) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleItemSelect(item);
+                return;
+            }
+            // Close dropdowns if clicked outside
+            if (dropdownMenu && !dropdownMenu.contains(e.target) && e.target !== dropdownButton && !dropdownButton?.contains(e.target)) {
+                dropdownMenu.classList.add('hidden');
+            }
+            if (dropdownMenu2 && !dropdownMenu2.contains(e.target) && e.target !== dropdownButton2 && !dropdownButton2?.contains(e.target)) {
+                dropdownMenu2.classList.add('hidden');
+            }
+        });
+
+        // Let's Go buttons
+        function handleLetsGo(destSpan) {
+            const destinationName = destSpan ? destSpan.textContent.trim() : '';
+            const slug = destSpan?.dataset?.slug || '';
+
+            if (destinationName === 'Other Location' || slug === 'other-location') {
+                if (typeof window.openOtherLocationModal === 'function') {
+                    window.openOtherLocationModal();
+                }
+                return;
+            }
+
+            if (destinationName && destinationName !== 'Any Destination') {
+                const targetSlug = slug || destinationName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                window.location.href = `customize-trip.html?destination=${encodeURIComponent(targetSlug)}&name=${encodeURIComponent(destinationName)}`;
+            } else {
+                alert('Please select a destination first.');
+            }
+        }
+
+        if (letsGoBtn) {
+            letsGoBtn.addEventListener('click', () => handleLetsGo(selectedDestination));
+        }
+        if (letsGoBtn2) {
+            letsGoBtn2.addEventListener('click', () => handleLetsGo(selectedDestination2));
+        }
+    }
 
                 if (destinationName === 'Other Location' || slug === 'other-location') {
                     if (typeof window.openOtherLocationModal === 'function') {
