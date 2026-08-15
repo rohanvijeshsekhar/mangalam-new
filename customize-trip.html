@@ -27,14 +27,14 @@
             z-index: 0;
             pointer-events: none;
             background-image: 
-                radial-gradient(circle at 15% 15%, rgba(239, 68, 68, 0.04) 0%, transparent 45%),
-                radial-gradient(circle at 85% 25%, rgba(14, 165, 233, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 50% 85%, rgba(245, 158, 11, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 15% 15%, rgba(239, 68, 68, 0.03) 0%, transparent 45%),
+                radial-gradient(circle at 85% 25%, rgba(14, 165, 233, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 50% 85%, rgba(245, 158, 11, 0.02) 0%, transparent 50%),
                 url('./assets/images/travel-doodle-bg.jpg');
             background-size: 780px auto;
             background-repeat: repeat;
             background-position: center top;
-            opacity: 0.65;
+            opacity: 0.28;
             mix-blend-mode: multiply;
         }
 
@@ -53,7 +53,7 @@
         .anim-plane { animation: planeFly 14s ease-in-out infinite; }
     </style>
 </head>
-<body class="bg-slate-50/80 text-slate-800 flex flex-col min-h-screen relative overflow-x-hidden">
+<body class="bg-slate-50/90 text-slate-800 flex flex-col min-h-screen relative overflow-x-hidden">
 
     <!-- Fixed Travel Illustration Background Wallpaper -->
     <div class="travel-bg-wallpaper"></div>
@@ -61,20 +61,19 @@
     <!-- Decorative Floating Travel Elements (Background Depth) -->
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <!-- Floating Compass Top-Left -->
-        <div class="absolute -left-12 top-28 text-slate-300/40 text-8xl anim-float-1 select-none">
+        <div class="absolute -left-12 top-28 text-slate-400/20 text-8xl anim-float-1 select-none">
             <i class="fa-regular fa-compass"></i>
         </div>
         <!-- Floating Hot Air Balloon Top-Right -->
-        <div class="absolute -right-8 top-36 text-red-300/30 text-7xl anim-float-2 select-none">
-            <i class="fa-solid fa-hot-tub-person hidden"></i>
-            <svg class="w-24 h-24 text-red-400/20 fill-current" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm-1 18h2v2h-2v-2z"/></svg>
+        <div class="absolute -right-8 top-36 text-red-400/15 text-7xl anim-float-2 select-none">
+            <svg class="w-24 h-24 text-red-400/15 fill-current" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm-1 18h2v2h-2v-2z"/></svg>
         </div>
         <!-- Floating Airplane Bottom-Left -->
-        <div class="absolute left-6 bottom-24 text-sky-400/25 text-6xl anim-plane select-none">
+        <div class="absolute left-6 bottom-24 text-sky-500/15 text-6xl anim-plane select-none">
             <i class="fa-solid fa-plane-departure"></i>
         </div>
         <!-- Globe Watermark Bottom-Right -->
-        <div class="absolute -right-12 bottom-12 text-slate-300/30 text-9xl anim-float-1 select-none">
+        <div class="absolute -right-12 bottom-12 text-slate-400/15 text-9xl anim-float-1 select-none">
             <i class="fa-solid fa-earth-americas"></i>
         </div>
     </div>
