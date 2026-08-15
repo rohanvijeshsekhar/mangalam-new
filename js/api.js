@@ -188,8 +188,68 @@ async function loadDestinationDropdowns() {
   });
 }
 
+// ─── Dynamic Google & Social SEO Meta Injector ───────────────────────────────
+async function loadDynamicSeo() {
+  try {
+    const pathname = window.location.pathname || '/';
+    const cleanPath = pathname === '/' || pathname.endsWith('/index.html') ? '/' : pathname;
+    const seo = await apiGet(`/seo/match?route=${encodeURIComponent(cleanPath)}`);
+    if (!seo || !seo.id) return;
+
+    if (seo.meta_title) {
+      document.title = seo.meta_title;
+      setMeta('og:title', 'property', seo.meta_title);
+      setMeta('twitter:title', 'name', seo.meta_title);
+    }
+    if (seo.meta_description) {
+      setMeta('description', 'name', seo.meta_description);
+      setMeta('og:description', 'property', seo.meta_description);
+      setMeta('twitter:description', 'name', seo.meta_description);
+    }
+    if (seo.meta_keywords) {
+      setMeta('keywords', 'name', seo.meta_keywords);
+    }
+    if (seo.robots) {
+      setMeta('robots', 'name', seo.robots);
+    }
+    if (seo.canonical_url) {
+      setLink('canonical', seo.canonical_url);
+      setMeta('og:url', 'property', seo.canonical_url);
+    }
+    if (seo.og_image) {
+      const resolved = resolveImg(seo.og_image);
+      setMeta('og:image', 'property', resolved);
+      setMeta('twitter:image', 'name', resolved);
+      setMeta('twitter:card', 'name', 'summary_large_image');
+    }
+  } catch (_) {}
+}
+
+function setMeta(nameOrProp, attr, content) {
+  if (!content) return;
+  let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, nameOrProp);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+}
+
+function setLink(rel, href) {
+  if (!href) return;
+  let el = document.querySelector(`link[rel="${rel}"]`);
+  if (!el) {
+    el = document.createElement('link');
+    el.setAttribute('rel', rel);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('href', href);
+}
+
 // ─── Init common page elements ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  loadDynamicSeo();
   loadNotice();
   loadFooterDests();
   loadFooterActivities();

@@ -70,6 +70,7 @@ const sections = {
   attractions:  { title: 'Attractions',  subtitle: 'Manage places and attraction experiences' },
   enquiries:    { title: 'Destination & Package Enquiries', subtitle: 'Manage customer leads, destination requests & package enquiries' },
   blogs:        { title: 'Blogs',        subtitle: 'Manage blog posts' },
+  seo:          { title: 'Google SEO & Keywords', subtitle: 'Manage page titles, Google meta descriptions, SEO focus keywords & search previews' },
   testimonials: { title: 'Testimonials', subtitle: 'Manage customer reviews' },
   partners:     { title: 'Partners',     subtitle: 'Manage partner logos' },
   posters:      { title: 'Promotional Banners', subtitle: 'Manage promotional banners and slider images' },
@@ -114,7 +115,7 @@ document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
 async function loadDashboard() {
   const stats = await api('GET', '/stats');
   if (!stats) return;
-  ['destinations','packages','collections','attractions','blogs','testimonials','partners','posters','enquiries'].forEach(k => {
+  ['destinations','packages','collections','attractions','blogs','testimonials','partners','posters','enquiries','seo'].forEach(k => {
     const el = document.getElementById(`stat-${k}`);
     if (el) el.textContent = stats[k] ?? 0;
   });
@@ -186,6 +187,7 @@ function openAddModal(section) {
     packages:     openPackageForm,
     collections:  openCollectionForm,
     enquiries:    openEnquiryForm,
+    seo:          openSeoForm,
     blogs:        openBlogForm,
     testimonials: openTestimonialForm,
     partners:     openPartnerForm,
@@ -1496,6 +1498,265 @@ window.deleteEnquiry = async function(id) {
 
 document.getElementById('btn-add-enquiry')?.addEventListener('click', () => openEnquiryForm());
 
+// ══════════════════════════════════════════════════════════════════════════════
+// GOOGLE SEO & KEYWORDS
+// ══════════════════════════════════════════════════════════════════════════════
+let seoList = [];
+let currentSeoSearch = '';
+
+async function loadSeo() {
+  seoList = await api('GET', '/seo') || [];
+  renderSeoTable();
+}
+
+function renderSeoTable() {
+  const tbody = document.getElementById('tbody-seo');
+  if (!tbody) return;
+
+  let filtered = [...seoList];
+  if (currentSeoSearch) {
+    const q = currentSeoSearch.toLowerCase();
+    filtered = filtered.filter(s =>
+      (s.page_route || '').toLowerCase().includes(q) ||
+      (s.page_name || '').toLowerCase().includes(q) ||
+      (s.meta_title || '').toLowerCase().includes(q) ||
+      (s.meta_description || '').toLowerCase().includes(q) ||
+      (s.meta_keywords || '').toLowerCase().includes(q)
+    );
+  }
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6"><i class="fas fa-search" style="font-size:24px;color:#e5e7eb;display:block;margin-bottom:8px"></i>No SEO configurations found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(s => {
+    const keywordsList = s.meta_keywords
+      ? s.meta_keywords.split(/,|;/).map(k => k.trim()).filter(Boolean).slice(0, 4)
+      : [];
+
+    const keywordsBadges = keywordsList.length
+      ? keywordsList.map(k => `<span class="badge gray" style="font-size:11px;margin:2px 2px 2px 0;display:inline-block">#${k}</span>`).join('') + (s.meta_keywords.split(/,|;/).length > 4 ? ` <span style="font-size:10px;color:#9ca3af">+${s.meta_keywords.split(/,|;/).length - 4} more</span>` : '')
+      : `<span style="color:#9ca3af;font-size:12px">No keywords added</span>`;
+
+    return `
+      <tr>
+        <td>
+          <code style="background:#f1f5f9;padding:3px 8px;border-radius:6px;font-size:12px;font-weight:700;color:#0f172a">${s.page_route}</code>
+        </td>
+        <td>
+          <strong>${s.page_name || 'Page'}</strong>
+        </td>
+        <td style="max-width:320px">
+          <div style="font-weight:700;font-size:13px;color:#1a0dab;line-height:1.3;margin-bottom:3px">${s.meta_title || 'No Meta Title'}</div>
+          <div style="font-size:12px;color:#4d5156;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${s.meta_description || 'No Meta Description'}</div>
+        </td>
+        <td style="max-width:240px">
+          <div>${keywordsBadges}</div>
+        </td>
+        <td>
+          <span class="badge ${s.status === 'Active' ? 'green' : 'gray'}">${s.status || 'Active'}</span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button class="btn-sm btn-edit" onclick="editSeo(${s.id})"><i class="fas fa-pen"></i> Edit</button>
+            <button class="btn-sm btn-delete" onclick="deleteSeo(${s.id})"><i class="fas fa-trash"></i></button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+window.searchSeo = function(val) {
+  currentSeoSearch = (val || '').trim();
+  renderSeoTable();
+};
+
+const COMMON_PAGE_ROUTES = [
+  { route: '/', name: 'Home Page' },
+  { route: '/holiday-package.html', name: 'Holiday Packages' },
+  { route: '/packages.html', name: 'All Packages Listing' },
+  { route: '/attraction.html', name: 'Attractions & Sightseeing' },
+  { route: '/blog.html', name: 'Travel Journal & Blog' },
+  { route: '/about.html', name: 'About Us' },
+  { route: '/contact.html', name: 'Contact Us' },
+  { route: '/global-visa-services.html', name: 'Global Visa Services' },
+  { route: '/flight-tickets.html', name: 'Flight Tickets' },
+  { route: '/travel-insurance.html', name: 'Travel Insurance' },
+  { route: '/mice-tourism.html', name: 'MICE Tourism' },
+  { route: '/cruises.html', name: 'Luxury Cruises' },
+  { route: '/miscellaneous.html', name: 'Miscellaneous Services' },
+  { route: '/customize-trip.html', name: 'Customize Your Trip' },
+  { route: '/career.html', name: 'Career Opportunities' },
+  { route: '/privacy-policy.html', name: 'Privacy Policy' },
+  { route: '/terms-and-conditions.html', name: 'Terms & Conditions' }
+];
+
+function openSeoForm(s = null) {
+  const routesDatalist = COMMON_PAGE_ROUTES.map(r => `<option value="${r.route}">${r.name} (${r.route})</option>`).join('');
+
+  openModal(s ? `Edit SEO: ${s.page_name}` : 'Add Page SEO Configuration', `
+    <!-- Google Search Live Preview Card -->
+    <div style="background:#ffffff;border:1px solid #dfe1e5;border-radius:12px;padding:16px;margin-bottom:20px;box-shadow:0 1px 6px rgba(32,33,36,0.08)">
+      <div style="font-size:11px;font-weight:700;color:#70757a;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+        <i class="fab fa-google" style="color:#4285F4"></i> Google Search Snippet Live Preview
+      </div>
+      <div style="font-size:12px;color:#202124;display:flex;align-items:center;gap:4px;margin-bottom:4px">
+        <span style="color:#202124">https://mangalamtravel.com</span>
+        <span style="color:#70757a">› <span id="preview-seo-route">${(s?.page_route||'/').replace(/^\//,'') || 'home'}</span></span>
+      </div>
+      <div id="preview-seo-title" style="font-size:18px;line-height:1.3;color:#1a0dab;font-family:Arial,sans-serif;font-weight:400;margin-bottom:4px;cursor:pointer">
+        ${s?.meta_title || 'Enter a Meta Title below to see Google preview'}
+      </div>
+      <div id="preview-seo-desc" style="font-size:13px;line-height:1.4;color:#4d5156;font-family:Arial,sans-serif">
+        ${s?.meta_description || 'Enter a Meta Description below. Google typically displays between 140 to 160 characters in search results.'}
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Page Route / URL Path *</label>
+        <input id="seo-route" list="seo-routes-list" value="${s?.page_route || '/'}" placeholder="e.g. / or /holiday-package.html" oninput="updateSeoPreview()">
+        <datalist id="seo-routes-list">
+          ${routesDatalist}
+        </datalist>
+      </div>
+      <div class="form-group">
+        <label>Page Name *</label>
+        <input id="seo-page-name" value="${s?.page_name || ''}" placeholder="e.g. Holiday Packages">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <label style="margin:0">Google Meta Title *</label>
+        <span id="char-count-title" style="font-size:11px;color:#6b7280">${(s?.meta_title||'').length}/60 chars</span>
+      </div>
+      <input id="seo-title" value="${s?.meta_title || ''}" placeholder="e.g. Holiday Packages — Best International Tours | Mangalam" oninput="updateSeoPreview()">
+    </div>
+
+    <div class="form-group">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <label style="margin:0">Google Meta Description *</label>
+        <span id="char-count-desc" style="font-size:11px;color:#6b7280">${(s?.meta_description||'').length}/160 chars</span>
+      </div>
+      <textarea id="seo-desc" rows="3" placeholder="Brief summary for search engines (140-160 characters)..." oninput="updateSeoPreview()">${s?.meta_description || ''}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label>SEO Focus Keywords (Comma separated) *</label>
+      <textarea id="seo-keywords" rows="2" placeholder="e.g. travel agency kerala, dubai holiday packages, emi tours, visa assistance">${s?.meta_keywords || ''}</textarea>
+      <span style="font-size:11px;color:#9ca3af;margin-top:2px;display:block">Separate keywords with commas. Example: <code>dubai tours, cheap flights, visa processing</code></span>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Canonical URL (Optional)</label>
+        <input id="seo-canonical" value="${s?.canonical_url || ''}" placeholder="e.g. https://mangalamtravel.com/holiday-package.html">
+      </div>
+      <div class="form-group">
+        <label>Robots Indexing</label>
+        <select id="seo-robots">
+          <option value="index, follow" ${s?.robots === 'index, follow' || !s ? 'selected' : ''}>index, follow (Recommended)</option>
+          <option value="noindex, follow" ${s?.robots === 'noindex, follow' ? 'selected' : ''}>noindex, follow</option>
+          <option value="noindex, nofollow" ${s?.robots === 'noindex, nofollow' ? 'selected' : ''}>noindex, nofollow (Hidden)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Social / OG Share Image</label>
+      ${createImageUpload('seo-og', s?.og_image || '')}
+    </div>
+
+    <div class="form-group">
+      <label>Status</label>
+      <select id="seo-status">
+        <option value="Active" ${s?.status === 'Active' || !s ? 'selected' : ''}>Active</option>
+        <option value="Draft" ${s?.status === 'Draft' ? 'selected' : ''}>Draft</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveSeo(${s?.id || 'null'})"><i class="fas fa-save"></i> ${s ? 'Update SEO' : 'Save SEO'}</button>
+    </div>
+  `);
+}
+
+window.updateSeoPreview = function() {
+  const route = document.getElementById('seo-route')?.value || '/';
+  const title = document.getElementById('seo-title')?.value || '';
+  const desc = document.getElementById('seo-desc')?.value || '';
+
+  const prevRoute = document.getElementById('preview-seo-route');
+  const prevTitle = document.getElementById('preview-seo-title');
+  const prevDesc = document.getElementById('preview-seo-desc');
+  const countTitle = document.getElementById('char-count-title');
+  const countDesc = document.getElementById('char-count-desc');
+
+  if (prevRoute) prevRoute.textContent = route.replace(/^\//, '') || 'home';
+  if (prevTitle) prevTitle.textContent = title || 'Enter a Meta Title below to see Google preview';
+  if (prevDesc) prevDesc.textContent = desc || 'Enter a Meta Description below. Google typically displays between 140 to 160 characters in search results.';
+
+  if (countTitle) {
+    countTitle.textContent = `${title.length}/60 chars`;
+    countTitle.style.color = title.length > 65 ? '#dc2626' : (title.length >= 40 ? '#16a34a' : '#6b7280');
+  }
+  if (countDesc) {
+    countDesc.textContent = `${desc.length}/160 chars`;
+    countDesc.style.color = desc.length > 165 ? '#dc2626' : (desc.length >= 120 ? '#16a34a' : '#6b7280');
+  }
+};
+
+window.editSeo = function(id) {
+  const s = seoList.find(x => x.id === id);
+  if (s) openSeoForm(s);
+};
+
+window.saveSeo = async function(id) {
+  const route = document.getElementById('seo-route').value.trim();
+  const pageName = document.getElementById('seo-page-name').value.trim();
+  const title = document.getElementById('seo-title').value.trim();
+  const desc = document.getElementById('seo-desc').value.trim();
+  const keywords = document.getElementById('seo-keywords').value.trim();
+  const canonical = document.getElementById('seo-canonical').value.trim();
+  const ogImg = document.getElementById('img-url-seo-og')?.value || '';
+  const robots = document.getElementById('seo-robots').value;
+  const status = document.getElementById('seo-status').value;
+
+  if (!route || !title) {
+    showToast('Page Route and Meta Title are required', 'error');
+    return;
+  }
+
+  const body = {
+    page_route: route,
+    page_name: pageName || 'Custom Page',
+    meta_title: title,
+    meta_description: desc,
+    meta_keywords: keywords,
+    canonical_url: canonical,
+    og_image: ogImg,
+    robots,
+    status
+  };
+
+  const res = id ? await api('PUT', `/seo/${id}`, body) : await api('POST', '/seo', body);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast(id ? 'SEO updated!' : 'SEO added!', 'success');
+  closeModal(); loadSeo(); loadDashboard();
+};
+
+window.deleteSeo = async function(id) {
+  if (!confirm('Delete this SEO configuration?')) return;
+  await api('DELETE', `/seo/${id}`);
+  showToast('SEO configuration deleted', 'success');
+  loadSeo(); loadDashboard();
+};
+
+document.getElementById('btn-add-seo')?.addEventListener('click', () => openSeoForm());
+
 // ── Section loaders map ───────────────────────────────────────────────────────
 const loaders = {
   dashboard:    loadDashboard,
@@ -1504,6 +1765,7 @@ const loaders = {
   collections:  loadCollections,
   attractions:  loadAttractions,
   blogs:        loadBlogs,
+  seo:          loadSeo,
   testimonials: loadTestimonials,
   partners:     loadPartners,
   posters:      loadPosters,

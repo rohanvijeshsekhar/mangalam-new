@@ -9,7 +9,7 @@ const bcrypt = require('bcryptjs');
 const DATA_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const COLLECTIONS = ['destinations', 'packages', 'tickets', 'blogs', 'testimonials', 'partners', 'users', 'collections'];
+const COLLECTIONS = ['destinations', 'packages', 'attractions', 'tickets', 'blogs', 'testimonials', 'partners', 'users', 'collections', 'posters', 'enquiries', 'seo'];
 
 // Initialize empty collection files if they don't exist
 COLLECTIONS.forEach(col => {
@@ -38,7 +38,9 @@ if (!adminUser) {
 
 // ── Core helpers ──────────────────────────────────────────────────────────────
 function read(col) {
-  return JSON.parse(fs.readFileSync(path.join(DATA_DIR, `${col}.json`), 'utf-8'));
+  const fp = path.join(DATA_DIR, `${col}.json`);
+  if (!fs.existsSync(fp)) return [];
+  try { return JSON.parse(fs.readFileSync(fp, 'utf-8')); } catch { return []; }
 }
 function write(col, data) {
   fs.writeFileSync(path.join(DATA_DIR, `${col}.json`), JSON.stringify(data, null, 2));
@@ -71,8 +73,7 @@ const store = {
     const all = read(col);
     const idx = all.findIndex(x => x.id === Number(id));
     if (idx === -1) return null;
-    // Remove undefined/null values from updates so existing data is preserved
-    const clean = Object.fromEntries(Object.entries(updates).filter(([, v]) => v !== undefined && v !== null && v !== ''));
+    const clean = Object.fromEntries(Object.entries(updates).filter(([, v]) => v !== undefined && v !== null));
     all[idx] = { ...all[idx], ...clean };
     write(col, all);
     return all[idx];

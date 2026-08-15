@@ -41,6 +41,7 @@ app.use('/api/posters',      require('./routes/posters'));
 app.use('/api/enquiries',    require('./routes/enquiries'));
 app.use('/api/enquiry',      require('./routes/enquiries'));
 app.use('/api/collections',  require('./routes/collections'));
+app.use('/api/seo',          require('./routes/seo'));
 app.use('/api/otp',          require('./routes/otp'));
 app.use('/api/upload',       require('./routes/upload'));
 
@@ -68,6 +69,7 @@ app.get('/api/stats', (req, res) => {
     partners:     store.count('partners'),
     posters:      store.count('posters'),
     enquiries:    store.count('enquiries'),
+    seo:          store.count('seo'),
   });
 });
 
