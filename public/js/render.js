@@ -4,6 +4,7 @@
 
 (function (window) {
     function destinationCard(destination) {
+        if (!destination) return '';
         const dSlug = destination.slug_url || destination.slug || '';
         const destinationUrl = dSlug ? `packages.html?slug=${encodeURIComponent(dSlug)}&type=package` : 'curated-itineraries.html';
         const title = destination.destination_name || destination.title || destination.name || '';

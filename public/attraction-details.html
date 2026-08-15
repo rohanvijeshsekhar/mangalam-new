@@ -41,22 +41,118 @@
   <div class="container mx-auto px-4 py-20 text-center text-gray-400">Loading attraction details...</div>
 </div>
 
-<footer class="bg-black text-white py-10 mb-20 lg:mb-0">
-<div class="container mx-auto px-4">
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 border-b border-gray-700 pb-8">
-    <div><h4 class="font-bold mb-3 text-white">Top Destinations</h4><div id="footer-dests-1" class="space-y-1 text-sm text-gray-300"></div></div>
-    <div><h4 class="font-bold mb-3 text-white">Top Activities</h4><div id="footer-activities" class="space-y-1 text-sm text-gray-300"></div></div>
-    <div><h4 class="font-bold mb-3 text-white">Top Tickets</h4><div id="footer-tickets" class="space-y-1 text-sm text-gray-300"></div></div>
-  </div>
-  <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-    <a href="/"><img src="./assets/images/logo.png" alt="Mangalam Tours" class="h-10"></a>
-    <p class="text-gray-400 text-sm">2026 Mangalam Travel &amp; Tours. All rights reserved.</p>
-    <div class="flex space-x-3">
-      <a href="#" class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700"><i class="fab fa-facebook-f text-white"></i></a>
-      <a href="#" class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700"><i class="fab fa-instagram text-white"></i></a>
+<footer class="mb-20 lg:mb-0">
+    <div class="bg-black text-white">
+        <!-- Upper Destinations Section -->
+        <section class="border-b border-gray-700 py-8">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 py-2">
+                    <div>
+                        <h3 class="text-lg font-bold mb-4 text-white">Top Destinations</h3>
+                        <div id="footer-dests" class="space-y-2">
+                            <p class="text-gray-400 text-sm">Loading destinations...</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold mb-4 text-white">Holiday Packages</h3>
+                        <div id="footer-pkgs" class="space-y-2">
+                            <p class="text-gray-400 text-sm">Loading packages...</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold mb-4 text-white">Top Tickets</h3>
+                        <div id="footer-tickets" class="space-y-2">
+                            <p class="text-gray-400 text-sm">Loading tickets...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Footer Section -->
+        <section class="py-12">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-8">
+                    <!-- Logo and Copyright Column -->
+                    <div class="md:col-span-1">
+                        <div class="mb-6 w-[170px] flex flex-col gap-4">
+                            <a href="/" class="block">
+                                <img src="./assets/images/logo.png" alt="Mangalam Travel &amp; Tours" class="w-full h-auto">
+                            </a>
+                            <a href="/" class="block">
+                                <img src="./assets/images/emi-holiday.png" alt="Mangalam Travel &amp; Tours" class="w-full h-auto">
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Quick Links Column -->
+                    <div>
+                        <h3 class="text-lg font-bold mb-4">Quick Links</h3>
+                        <ul class="space-y-2">
+                            <li><a href="/" class="text-gray-300 hover:text-white transition-colors">Home</a></li>
+                            <li><a href="/about.html" class="text-gray-300 hover:text-white transition-colors">About</a></li>
+                            <li><a href="/contact.html" class="text-gray-300 hover:text-white transition-colors">Contact</a></li>
+                            <li><a href="/career.html" class="text-gray-300 hover:text-white transition-colors">Career</a></li>
+                            <li><a href="/holiday-package.html" class="text-gray-300 hover:text-white transition-colors">Holiday Packages</a></li>
+                            <li><a href="/attraction.html" class="text-gray-300 hover:text-white transition-colors">Attractions</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Services Column -->
+                    <div>
+                        <h3 class="text-lg font-bold mb-4">Services</h3>
+                        <ul class="space-y-2">
+                            <li><a href="/flight-tickets.html" class="text-gray-300 hover:text-white transition-colors">Flight Tickets</a></li>
+                            <li><a href="/global-visa-services.html" class="text-gray-300 hover:text-white transition-colors">Visa Services</a></li>
+                            <li><a href="/travel-insurance.html" class="text-gray-300 hover:text-white transition-colors">Travel Insurance</a></li>
+                            <li><a href="/miscellaneous.html" class="text-gray-300 hover:text-white transition-colors">Miscellaneous Services</a></li>
+                            <li><a href="/mice-tourism.html" class="text-gray-300 hover:text-white transition-colors">MICE Tourism</a></li>
+                            <li><a href="/cruises.html" class="text-gray-300 hover:text-white transition-colors">Cruises</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Other Links -->
+                    <div>
+                        <h3 class="text-lg font-bold mb-4">Other Links</h3>
+                        <ul class="space-y-2">
+                            <li><a href="/privacy-policy.html" class="text-gray-300 hover:text-white transition-colors">Privacy &amp; Policy</a></li>
+                            <li><a href="/terms-and-conditions.html" class="text-gray-300 hover:text-white transition-colors">Terms &amp; Conditions</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Contact Column -->
+                    <div>
+                        <h3 class="text-lg font-bold mb-4">Contact</h3>
+                        <ul class="space-y-2">
+                            <li class="text-gray-300">5 &amp; 6, 1st Floor, Our Tower, Vellayambalam - Sasthamangalam Rd, P.O, Thiruvananthapuram, Kerala 695010</li>
+                            <li><a href="mailto:enquiries@mangalamtravel.com" class="text-gray-300 hover:text-white transition-colors">enquiries@mangalamtravel.com</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Social Media Icons -->
+                    <div>
+                        <div class="flex space-x-4">
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
+                                <i class="fab fa-facebook-f text-white"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
+                                <i class="fab fa-whatsapp text-white"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
+                                <i class="fab fa-twitter text-white"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
+                                <i class="fab fa-instagram text-white"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Copyright -->
+                <p class="text-sm text-gray-400 text-center mt-10">2026 mangalam travel &amp; tours . All right reserved. powered by <a href="https://manziostudio.com/" target="_blank" class="text-gray-100">Manzio</a></p>
+            </div>
+        </section>
     </div>
-  </div>
-</div>
 </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
@@ -65,7 +161,7 @@
     <script src="./js/enquiryOtp.js"></script>
     <script src="./js/customize.js"></script>
     <script src="./js/App.js"></script>
-    <script src="./js/api.js?v=20260812"></script>
+    <script src="./js/api.js?v=20260815"></script>
     <script src="./js/render.js?v=20260812"></script>
     <script src="./js/attraction-details.js?v=20260812"></script>
     <script>AOS.init({once:true,duration:700});if(typeof updateCartCount==='function')updateCartCount();</script>
