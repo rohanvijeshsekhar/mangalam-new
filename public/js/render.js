@@ -270,6 +270,92 @@
       </section>`;
     }
 
+    function attractionCard(a) {
+        if (!a) return '';
+        const title = a.name || a.title || 'Attraction';
+        const slug = a.slug_url || a.slug || '';
+        const link = `attraction-details.html?slug=${encodeURIComponent(slug || a.id || a.attraction_id)}`;
+        const img = MT.resolveImg(a.card_image || a.banner_image || a.image);
+        const expType = a.experience_type || 'Cultural';
+        const duration = a.duration || '2-3 Hours';
+        const dest = a.destination_name || 'Destination';
+        const price = a.price || a.amount ? `₹ ${Number(a.price || a.amount).toLocaleString('en-IN')}` : 'Included';
+        const desc = a.description || a.overview || '';
+        const included = a.included || '';
+
+        const expColors = {
+            'Adventure': 'bg-amber-500 text-white',
+            'Cultural':  'bg-indigo-600 text-white',
+            'Luxury':    'bg-yellow-400 text-slate-900',
+            'Sightseeing':'bg-emerald-600 text-white',
+            'Nature':    'bg-green-600 text-white',
+            'Family':    'bg-purple-600 text-white',
+        };
+        const badgeColor = expColors[expType] || 'bg-red-600 text-white';
+
+        return `
+      <div class="group bg-white rounded-[28px] border border-gray-100 shadow-lg shadow-gray-200/50 overflow-hidden hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full">
+        <!-- Image Box & Badges -->
+        <div class="relative h-56 w-full overflow-hidden bg-slate-900">
+          <img src="${img}" alt="${title}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out" onerror="this.src='./assets/images/activity-1.webp'">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+          
+          <!-- Experience Type Badge -->
+          <div class="absolute top-4 left-4 z-10">
+            <span class="px-3.5 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider font-dm-sans shadow-md ${badgeColor}">
+              <i class="fa-solid fa-sparkles mr-1"></i> ${expType}
+            </span>
+          </div>
+
+          <!-- Duration Pill -->
+          <div class="absolute top-4 right-4 z-10">
+            <span class="px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md text-white font-semibold text-xs font-dm-sans border border-white/20">
+              <i class="fa-regular fa-clock mr-1 text-yellow-400"></i> ${duration}
+            </span>
+          </div>
+
+          <!-- Location -->
+          <div class="absolute bottom-3 left-4 z-10 text-white text-xs font-dm-sans flex items-center gap-1 font-medium drop-shadow">
+            <i class="fa-solid fa-location-dot text-red-500"></i> ${dest}
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <h3 class="text-xl font-bold font-[Quicksand] text-gray-900 group-hover:text-red-600 transition-colors line-clamp-2 leading-snug">
+              <a href="${link}">${title}</a>
+            </h3>
+            
+            ${desc ? `
+              <p class="text-gray-500 font-dm-sans text-sm line-clamp-2 leading-relaxed">
+                ${desc}
+              </p>
+            ` : ''}
+
+            ${included ? `
+              <div class="pt-2 flex items-center gap-2 text-xs text-emerald-700 font-dm-sans font-medium">
+                <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                <span class="truncate">${included}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Footer & Action -->
+          <div class="pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
+            <div>
+              <span class="text-xs uppercase tracking-wider text-gray-400 font-bold font-dm-sans block">Starting from</span>
+              <div class="text-xl font-extrabold text-gray-900 font-[Quicksand]">${price}</div>
+            </div>
+            <a href="${link}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900 text-white font-bold text-xs uppercase tracking-wider font-dm-sans group-hover:bg-red-600 hover:bg-red-600 transition-all shadow-md">
+              <span>View Details</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </a>
+          </div>
+        </div>
+      </div>`;
+    }
+
     window.R = {
         destinationCard,
         ticketCard,
@@ -277,6 +363,7 @@
         testimonialCard,
         partnerLogo,
         packageCard,
+        attractionCard,
         collectionSection
     };
 })(window);

@@ -970,6 +970,201 @@
                             <a href="/travel-insurance.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
                                 Travel Insurance
                             </a>
+                align-items: flex-end;
+                list-style: none;
+                margin: 0;
+                padding: 8px 8px;
+                gap: 4px;
+            }
+
+            .responsive-float-header li {
+                flex: 1;
+                text-align: center;
+            }
+
+            .responsive-float-header a {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-decoration: none;
+                color: #666;
+                font-size: 10px;
+                line-height: 1.2;
+                text-align: center;
+            }
+
+            .responsive-float-header a.active {
+                color: #1f2937;
+            }
+
+            .responsive-float-header i {
+                font-size: 20px;
+                margin-bottom: 4px;
+            }
+
+            .mobile-customize-item {
+                position: relative;
+            }
+
+            .mobile-customize-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                text-decoration: none;
+                color: #1f2937;
+            }
+
+            .mobile-customize-button:focus {
+                outline: none;
+            }
+
+            .mobile-customize-icon svg {
+                width: 64px;
+                height: 64px;
+            }
+
+            .mobile-customize-dropdown {
+                position: absolute;
+                bottom: 80px;
+                left: 50%;
+                transform: translate(-50%, 12px);
+                width: min(320px, calc(100vw - 32px));
+                background: #ffffff;
+                border-radius: 18px;
+                box-shadow: 0 20px 45px rgba(15, 23, 42, 0.35);
+                padding: 18px 16px;
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                transition: all 0.25s ease;
+                z-index: 1100;
+                max-height: 65vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .mobile-customize-dropdown::before {
+                content: '';
+                position: absolute;
+                bottom: -12px;
+                left: 50%;
+                transform: translateX(-50%);
+                border-width: 12px 12px 0 12px;
+                border-style: solid;
+                border-color: #ffffff transparent transparent transparent;
+            }
+
+            .mobile-customize-dropdown-visible {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
+                transform: translate(-50%, 0);
+            }
+
+            .mobile-customize-dropdown-header {
+                font-size: 14px;
+                font-weight: 600;
+                color: #111827;
+                margin-bottom: 12px;
+                text-align: left;
+            }
+
+            .mobile-customize-dropdown-list {
+                overflow-y: auto;
+                padding-right: 4px;
+            }
+
+            .mobile-customize-dropdown-item {
+                width: 100%;
+                display: block;
+                text-align: left;
+                padding: 12px 14px;
+                margin-bottom: 10px;
+                border-radius: 12px;
+                border: 1px solid #e5e7eb;
+                background: #ffffff;
+                font-size: 14px;
+                font-weight: 500;
+                color: #1f2937;
+                transition: all 0.2s ease;
+            }
+
+            .mobile-customize-dropdown-item:last-child {
+                margin-bottom: 0;
+            }
+
+            .mobile-customize-dropdown-item:hover,
+            .mobile-customize-dropdown-item:focus {
+                background: #f0f9ff;
+                border-color: #1aacde;
+                color: #0f172a;
+            }
+
+            .mobile-customize-dropdown-empty {
+                text-align: center;
+                font-size: 13px;
+                color: #6b7280;
+                padding: 18px 0;
+            }
+
+            .c-inside-alert {
+                display: none;
+            }
+        </style>
+        <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            'warm-pink': '#FFF5F5',
+                            'dark-brown': '#8B4513',
+                            'gold': '#DAA520'
+                        },
+                        fontFamily: {
+                            'roxborough': ['Roxborough CF', 'serif'],
+                            'dm-sans': ['DM Sans', 'sans-serif']
+                        }
+                    }
+                }
+            }
+        </script>
+</head>
+<body class="font-dm-sans bg-white">
+    <script>
+        window.initialActiveTab = '';
+    </script>
+    <!-- Header -->
+    <header class="fixed top-0 left-0 w-full bg-white/95 backdrop-blur-md shadow-sm z-[999] transition-all duration-300">
+    
+    <div class="container mx-auto p-2">
+        <div class="flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center space-x-2 w-[120px]">
+                <a href="/"><img src="./assets/images/logo-color.png" alt="Mangalam Travel & Tours" class="w-full h-full"></a>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="hidden md:flex items-center space-x-8 relative">
+                <a href="/" class="text-gray-600 hover:text-gray-900 font-dm-sans transition-colors">Home</a>
+                <a href="/holiday-package.html" class="text-gray-900 font-bold font-dm-sans">Holiday Packages</a>
+                <!-- Services Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 text-gray-600 hover:text-gray-900 font-dm-sans transition-colors focus:outline-none">
+                        Services 
+                        <i class="fi fi-rr-angle-small-down pt-1 flex items-center justify-center"></i>
+                    </button>
+                    <div class="absolute top-full -left-4 mt-0 w-64 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+                        <div class="py-2">
+                            <a href="/flight-tickets.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Flight Tickets
+                            </a>
+                            <a href="/global-visa-services.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Visa Services
+                            </a>
+                            <a href="/travel-insurance.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Travel Insurance
+                            </a>
                             <a href="/miscellaneous.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
                                 Miscellaneous Services
                             </a>
@@ -992,7 +1187,7 @@
 </header>
 
 
-    <main class="pt-20 md:pt-24">
+    <main class="pt-20 md:pt-24">-24">
         <!-- Hero Section -->
         <section class="relative h-[45vh] min-h-[340px] overflow-hidden flex items-center justify-center" data-aos="fade-up">
             <div class="absolute inset-0" data-aos="zoom-in" data-aos-delay="100">
@@ -1005,21 +1200,21 @@
                 <p id="dest-hero-desc" class="text-white/90 text-sm md:text-base mt-2 font-dm-sans max-w-xl mx-auto drop-shadow-sm"></p>
             </div>
 
-            <!-- Navigation Tabs (Only Packages and Attractions) -->
+            <!-- Navigation Tabs (Packages and Attractions) -->
             <div class="absolute bottom-0 left-0 w-full" data-aos="fade-up" data-aos-delay="250">
                 <div class="w-full max-w-sm mx-auto px-2 sm:px-0">
                     <div class="flex justify-around bg-white rounded-t-2xl overflow-x-auto no-scrollbar shadow-sm">
                         <div class="relative flex-1 text-center">
-                            <a href="packages.html" id="tab-packages" class="px-6 sm:px-10 py-3 sm:py-4 font-semibold text-[15px] sm:text-lg text-gray-900 transition-colors block whitespace-nowrap">
+                            <button type="button" id="tab-packages" class="w-full px-6 sm:px-10 py-3 sm:py-4 font-semibold text-[15px] sm:text-lg text-gray-900 transition-colors block whitespace-nowrap cursor-pointer">
                                 Packages
-                            </a>
+                            </button>
                             <div id="indicator-packages" class="absolute top-0 left-1/2 transform -translate-x-1/2 w-16 sm:w-20 h-1 bg-red-600 rounded-full"></div>
                         </div>
 
                         <div class="relative flex-1 text-center">
-                            <a href="attraction.html" id="tab-activity" class="px-6 sm:px-10 py-3 sm:py-4 font-semibold text-[15px] sm:text-lg text-gray-500 hover:text-gray-900 transition-colors block whitespace-nowrap">
+                            <button type="button" id="tab-activity" class="w-full px-6 sm:px-10 py-3 sm:py-4 font-semibold text-[15px] sm:text-lg text-gray-500 hover:text-gray-900 transition-colors block whitespace-nowrap cursor-pointer">
                                 Attractions
-                            </a>
+                            </button>
                             <div id="indicator-activity" class="absolute top-0 left-1/2 transform -translate-x-1/2 w-16 sm:w-20 h-1 bg-red-600 rounded-full hidden"></div>
                         </div>
                     </div>
@@ -1032,7 +1227,7 @@
             <div class="container mx-auto px-4">
                 <div class="mb-8 text-center">
                     <h2 class="text-3xl font-bold text-gray-800 mb-2">Popular Packages In <span id="dest-span-name" class="text-red-600"></span></h2>
-                    <p class="text-gray-600"></p>
+                    <p class="text-gray-600 font-dm-sans text-sm">Handcrafted vacation packages tailored for memorable getaways</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="packages-grid">
                     <!-- Packages injected by packages.js -->
@@ -1040,15 +1235,15 @@
             </div>
         </section>
 
-        <!-- Activity Tab Section -->
-        <section id="section-activity" class="py-16 bg-gray-50 " data-aos="fade-up">
+        <!-- Activity / Attractions Tab Section -->
+        <section id="section-activity" class="py-16 bg-white hidden" data-aos="fade-up">
             <div class="container mx-auto px-4">
                 <div class="mb-8 text-center" data-aos="fade-up" data-aos-delay="100">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2" data-aos="fade-up" data-aos-delay="150">Popular Activities In <span class="text-red-600"></span></h2>
-                    <p class="text-gray-600" data-aos="fade-up" data-aos-delay="200"></p>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2" data-aos="fade-up" data-aos-delay="150">Popular Attractions In <span id="dest-span-attraction-name" class="text-red-600"></span></h2>
+                    <p class="text-gray-600 font-dm-sans text-sm" data-aos="fade-up" data-aos-delay="200">Top rated experiences, sightseeing, and must-visit attractions</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="activities-grid">
-                    <!-- Activities injected by packages.js -->
+                    <!-- Attractions injected by packages.js -->
                 </div>
             </div>
         </section>

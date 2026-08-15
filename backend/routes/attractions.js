@@ -6,6 +6,8 @@ const slugify = t => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+
 
 const map = a => ({
   attraction_id:   a.id,
+  destination_id:  a.destination_id || (a.destination_name && a.destination_name.toLowerCase().includes('dubai') ? 1 : null),
+  destination_name:a.destination_name || 'Dubai, UAE',
   name:            a.name || a.title || '',
   title:           a.name || a.title || '',
   slug_url:        a.slug_url || (a.name ? slugify(a.name) : ''),
@@ -14,7 +16,6 @@ const map = a => ({
   experience_type: a.experience_type || 'Cultural',
   duration:        a.duration || '2-3 Hours',
   included:        a.included || 'Entry Ticket & Guide',
-  destination_name:a.destination_name || 'Dubai, UAE',
   price:           a.price || a.amount || 0,
   amount:          a.price || a.amount || 0,
   description:     a.description || a.overview || '',
@@ -34,6 +35,7 @@ function ensureSeed() {
         experience_type: 'Luxury',
         duration: '2-3 Hours',
         included: 'At The Top Level 124 & 125 Entry Pass, Telescope Access, High Speed Elevator, WiFi Access',
+        destination_id: 1,
         destination_name: 'Dubai, UAE',
         price: 3800,
         description: 'Ascend the world\'s tallest skyscraper, Burj Khalifa, and enjoy breathtaking 360-degree panoramic views of Dubai\'s futuristic skyline, Arabian Gulf, and desert landscapes from the 124th and 125th floors.'
@@ -45,6 +47,7 @@ function ensureSeed() {
         experience_type: 'Adventure',
         duration: '6 Hours',
         included: '4x4 Dune Bashing, Camel Riding, Live Tanoura & Belly Dance Shows, Gourmet BBQ Dinner, Henna Painting',
+        destination_id: 1,
         destination_name: 'Dubai, UAE',
         price: 2400,
         description: 'Immerse yourself in Arabian culture with an exhilarating 4x4 dune bashing adventure, sunset camel ride, traditional desert camp entertainment, and a delicious barbecue feast under the stars.'
@@ -56,6 +59,7 @@ function ensureSeed() {
         experience_type: 'Cultural',
         duration: '3 Hours',
         included: 'Timed Entry Ticket, Access to All 5 Futuristic Floor Exhibits, Interactive AI Installations',
+        destination_id: 1,
         destination_name: 'Dubai, UAE',
         price: 3500,
         description: 'Explore futuristic innovations, space travel simulations, climate sanctuary exhibits, and groundbreaking technological design at the iconic Museum of the Future.'
@@ -67,6 +71,7 @@ function ensureSeed() {
         experience_type: 'Luxury',
         duration: '2 Hours',
         included: 'Luxury Yacht Access, Soft Drinks & Refreshments, Professional Captain & Crew, Live Music',
+        destination_id: 1,
         destination_name: 'Dubai Marina, UAE',
         price: 2900,
         description: 'Sail through the stunning Dubai Marina canal, JBR skyline, and Atlantis The Palm on a premium private or shared luxury yacht with complimentary refreshments and photography spots.'
@@ -94,7 +99,7 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', verifyToken, (req, res) => {
-  const { name, card_image, banner_image, experience_type, duration, included, destination_name, price, description } = req.body;
+  const { name, card_image, banner_image, experience_type, duration, included, destination_id, destination_name, price, description } = req.body;
   if (!name) return res.status(400).json({ error: 'name is required' });
   const doc = store.insert('attractions', {
     name,
@@ -104,6 +109,7 @@ router.post('/', verifyToken, (req, res) => {
     experience_type: experience_type || 'Cultural',
     duration: duration || '2-3 Hours',
     included: included || '',
+    destination_id: destination_id ? Number(destination_id) : null,
     destination_name: destination_name || '',
     price: Number(price) || 0,
     description: description || ''
@@ -112,7 +118,7 @@ router.post('/', verifyToken, (req, res) => {
 });
 
 router.put('/:id', verifyToken, (req, res) => {
-  const { name, card_image, banner_image, experience_type, duration, included, destination_name, price, description } = req.body;
+  const { name, card_image, banner_image, experience_type, duration, included, destination_id, destination_name, price, description } = req.body;
   const updates = {
     name,
     card_image,
@@ -120,6 +126,7 @@ router.put('/:id', verifyToken, (req, res) => {
     experience_type,
     duration,
     included,
+    destination_id: destination_id !== undefined ? (destination_id ? Number(destination_id) : null) : undefined,
     destination_name,
     price: price !== undefined ? Number(price) : undefined,
     description

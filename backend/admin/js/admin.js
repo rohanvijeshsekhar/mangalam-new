@@ -1062,13 +1062,14 @@ async function loadAttractions() {
   const tbody = document.getElementById('tbody-attractions');
   if (!tbody) return;
   if (!attractions.length) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="6"><i class="fas fa-camera" style="font-size:24px;color:#e5e7eb;display:block;margin-bottom:8px"></i>No attractions found.</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7"><i class="fas fa-camera" style="font-size:24px;color:#e5e7eb;display:block;margin-bottom:8px"></i>No attractions found.</td></tr>`;
     return;
   }
   tbody.innerHTML = attractions.map(a => `
     <tr>
       <td>${imgCell(a.card_image || a.banner_image)}</td>
       <td><strong>${a.name || a.title}</strong></td>
+      <td><span class="badge" style="background:#f1f5f9;color:#334155;font-weight:600;padding:4px 10px;border-radius:12px">${a.destination_name || '—'}</span></td>
       <td><span class="badge" style="background:#e0f2fe;color:#0369a1;font-weight:bold;padding:4px 10px;border-radius:12px">${a.experience_type || 'Cultural'}</span></td>
       <td>${a.duration || '2-3 Hours'}</td>
       <td>${a.price || a.amount ? `₹ ${Number(a.price || a.amount).toLocaleString('en-IN')}` : 'Free / Included'}</td>
@@ -1083,6 +1084,11 @@ function openAttractionForm(a = null) {
   openModal(a ? 'Edit Attraction' : 'Add Attraction', `
     <div class="form-group"><label>Attraction Name *</label><input id="a-name" value="${a?.name||a?.title||''}" placeholder="e.g. Burj Khalifa Observation Deck & Sky Views"></div>
     <div class="form-row-two">
+      <div class="form-group"><label>Destination / Category *</label>
+        <select id="a-dest-id">
+          ${getDestOptions(a?.destination_id)}
+        </select>
+      </div>
       <div class="form-group"><label>Experience Type *</label>
         <select id="a-exp">
           <option value="Adventure" ${a?.experience_type==='Adventure'?'selected':''}>Adventure</option>
@@ -1093,11 +1099,10 @@ function openAttractionForm(a = null) {
           <option value="Family" ${a?.experience_type==='Family'?'selected':''}>Family</option>
         </select>
       </div>
-      <div class="form-group"><label>Duration</label><input id="a-duration" value="${a?.duration||'2-3 Hours'}" placeholder="e.g. 2-3 Hours, Half Day, Full Day"></div>
     </div>
     <div class="form-row-two">
-      <div class="form-group"><label>Destination / Location</label><input id="a-dest" value="${a?.destination_name||'Dubai, UAE'}" placeholder="e.g. Dubai, UAE"></div>
-      <div class="form-group"><label>Ticket Price (₹)</label><input id="a-price" type="number" value="${a?.price||a?.amount||''}" placeholder="3500"></div>
+      <div class="form-group"><label>Duration</label><input id="a-duration" value="${a?.duration||'2-3 Hours'}" placeholder="e.g. 2-3 Hours, Half Day, Full Day"></div>
+      <div class="form-group"><label>Price (₹)</label><input id="a-price" type="number" value="${a?.price||a?.amount||''}" placeholder="3500"></div>
     </div>
     <div class="form-group"><label>Included Items (comma or line separated)</label><textarea id="a-included" rows="2" placeholder="e.g. Timed Entry Ticket, Access to Observation Deck, Soft Drinks">${a?.included||''}</textarea></div>
     <div class="form-group"><label>Card Image (Thumbnail)</label>${createImageUpload('a-card', a?.card_image||'')}</div>
@@ -1112,11 +1117,16 @@ function openAttractionForm(a = null) {
 window.editAttraction = function(id) { const a = attractions.find(x => x.attraction_id === id); if (a) openAttractionForm(a); };
 
 window.saveAttraction = async function(id) {
+  const destSelect = document.getElementById('a-dest-id');
+  const selectedDestId = destSelect ? destSelect.value : '';
+  const selectedDestName = destSelect && destSelect.selectedIndex >= 0 ? destSelect.options[destSelect.selectedIndex].text.replace(/^[—\-]\s*/, '') : '';
+
   const body = {
     name: document.getElementById('a-name').value.trim(),
+    destination_id: selectedDestId ? Number(selectedDestId) : null,
+    destination_name: selectedDestId ? selectedDestName : '',
     experience_type: document.getElementById('a-exp').value,
     duration: document.getElementById('a-duration').value.trim() || '2-3 Hours',
-    destination_name: document.getElementById('a-dest').value.trim() || '',
     price: document.getElementById('a-price').value,
     included: document.getElementById('a-included').value.trim(),
     card_image: document.getElementById('img-url-a-card').value,
