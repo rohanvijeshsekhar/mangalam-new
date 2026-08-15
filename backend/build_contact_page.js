@@ -15,7 +15,7 @@ const contactHtml = `<!DOCTYPE html>
     <!-- Primary Meta Tags -->
     <title>Contact Us | Mangalam Travel & Tours</title>
     <meta name="title" content="Contact Us | Mangalam Travel & Tours">
-    <meta name="description" content="Get in touch with Mangalam Travel & Tours. Call us, send an inquiry or visit our branch offices across Kerala and Tamil Nadu.">
+    <meta name="description" content="Get in touch with Mangalam Travel & Tours. Call us, send a trip inquiry or visit our branch offices across Kerala and Tamil Nadu.">
     <meta name="keywords" content="Mangalam Travel contact, travel agency Trivandrum, tour operator Kerala, contact Mangalam tours">
 
     <!-- Open Graph / Facebook -->
@@ -121,7 +121,7 @@ const contactHtml = `<!DOCTYPE html>
                         Get In Touch <span class="font-bold">With Us</span>
                     </h1>
                     <p class="text-base text-gray-600 font-dm-sans max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">
-                        Have questions about your next adventure? We're here to help plan your perfect journey.
+                        Have questions about your next adventure? Send us a trip enquiry and our experts will help plan your perfect journey.
                     </p>
                 </div>
             </div>
@@ -166,46 +166,56 @@ const contactHtml = `<!DOCTYPE html>
                                 <div class="w-12 h-auto flex items-center justify-center mr-4">
                                     <img src="./assets/images/parachute-img.png" alt="Parachute" class="w-full h-full object-cover">
                                 </div>
-                                <h2 class="text-4xl font-medium text-gray-900 font-[Quicksand]">
-                                    Send Us a <span class="font-bold">Message</span>
-                                </h2>
+                                <div>
+                                    <span class="inline-block px-3 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-full uppercase tracking-wider font-dm-sans mb-2">
+                                        Direct Trip Enquiry
+                                    </span>
+                                    <h2 class="text-3xl lg:text-4xl font-medium text-gray-900 font-[Quicksand]">
+                                        Send Us a <span class="font-bold text-red-600">Message</span>
+                                    </h2>
+                                </div>
                             </div>
                             <p class="text-gray-600 font-dm-sans mb-8" data-aos="fade-up" data-aos-delay="180">
                                 Fill out the form below and our team will get back to you shortly to discuss your travel plans.
                             </p>
 
-                            <form id="contact-form" action="/action/submitContactEnquiry.html" method="POST" class="space-y-6" data-aos="fade-up" data-aos-delay="200">
+                            <form id="contact-form" class="space-y-5" data-aos="fade-up" data-aos-delay="200">
                                 <div>
-                                    <label for="contact-name" class="block text-gray-700 font-dm-sans font-medium mb-2">Full Name</label>
+                                    <label for="contact-name" class="block text-gray-700 font-dm-sans font-medium mb-1.5 text-sm">Full Name *</label>
                                     <input type="text" id="contact-name" name="name" required 
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500 transition-all font-dm-sans"
-                                        placeholder="John Doe">
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all font-dm-sans text-sm"
+                                        placeholder="Your full name">
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="contact-email" class="block text-gray-700 font-dm-sans font-medium mb-1.5 text-sm">Email Address</label>
+                                        <input type="email" id="contact-email" name="email" 
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all font-dm-sans text-sm"
+                                            placeholder="you@example.com">
+                                    </div>
+
+                                    <div>
+                                        <label for="contact-phone" class="block text-gray-700 font-dm-sans font-medium mb-1.5 text-sm">Phone Number *</label>
+                                        <input type="tel" id="contact-phone" name="mobile" required 
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all font-dm-sans text-sm"
+                                            placeholder="+91 87146 36969">
+                                    </div>
                                 </div>
 
                                 <div>
-                                    <label for="contact-email" class="block text-gray-700 font-dm-sans font-medium mb-2">Email Address</label>
-                                    <input type="email" id="contact-email" name="email" required 
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500 transition-all font-dm-sans"
-                                        placeholder="john@example.com">
-                                </div>
-
-                                <div>
-                                    <label for="contact-phone" class="block text-gray-700 font-dm-sans font-medium mb-2">Phone Number</label>
-                                    <input type="tel" id="contact-phone" name="mobile" required 
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500 transition-all font-dm-sans"
-                                        placeholder="+91 87146 36969">
-                                </div>
-
-                                <div>
-                                    <label for="contact-message" class="block text-gray-700 font-dm-sans font-medium mb-2">Message</label>
+                                    <label for="contact-message" class="block text-gray-700 font-dm-sans font-medium mb-1.5 text-sm">Trip Details / Message *</label>
                                     <textarea id="contact-message" name="message" rows="4" required 
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500 transition-all font-dm-sans"
-                                        placeholder="Tell us about your travel plans..."></textarea>
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all font-dm-sans text-sm"
+                                        placeholder="Tell us where you want to travel, dates, number of guests, or special requirements..."></textarea>
                                 </div>
 
-                                <button type="submit" 
-                                    class="w-full bg-gray-900 text-white font-dm-sans font-bold py-4 rounded-xl hover:bg-red-600 transition-all duration-300 uppercase tracking-widest text-sm shadow-md">
-                                    Send Message
+                                <div id="contact-alert" class="hidden text-sm py-3 px-4 rounded-xl font-dm-sans"></div>
+
+                                <button type="submit" id="contact-submit-btn"
+                                    class="w-full bg-gray-900 text-white font-dm-sans font-bold py-4 rounded-xl hover:bg-red-600 transition-all duration-300 uppercase tracking-widest text-sm shadow-md flex items-center justify-center gap-2">
+                                    <span>Send Trip Enquiry</span>
+                                    <i class="fi fi-rr-paper-plane text-xs"></i>
                                 </button>
                             </form>
                         </div>
@@ -527,6 +537,76 @@ const contactHtml = `<!DOCTYPE html>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
         AOS.init({ duration: 800, once: true });
+
+        // Wire Contact Form to submit directly as a Trip Enquiry
+        document.addEventListener('DOMContentLoaded', function() {
+            const contactForm = document.getElementById('contact-form');
+            if (contactForm) {
+                contactForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const btn = document.getElementById('contact-submit-btn');
+                    const alertBox = document.getElementById('contact-alert');
+                    const origHtml = btn.innerHTML;
+
+                    const name = document.getElementById('contact-name').value.trim();
+                    const email = document.getElementById('contact-email').value.trim();
+                    const phone = document.getElementById('contact-phone').value.trim();
+                    const message = document.getElementById('contact-message').value.trim();
+
+                    if (!name || !phone) {
+                        alert('Please fill in your name and phone number.');
+                        return;
+                    }
+
+                    btn.disabled = true;
+                    btn.innerHTML = '<span>Sending Enquiry...</span>';
+
+                    try {
+                        const payload = {
+                            enquiry_type: 'Trip Enquiry',
+                            destination_name: 'Trip Enquiry',
+                            destination: 'General / Contact Page',
+                            name: name,
+                            email: email,
+                            phone: phone,
+                            notes: message,
+                            status: 'New'
+                        };
+
+                        const res = await fetch('/api/enquiries', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const data = await res.json();
+
+                        if (res.ok && (data.success || data.enquiry)) {
+                            contactForm.reset();
+                            if (alertBox) {
+                                alertBox.className = 'text-sm py-3 px-4 rounded-xl font-dm-sans bg-green-50 text-green-700 border border-green-200 block';
+                                alertBox.innerText = 'Thank you! Your trip enquiry has been submitted successfully. Our team will contact you shortly.';
+                            } else {
+                                alert('Thank you! Your trip enquiry has been submitted successfully.');
+                            }
+                        } else {
+                            throw new Error(data.error || 'Failed to submit enquiry');
+                        }
+                    } catch (err) {
+                        console.error('Submission error:', err);
+                        if (alertBox) {
+                            alertBox.className = 'text-sm py-3 px-4 rounded-xl font-dm-sans bg-red-50 text-red-700 border border-red-200 block';
+                            alertBox.innerText = err.message || 'Failed to send enquiry. Please try again.';
+                        } else {
+                            alert('Error: ' + (err.message || 'Failed to send enquiry'));
+                        }
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = origHtml;
+                    }
+                });
+            }
+        });
     </script>
     <script src="./js/api.js"></script>
     <script src="./js/render.js"></script>
@@ -539,4 +619,4 @@ fs.writeFileSync(path.join(ROOT_DIR, 'contact.html'), contactHtml, 'utf8');
 fs.writeFileSync(path.join(ROOT_DIR, 'public', 'contact.html'), contactHtml, 'utf8');
 fs.writeFileSync(path.join(ROOT_DIR, 'backend', 'public', 'contact.html'), contactHtml, 'utf8');
 
-console.log('Successfully generated clean contact.html across all directories!');
+console.log('Successfully generated clean contact.html with Trip Enquiry integration across all directories!');
