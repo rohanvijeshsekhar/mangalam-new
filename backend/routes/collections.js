@@ -5,8 +5,12 @@ const router  = express.Router();
 
 const slugify = t => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
-function mapPackage(p) {
+function mapPackage(p, allDestinations = null) {
   if (!p) return null;
+  const dests = allDestinations || store.getAll('destinations');
+  const dest = dests.find(d => String(d.id || d.destination_id) === String(p.destination_id));
+  const destName = dest ? (dest.destination_name || dest.name || '') : (p.destination_name || 'Popular Destination');
+
   return {
     package_id:    p.id,
     package_name:  p.package_name,
@@ -17,6 +21,7 @@ function mapPackage(p) {
     nights:        p.nights || 0,
     days:          p.days || 0,
     destination_id:p.destination_id || null,
+    destination_name: destName,
     type:          p.type || 'package',
     overview:      p.overview || '',
     hotel_type:    p.hotel_type || '4 Star Hotel',
@@ -26,9 +31,10 @@ function mapPackage(p) {
   };
 }
 
-function mapCollection(c, allPackages = null) {
+function mapCollection(c, allPackages = null, allDestinations = null) {
   if (!c) return null;
   const packagesList = allPackages || store.getAll('packages');
+  const destinationsList = allDestinations || store.getAll('destinations');
   const packageIds = Array.isArray(c.package_ids) ? c.package_ids.map(Number) : [];
 
   // Resolve packages in the selected order
@@ -36,7 +42,7 @@ function mapCollection(c, allPackages = null) {
   packageIds.forEach(pid => {
     const pkg = packagesList.find(p => p.id === pid);
     if (pkg) {
-      resolvedPackages.push(mapPackage(pkg));
+      resolvedPackages.push(mapPackage(pkg, destinationsList));
     }
   });
 
