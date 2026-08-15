@@ -303,24 +303,36 @@ function injectMobileNavStyles() {
       }
       .mobile-customize-button {
         position: relative !important;
-        top: -20px !important;
+        top: -22px !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
         border-radius: 50% !important;
-        background: #ffffff !important;
-        padding: 3px !important;
-        box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08), 0 6px 18px rgba(26, 172, 222, 0.35) !important;
         transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
         z-index: 1002 !important;
+        outline: none !important;
       }
       .mobile-customize-button:active {
         transform: scale(0.92) !important;
       }
+      .mobile-customize-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
       .mobile-customize-icon svg {
-        width: 58px !important;
-        height: 58px !important;
+        width: 74px !important;
+        height: 74px !important;
         display: block !important;
+        filter: drop-shadow(0 6px 16px rgba(26, 172, 222, 0.45)) !important;
       }
       .mobile-customize-dropdown {
         bottom: 74px !important;
