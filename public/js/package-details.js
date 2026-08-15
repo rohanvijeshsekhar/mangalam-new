@@ -6,10 +6,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   const root = document.getElementById('package-detail-root');
   if (!root) return;
 
-  const slug = MT.qParam('slug');
+  const rawParam = (MT.qParam('slug') || MT.qParam('id') || MT.qParam('package_id') || '').trim();
   const packages = await MT.apiGet('/api/packages');
   let pkg = null;
-  if (packages && slug) pkg = packages.find(p => (p.slug_url || p.slug) === slug);
+
+  if (Array.isArray(packages) && packages.length > 0) {
+    if (rawParam) {
+      const lower = rawParam.toLowerCase();
+      pkg = packages.find(p => 
+        String(p.slug_url || p.slug || '').toLowerCase() === lower ||
+        String(p.package_id || p.id || '') === rawParam ||
+        String(p.package_name || p.title || '').toLowerCase() === lower ||
+        String(p.package_name || p.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-') === lower
+      );
+    }
+    if (!pkg && rawParam) {
+      // Direct API fetch
+      const direct = await MT.apiGet(`/api/packages/${encodeURIComponent(rawParam)}`);
+      if (direct && (direct.package_id || direct.id || direct.package_name)) pkg = direct;
+    }
+    if (!pkg && packages.length > 0) {
+      // Fallback to first available package if single package exists
+      pkg = packages[0];
+    }
+  }
 
   if (!pkg) {
     root.innerHTML = `
