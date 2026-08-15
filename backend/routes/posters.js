@@ -17,6 +17,12 @@ router.get('/', (req, res) => {
   res.json(store.getAll('posters').map(map));
 });
 
+router.get('/:id', (req, res) => {
+  const doc = store.getById('posters', req.params.id);
+  if (!doc) return res.status(404).json({ error: 'Not found' });
+  res.json(map(doc));
+});
+
 router.post('/', verifyToken, (req, res) => {
   const { title, name, image, link, alt_text } = req.body;
   const doc = store.insert('posters', {

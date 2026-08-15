@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "Exclusive Dubai & Europe Holiday Packages — Special Summer Offers",
+    "image": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1600&q=80",
+    "link": "holiday-package.html",
+    "alt_text": "Dubai Holiday Sale",
+    "created_at": "2026-08-15T10:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "title": "Tropical Paradise Escapes — Bali, Maldives & Thailand Early Bird Discounts",
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80",
+    "link": "packages.html",
+    "alt_text": "Tropical Island Holidays",
+    "created_at": "2026-08-15T11:00:00.000Z"
+  }
+]

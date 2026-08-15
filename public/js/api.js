@@ -471,6 +471,66 @@ async function loadHomePartners() {
   }
 }
 
+// ─── Home Page Promotional Banners / Posters ──────────────────────────────────
+async function loadHomePosters() {
+  const section = document.getElementById('poster-section');
+  const list = document.getElementById('poster-list');
+  if (!section || !list) return;
+
+  try {
+    let posters = await apiGet('/api/posters') || await apiGet('/api/banners');
+    if (!Array.isArray(posters) || !posters.length) {
+      posters = [
+        {
+          title: "Exclusive Dubai & Europe Holiday Packages — Special Summer Offers",
+          image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1600&q=80",
+          link: "holiday-package.html",
+          alt_text: "Dubai Holiday Sale"
+        },
+        {
+          title: "Tropical Paradise Escapes — Bali, Maldives & Thailand Early Bird Discounts",
+          image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80",
+          link: "packages.html",
+          alt_text: "Tropical Island Holidays"
+        }
+      ];
+    }
+
+    list.innerHTML = posters.map(p => {
+      const img = resolveImg(p.image);
+      const alt = p.alt_text || p.title || p.name || 'Special Travel Offer';
+      const tag = p.link ? `<a href="${p.link}" class="block w-full h-full">` : `<div class="block w-full h-full">`;
+      const endTag = p.link ? `</a>` : `</div>`;
+      return `
+        <li class="splide__slide">
+          <div class="rounded-3xl overflow-hidden shadow-lg h-auto max-h-[380px] bg-gray-900">
+            ${tag}<img src="${img}" alt="${alt}" class="w-full h-full object-cover object-center max-h-[380px]" onerror="this.src='https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1600&q=80'">${endTag}
+          </div>
+        </li>
+      `;
+    }).join('');
+
+    section.style.display = '';
+
+    if (window.Splide && document.getElementById('posterCarousel') && !document.getElementById('posterCarousel').classList.contains('is-active')) {
+      const cnt = posters.length;
+      if (cnt > 0) {
+        new Splide('#posterCarousel', {
+          type: cnt > 1 ? 'loop' : 'slide',
+          autoplay: cnt > 1,
+          interval: 4500,
+          speed: 800,
+          arrows: cnt > 1,
+          pagination: true,
+          perPage: 1
+        }).mount();
+      }
+    }
+  } catch (err) {
+    console.warn('[Posters] Load error:', err);
+  }
+}
+
 // ─── Init common page elements ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   injectMobileNavStyles();
@@ -478,6 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadNotice();
   loadFooterLinks();
   loadDestinationDropdowns();
+  loadHomePosters();
   loadHomeTestimonials();
   loadHomePartners();
 });
@@ -485,6 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Also run immediately if DOM is ready
 if (document.readyState !== 'loading') {
   injectMobileNavStyles();
+  loadHomePosters();
   loadHomeTestimonials();
   loadHomePartners();
 }
@@ -493,6 +555,7 @@ if (document.readyState !== 'loading') {
 window.MT = {
   apiGet, apiPost, resolveImg, showSkeleton, showError,
   fmtPrice, truncate, slugify, qParam,
-  loadHomeTestimonials, loadHomePartners
+  loadHomePosters, loadHomeTestimonials, loadHomePartners
 };
+
 
