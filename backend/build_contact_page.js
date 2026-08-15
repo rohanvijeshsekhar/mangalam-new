@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+const fs = require('fs');
+const path = require('path');
+
+const contactHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -529,3 +532,11 @@
     <script src="./js/render.js"></script>
 </body>
 </html>
+`;
+
+const ROOT_DIR = 'c:/Users/rohan/Downloads/public_html2';
+fs.writeFileSync(path.join(ROOT_DIR, 'contact.html'), contactHtml, 'utf8');
+fs.writeFileSync(path.join(ROOT_DIR, 'public', 'contact.html'), contactHtml, 'utf8');
+fs.writeFileSync(path.join(ROOT_DIR, 'backend', 'public', 'contact.html'), contactHtml, 'utf8');
+
+console.log('Successfully generated clean contact.html across all directories!');
