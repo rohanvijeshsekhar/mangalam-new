@@ -257,11 +257,11 @@ function injectMobileNavStyles() {
       .responsive-float-header {
         display: block !important;
         background: #ffffff !important;
-        box-shadow: 0 -3px 14px rgba(0, 0, 0, 0.06) !important;
-        padding-bottom: env(safe-area-inset-bottom, 2px) !important;
+        box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.07) !important;
+        padding-bottom: env(safe-area-inset-bottom, 4px) !important;
         border-top: 1px solid #f1f5f9 !important;
         z-index: 1000 !important;
-        height: 50px !important;
+        height: 58px !important;
         overflow: visible !important;
       }
       .responsive-float-header ul {
@@ -270,7 +270,7 @@ function injectMobileNavStyles() {
         align-items: center !important;
         list-style: none !important;
         margin: 0 !important;
-        padding: 0 6px !important;
+        padding: 4px 8px !important;
         height: 100% !important;
         position: relative !important;
       }
@@ -282,9 +282,9 @@ function injectMobileNavStyles() {
         align-items: center !important;
       }
       .responsive-float-header li.mobile-customize-item {
-        flex: 0 0 54px !important;
-        width: 54px !important;
-        max-width: 54px !important;
+        flex: 0 0 60px !important;
+        width: 60px !important;
+        max-width: 60px !important;
         height: 0 !important;
         position: relative !important;
         overflow: visible !important;
@@ -296,11 +296,11 @@ function injectMobileNavStyles() {
         justify-content: center !important;
         text-decoration: none !important;
         color: #64748b !important;
-        font-size: 10px !important;
+        font-size: 11px !important;
         font-weight: 500 !important;
-        line-height: 1 !important;
-        padding: 0 !important;
-        margin: 0 !important;
+        line-height: 1.1 !important;
+        padding: 2px 0 !important;
+        gap: 2px !important;
         transition: color 0.15s ease !important;
       }
       .responsive-float-header a:hover,
@@ -310,14 +310,14 @@ function injectMobileNavStyles() {
       }
       .responsive-float-header a > svg,
       .responsive-float-header i {
-        width: 18px !important;
-        height: 18px !important;
-        margin-bottom: 2px !important;
+        width: 21px !important;
+        height: 21px !important;
+        margin-bottom: 1px !important;
         display: block !important;
       }
       .mobile-customize-button {
         position: absolute !important;
-        top: -36px !important;
+        top: -24px !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -343,13 +343,13 @@ function injectMobileNavStyles() {
         margin: 0 !important;
       }
       .mobile-customize-icon svg {
-        width: 72px !important;
-        height: 72px !important;
+        width: 74px !important;
+        height: 74px !important;
         display: block !important;
         filter: drop-shadow(0 6px 14px rgba(26, 172, 222, 0.42)) !important;
       }
       .mobile-customize-dropdown {
-        bottom: 60px !important;
+        bottom: 68px !important;
       }
     }
   `;
