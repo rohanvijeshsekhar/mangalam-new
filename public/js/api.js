@@ -257,10 +257,12 @@ function injectMobileNavStyles() {
       .responsive-float-header {
         display: block !important;
         background: #ffffff !important;
-        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06) !important;
+        box-shadow: 0 -3px 14px rgba(0, 0, 0, 0.06) !important;
         padding-bottom: env(safe-area-inset-bottom, 2px) !important;
         border-top: 1px solid #f1f5f9 !important;
         z-index: 1000 !important;
+        height: 50px !important;
+        overflow: visible !important;
       }
       .responsive-float-header ul {
         display: flex !important;
@@ -268,28 +270,37 @@ function injectMobileNavStyles() {
         align-items: center !important;
         list-style: none !important;
         margin: 0 !important;
-        padding: 4px 6px 3px !important;
+        padding: 0 6px !important;
+        height: 100% !important;
         position: relative !important;
       }
       .responsive-float-header li {
         flex: 1 !important;
         text-align: center !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
       }
       .responsive-float-header li.mobile-customize-item {
-        flex: 0 0 60px !important;
-        width: 60px !important;
-        max-width: 60px !important;
+        flex: 0 0 54px !important;
+        width: 54px !important;
+        max-width: 54px !important;
+        height: 0 !important;
+        position: relative !important;
+        overflow: visible !important;
       }
       .responsive-float-header a {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
+        justify-content: center !important;
         text-decoration: none !important;
         color: #64748b !important;
         font-size: 10px !important;
         font-weight: 500 !important;
-        line-height: 1.1 !important;
-        padding: 2px 0 !important;
+        line-height: 1 !important;
+        padding: 0 !important;
+        margin: 0 !important;
         transition: color 0.15s ease !important;
       }
       .responsive-float-header a:hover,
@@ -299,19 +310,14 @@ function injectMobileNavStyles() {
       }
       .responsive-float-header a > svg,
       .responsive-float-header i {
-        width: 19px !important;
-        height: 19px !important;
+        width: 18px !important;
+        height: 18px !important;
         margin-bottom: 2px !important;
-      }
-      .mobile-customize-item {
-        position: relative !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
+        display: block !important;
       }
       .mobile-customize-button {
-        position: relative !important;
-        top: -26px !important;
+        position: absolute !important;
+        top: -36px !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -337,13 +343,13 @@ function injectMobileNavStyles() {
         margin: 0 !important;
       }
       .mobile-customize-icon svg {
-        width: 78px !important;
-        height: 78px !important;
+        width: 72px !important;
+        height: 72px !important;
         display: block !important;
         filter: drop-shadow(0 6px 14px rgba(26, 172, 222, 0.42)) !important;
       }
       .mobile-customize-dropdown {
-        bottom: 74px !important;
+        bottom: 60px !important;
       }
     }
   `;
