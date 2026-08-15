@@ -275,6 +275,11 @@ function injectMobileNavStyles() {
         flex: 1 !important;
         text-align: center !important;
       }
+      .responsive-float-header li.mobile-customize-item {
+        flex: 0 0 60px !important;
+        width: 60px !important;
+        max-width: 60px !important;
+      }
       .responsive-float-header a {
         display: flex !important;
         flex-direction: column !important;
