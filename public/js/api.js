@@ -124,7 +124,7 @@ async function loadFooterLinks() {
     // 1. Top Destinations Links
     if (Array.isArray(dests) && dests.length > 0) {
       const destLinksHTML = dests.map(d => {
-        const label = d.footer_title || d.footer_label || d.destination_name || d.name || '';
+        const label = d.footer_title || d.footer_label || `${d.destination_name || d.name} Holiday Packages`;
         const slug = d.slug_url || d.slug || (d.destination_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
         const url = slug ? `packages.html?slug=${encodeURIComponent(slug)}&type=package` : 'packages.html';
         return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">${label}</a>`;
