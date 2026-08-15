@@ -61,8 +61,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent z-10 pointer-events-none"></div>
         
         <!-- Overlay Badges & Title at Bottom of Image -->
-        <div class="absolute bottom-0 left-0 right-0 p-6 md:p-12 text-white container mx-auto z-20 pointer-events-none">
+        <div class="absolute bottom-0 left-0 right-0 p-6 md:p-12 text-white container mx-auto z-30 pointer-events-none">
           <div class="max-w-4xl space-y-3">
+            <div>
+              <a href="/" class="pointer-events-auto inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-semibold text-xs font-dm-sans border border-white/30 transition-all shadow-sm">
+                <i class="fa-solid fa-arrow-left text-xs text-yellow-300"></i> Back to Home
+              </a>
+            </div>
             <div class="flex flex-wrap items-center gap-3">
               <span class="px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider font-dm-sans shadow-lg ${badgeColor}">
                 <i class="fa-solid fa-sparkles mr-1.5"></i>${expType} Experience

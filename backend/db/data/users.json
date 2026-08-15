@@ -2,7 +2,7 @@
   {
     "id": 1,
     "username": "admin",
-    "password_hash": "$2a$10$BulAtNDQQo699kDEq1HpfuPeOJWJWfOY6/5vhlGAJK/hIl2QFqg8m",
+    "password_hash": "$2a$10$w4Y/5Zp7T0nkRNGy4UAC6uXwpj/kPn9AIXYtekiMbypqlIXYlQ3uS",
     "created_at": "2026-08-08T08:17:17.024Z"
   }
 ]
