@@ -79,18 +79,56 @@
     </div>
 
     <!-- Top Banner / Navbar -->
-    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
-            <a href="index.html" class="flex items-center gap-3">
-                <img src="./assets/images/logo-color.png" alt="Mangalam Logo" class="h-10 w-auto object-contain" onerror="this.src='./assets/images/logo-dark.png'">
-                <span class="brand-font font-bold text-xl text-slate-900 hidden sm:inline">Mangalam <span class="text-red-500">Travels</span></span>
-            </a>
-            <div class="flex items-center gap-3">
-                <span class="text-xs sm:text-sm font-medium text-slate-500 hidden md:inline"><i class="fas fa-headset text-red-500 mr-1.5"></i> Need Assistance?</span>
-                <a href="tel:+919876543210" class="text-xs sm:text-sm font-bold text-slate-800 hover:text-red-600 transition-colors hidden sm:inline">+91 98765 43210</a>
+        <!-- Header -->
+    <header class="fixed top-0 left-0 w-full bg-white/95 backdrop-blur-md shadow-sm z-[999] transition-all duration-300">
+    <div class="container mx-auto p-2">
+        <div class="flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center space-x-2 w-[120px]">
+                <a href="/"><img src="./assets/images/logo-color.png" alt="Mangalam Travel & Tours" class="w-full h-full"></a>
             </div>
+
+            <!-- Navigation -->
+            <nav class="hidden md:flex items-center space-x-8 relative">
+                <a href="/" class="text-gray-600 hover:text-gray-900 font-dm-sans transition-colors">Home</a>
+                <a href="/holiday-package.html" class="text-gray-600 hover:text-gray-900 font-dm-sans transition-colors">Holiday Packages</a>
+                <!-- Services Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 text-gray-600 hover:text-gray-900 font-dm-sans transition-colors focus:outline-none">
+                        Services 
+                        <i class="fi fi-rr-angle-small-down pt-1 flex items-center justify-center"></i>
+                    </button>
+                    <div class="absolute top-full -left-4 mt-0 w-64 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+                        <div class="py-2">
+                            <a href="/flight-tickets.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Flight Tickets
+                            </a>
+                            <a href="/global-visa-services.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Visa Services
+                            </a>
+                            <a href="/travel-insurance.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Travel Insurance
+                            </a>
+                            <a href="/miscellaneous.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Miscellaneous Services
+                            </a>
+                            <a href="/mice-tourism.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                MICE Tourism
+                            </a>
+                            <a href="/cruises.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
+                                Cruises
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <a href="/attraction.html" class="text-gray-600 hover:text-gray-900 font-dm-sans transition-colors">Attractions</a>
+                <a href="https://agents.mangalamtravel.com/Config/Login/Agent" target="_blank" class="text-gray-600 hover:text-gray-900 font-dm-sans transition-colors">Agent Login</a>
+            </nav>
+
+            <!-- Header Icons Removed -->
         </div>
-    </header>
+    </div>
+</header>
 
     <!-- Main Content Area -->
     <main class="flex-grow py-6 sm:py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full relative z-10">

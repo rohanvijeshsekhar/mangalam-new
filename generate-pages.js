@@ -18,22 +18,36 @@ const HEAD_LINKS = `
     <script>tailwind.config={theme:{extend:{fontFamily:{'dm-sans':['DM Sans','sans-serif']}}}}</script>
     <style>.cart-trigger{position:relative}.cart-trigger .counter{position:absolute;top:-8px;right:-8px;background:#ef4444;color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}</style>`;
 
-const NAV = `<header class="sticky top-0 z-50 bg-white shadow-sm">
-<nav class="container mx-auto px-4 py-3 flex items-center justify-between">
-  <a href="/"><img src="/assets/images/logo-color.png" alt="Mangalam Tours" class="h-10"></a>
-  <div class="hidden md:flex space-x-6 text-sm font-dm-sans">
-    <a href="/" class="text-gray-700 hover:text-red-600">Home</a>
-    <a href="/packages" class="text-gray-700 hover:text-red-600">Packages</a>
-    <a href="/tickets" class="text-gray-700 hover:text-red-600">Tickets</a>
-    <a href="/about" class="text-gray-700 hover:text-red-600">About</a>
-    <a href="/contact" class="text-gray-700 hover:text-red-600">Contact</a>
-    <a href="/blog" class="text-gray-700 hover:text-red-600">Blog</a>
-  </div>
-  <a href="/cart" class="cart-trigger relative p-2 border border-gray-300 rounded-lg hover:bg-gray-100 flex items-center">
-    <div class="counter">0</div>
-    <i class="fi fi-rr-shopping-cart text-gray-700 text-lg flex items-center justify-center"></i>
-  </a>
-</nav>
+const NAV = `<header class="fixed top-0 left-0 w-full bg-white/95 backdrop-blur-md shadow-sm z-[999] transition-all duration-300">
+    <div class="container mx-auto p-2">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2 w-[120px]">
+                <a href="/"><img src="./assets/images/logo-color.png" alt="Mangalam Travel & Tours" class="w-full h-full"></a>
+            </div>
+            <nav class="hidden md:flex items-center space-x-8 relative">
+                <a href="/" class="text-gray-600 hover:text-gray-900 font-dm-sans transition-colors">Home</a>
+                <a href="/holiday-package.html" class="text-gray-600 hover:text-gray-900 font-dm-sans transition-colors">Holiday Packages</a>
+                <div class="relative group">
+                    <button class="flex items-center gap-1 text-gray-600 hover:text-gray-900 font-dm-sans transition-colors focus:outline-none">
+                        Services 
+                        <i class="fi fi-rr-angle-small-down pt-1 flex items-center justify-center"></i>
+                    </button>
+                    <div class="absolute top-full -left-4 mt-0 w-64 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+                        <div class="py-2">
+                            <a href="/flight-tickets.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">Flight Tickets</a>
+                            <a href="/global-visa-services.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">Visa Services</a>
+                            <a href="/travel-insurance.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">Travel Insurance</a>
+                            <a href="/miscellaneous.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">Miscellaneous Services</a>
+                            <a href="/mice-tourism.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">MICE Tourism</a>
+                            <a href="/cruises.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">Cruises</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="/attraction.html" class="text-gray-600 hover:text-gray-900 font-dm-sans transition-colors">Attractions</a>
+                <a href="https://agents.mangalamtravel.com/Config/Login/Agent" target="_blank" class="text-gray-600 hover:text-gray-900 font-dm-sans transition-colors">Agent Login</a>
+            </nav>
+        </div>
+    </div>
 </header>`;
 
 const NOTICE = `<div id="notice-bar" class="bg-red-600 text-white text-center text-sm font-dm-sans py-2.5 px-4" style="display:none"><span id="notice-text"></span></div>`;
