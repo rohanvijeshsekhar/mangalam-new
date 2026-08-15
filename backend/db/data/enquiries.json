@@ -1,5 +1,27 @@
 [
   {
+    "enquiry_type": "Package",
+    "package_name": "Golden Triangle Extravaganza",
+    "package_id": null,
+    "destination": "",
+    "destination_name": "Golden Triangle Extravaganza",
+    "start_date": "",
+    "end_date": "",
+    "duration_days": 6,
+    "adults": 2,
+    "children": 0,
+    "children_ages": [],
+    "hotel_rating": "5-Star",
+    "places_to_visit": [],
+    "name": "Sarah Jenkins",
+    "email": "sarah.j@example.com",
+    "phone": "+971501234567",
+    "notes": "Interested in luxury heritage palaces",
+    "status": "New",
+    "id": 2,
+    "created_at": "2026-08-15T06:07:53.160Z"
+  },
+  {
     "destination": "dubai",
     "destination_name": "Dubai",
     "start_date": "2026-09-01",

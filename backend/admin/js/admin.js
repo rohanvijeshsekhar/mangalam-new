@@ -68,6 +68,7 @@ const sections = {
   packages:     { title: 'Packages',     subtitle: 'Manage holiday packages' },
   collections:  { title: 'Collections',  subtitle: 'Manage curated homepage package collections' },
   attractions:  { title: 'Attractions',  subtitle: 'Manage places and attraction experiences' },
+  enquiries:    { title: 'Destination & Package Enquiries', subtitle: 'Manage customer leads, destination requests & package enquiries' },
   blogs:        { title: 'Blogs',        subtitle: 'Manage blog posts' },
   testimonials: { title: 'Testimonials', subtitle: 'Manage customer reviews' },
   partners:     { title: 'Partners',     subtitle: 'Manage partner logos' },
@@ -113,7 +114,7 @@ document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
 async function loadDashboard() {
   const stats = await api('GET', '/stats');
   if (!stats) return;
-  ['destinations','packages','collections','attractions','blogs','testimonials','partners','posters'].forEach(k => {
+  ['destinations','packages','collections','attractions','blogs','testimonials','partners','posters','enquiries'].forEach(k => {
     const el = document.getElementById(`stat-${k}`);
     if (el) el.textContent = stats[k] ?? 0;
   });
@@ -184,6 +185,7 @@ function openAddModal(section) {
     destinations: openDestinationForm,
     packages:     openPackageForm,
     collections:  openCollectionForm,
+    enquiries:    openEnquiryForm,
     blogs:        openBlogForm,
     testimonials: openTestimonialForm,
     partners:     openPartnerForm,
@@ -1182,91 +1184,298 @@ window.deletePoster = async function(id) {
 document.getElementById('btn-add-poster')?.addEventListener('click', () => openPosterForm());
 
 // ══════════════════════════════════════════════════════════════════════════════
-// TRIP ENQUIRIES
+// TRIP & PACKAGE ENQUIRIES
 // ══════════════════════════════════════════════════════════════════════════════
 let enquiries = [];
+let currentEnquiryFilter = 'all';
+let currentEnquirySearch = '';
 
 async function loadEnquiries() {
+  if (!destinations.length) destinations = await api('GET', '/destinations') || [];
+  if (!packages.length) packages = await api('GET', '/packages') || [];
+
   enquiries = await api('GET', '/enquiries') || [];
+  updateEnquiryCounts();
+  renderEnquiriesTable();
+}
+
+function updateEnquiryCounts() {
+  const allCnt = enquiries.length;
+  const pkgCnt = enquiries.filter(e => String(e.enquiry_type).toLowerCase() === 'package' || e.package_name).length;
+  const destCnt = enquiries.filter(e => String(e.enquiry_type).toLowerCase() === 'destination' && !e.package_name).length;
+  const customCnt = enquiries.filter(e => !e.package_name && String(e.enquiry_type).toLowerCase() !== 'package' && String(e.enquiry_type).toLowerCase() !== 'destination').length;
+
+  const setCnt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setCnt('count-enq-all', allCnt);
+  setCnt('count-enq-pkg', pkgCnt);
+  setCnt('count-enq-dest', destCnt);
+  setCnt('count-enq-custom', customCnt);
+}
+
+function renderEnquiriesTable() {
   const tbody = document.getElementById('tbody-enquiries');
   if (!tbody) return;
-  if (!enquiries.length) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="7"><i class="fas fa-clipboard-list" style="font-size:24px;color:#e5e7eb;display:block;margin-bottom:8px"></i>No trip enquiries found yet.</td></tr>`;
+
+  let filtered = [...enquiries];
+
+  // Apply tab filter
+  if (currentEnquiryFilter === 'Package') {
+    filtered = filtered.filter(e => String(e.enquiry_type).toLowerCase() === 'package' || e.package_name);
+  } else if (currentEnquiryFilter === 'Destination') {
+    filtered = filtered.filter(e => String(e.enquiry_type).toLowerCase() === 'destination' && !e.package_name);
+  } else if (currentEnquiryFilter === 'Custom') {
+    filtered = filtered.filter(e => !e.package_name && String(e.enquiry_type).toLowerCase() !== 'package' && String(e.enquiry_type).toLowerCase() !== 'destination');
+  }
+
+  // Apply search query
+  if (currentEnquirySearch) {
+    const q = currentEnquirySearch.toLowerCase();
+    filtered = filtered.filter(e =>
+      (e.name || '').toLowerCase().includes(q) ||
+      (e.phone || '').toLowerCase().includes(q) ||
+      (e.email || '').toLowerCase().includes(q) ||
+      (e.destination_name || '').toLowerCase().includes(q) ||
+      (e.package_name || '').toLowerCase().includes(q)
+    );
+  }
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7"><i class="fas fa-clipboard-list" style="font-size:24px;color:#e5e7eb;display:block;margin-bottom:8px"></i>No enquiries matching current criteria.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = enquiries.map(e => {
-    let statusClass = 'gray';
-    if (e.status === 'New') statusClass = 'red';
-    else if (e.status === 'Contacted') statusClass = 'blue';
-    else if (e.status === 'Completed') statusClass = 'green';
+  tbody.innerHTML = filtered.map(e => {
+    const rawType = (e.enquiry_type || (e.package_name ? 'Package' : (e.destination_name ? 'Destination' : 'Custom'))).toLowerCase();
+    let typeBadge = '<span class="badge blue">📍 Destination</span>';
+    if (rawType.includes('package') || e.package_name) {
+      typeBadge = '<span class="badge red">📦 Package</span>';
+    } else if (rawType.includes('custom') || rawType.includes('general')) {
+      typeBadge = '<span class="badge green">✨ Custom Trip</span>';
+    }
 
-    const durationText = e.start_date && e.end_date ? `${e.start_date} to ${e.end_date} (${e.duration_days||0} days)` : 'Flexible Dates';
+    const destOrPkg = e.package_name || e.destination_name || e.destination || 'Custom Itinerary';
+    const durationText = e.start_date && e.end_date ? `${e.start_date} to ${e.end_date} (${e.duration_days||0}D)` : (e.duration_days ? `${e.duration_days} Days (Flexible)` : 'Flexible Dates');
     const passengersText = `${e.adults||1} Adult${(e.adults||1)>1?'s':''}${e.children>0?`, ${e.children} Child`:''}`;
+    const cleanPhone = (e.phone || '').replace(/[^0-9]/g, '');
 
     return `
       <tr>
-        <td><strong>${e.name}</strong><br><span style="font-size:12px;color:#6b7280">${e.phone} ${e.email ? '| '+e.email : ''}</span></td>
-        <td><strong style="color:#ef4444">${e.destination_name || e.destination || 'Custom'}</strong></td>
-        <td><span style="font-size:13px">${durationText}</span></td>
-        <td>${passengersText}</td>
-        <td><span class="badge gray">${e.hotel_rating || '3-Star'}</span></td>
         <td>
-          <select onchange="updateEnquiryStatus(${e.enquiry_id}, this.value)" style="padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600">
+          <strong>${e.name || 'Anonymous'}</strong><br>
+          <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px;margin-top:2px">
+            <i class="fas fa-phone text-xs"></i> <a href="tel:${e.phone}" style="color:#2563eb;text-decoration:none">${e.phone}</a>
+            ${cleanPhone ? `<a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent('Hello ' + (e.name||'') + ', regarding your enquiry for ' + destOrPkg + ' on Mangalam Travel & Tours...')}" target="_blank" style="color:#16a34a;margin-left:4px" title="Chat on WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
+          </span>
+          ${e.email ? `<span style="font-size:11px;color:#9ca3af;display:block">${e.email}</span>` : ''}
+        </td>
+        <td>${typeBadge}</td>
+        <td><strong style="color:#1e293b">${destOrPkg}</strong></td>
+        <td><span style="font-size:12px;font-weight:500">${durationText}</span></td>
+        <td><span style="font-size:12px">${passengersText}</span><br><span class="badge gray" style="font-size:10px;margin-top:3px">${e.hotel_rating || '3-Star'}</span></td>
+        <td>
+          <select onchange="updateEnquiryStatus(${e.enquiry_id}, this.value)" style="padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid #d1d5db;background:#fff">
             <option value="New" ${e.status === 'New' ? 'selected' : ''}>🔴 New</option>
             <option value="Contacted" ${e.status === 'Contacted' ? 'selected' : ''}>🔵 Contacted</option>
+            <option value="In Progress" ${e.status === 'In Progress' ? 'selected' : ''}>🟡 In Progress</option>
             <option value="Completed" ${e.status === 'Completed' ? 'selected' : ''}>🟢 Completed</option>
+            <option value="Cancelled" ${e.status === 'Cancelled' ? 'selected' : ''}>⚪ Cancelled</option>
           </select>
         </td>
-        <td><div class="table-actions">
-          <button class="btn-sm btn-edit" onclick="viewEnquiryModal(${e.enquiry_id})"><i class="fas fa-eye"></i> View</button>
-          <button class="btn-sm btn-delete" onclick="deleteEnquiry(${e.enquiry_id})"><i class="fas fa-trash"></i></button>
-        </div></td>
+        <td>
+          <div class="table-actions">
+            <button class="btn-sm btn-edit" onclick="viewEnquiryModal(${e.enquiry_id})" title="View Full Details"><i class="fas fa-eye"></i> View</button>
+            <button class="btn-sm btn-delete" onclick="deleteEnquiry(${e.enquiry_id})" title="Delete Enquiry"><i class="fas fa-trash"></i></button>
+          </div>
+        </td>
       </tr>`;
   }).join('');
 }
 
+window.filterEnquiries = function(type) {
+  currentEnquiryFilter = type;
+  document.querySelectorAll('#enquiry-filter-tabs .filter-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === type);
+  });
+  renderEnquiriesTable();
+};
+
+window.searchEnquiries = function(val) {
+  currentEnquirySearch = (val || '').trim();
+  renderEnquiriesTable();
+};
+
+function openEnquiryForm(e = null) {
+  const pkgOptions = packages.map(p => `<option value="${p.package_name||p.title}">${p.package_name||p.title}</option>`).join('');
+  const destOptions = destinations.map(d => `<option value="${d.destination_name||d.name}">${d.destination_name||d.name}</option>`).join('');
+
+  openModal(e ? 'Edit Enquiry' : 'Log New Enquiry', `
+    <div class="form-group">
+      <label>Enquiry Type *</label>
+      <select id="enq-type">
+        <option value="Package" ${e?.enquiry_type === 'Package' || e?.package_name ? 'selected' : ''}>📦 Holiday Package</option>
+        <option value="Destination" ${e?.enquiry_type === 'Destination' ? 'selected' : ''}>📍 Destination Trip</option>
+        <option value="Custom" ${e?.enquiry_type === 'Custom' ? 'selected' : ''}>✨ Custom Tailormade Tour</option>
+      </select>
+    </div>
+
+    <div class="form-group" id="enq-target-group">
+      <label id="enq-target-label">Selected Destination / Package Name *</label>
+      <input id="enq-target-name" list="enq-targets-datalist" value="${e?.package_name || e?.destination_name || e?.destination || ''}" placeholder="e.g. Dubai Luxury Extravaganza or Bali">
+      <datalist id="enq-targets-datalist">
+        ${pkgOptions}
+        ${destOptions}
+      </datalist>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group"><label>Customer Name *</label><input id="enq-name" value="${e?.name||''}" placeholder="e.g. John Doe"></div>
+      <div class="form-group"><label>Phone / WhatsApp Number *</label><input id="enq-phone" value="${e?.phone||''}" placeholder="e.g. +971 50 123 4567"></div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group"><label>Email Address</label><input id="enq-email" type="email" value="${e?.email||''}" placeholder="john@example.com"></div>
+      <div class="form-group">
+        <label>Hotel Category</label>
+        <select id="enq-hotel">
+          <option value="3-Star" ${e?.hotel_rating === '3-Star' ? 'selected' : ''}>3-Star Hotel</option>
+          <option value="4-Star" ${e?.hotel_rating === '4-Star' ? 'selected' : ''}>4-Star Premium Hotel</option>
+          <option value="5-Star" ${e?.hotel_rating === '5-Star' ? 'selected' : ''}>5-Star Luxury Hotel</option>
+          <option value="Luxury Resort" ${e?.hotel_rating === 'Luxury Resort' ? 'selected' : ''}>Luxury Resort / Villa</option>
+          <option value="Budget" ${e?.hotel_rating === 'Budget' ? 'selected' : ''}>Budget / Standard</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group"><label>Travel Start Date</label><input id="enq-start-date" type="date" value="${e?.start_date||''}"></div>
+      <div class="form-group"><label>Travel End Date</label><input id="enq-end-date" type="date" value="${e?.end_date||''}"></div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group"><label>Adult Travelers (12+ yrs)</label><input id="enq-adults" type="number" min="1" value="${e?.adults||2}"></div>
+      <div class="form-group"><label>Child Travelers (2-11 yrs)</label><input id="enq-children" type="number" min="0" value="${e?.children||0}"></div>
+      <div class="form-group"><label>Duration (Days)</label><input id="enq-duration" type="number" min="1" value="${e?.duration_days||5}"></div>
+    </div>
+
+    <div class="form-group">
+      <label>Customer Notes / Preferences</label>
+      <textarea id="enq-notes" rows="3" placeholder="Special requests, flight requirements, dietary preferences...">${e?.notes||''}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Lead Status</label>
+      <select id="enq-status">
+        <option value="New" ${e?.status === 'New' ? 'selected' : ''}>🔴 New</option>
+        <option value="Contacted" ${e?.status === 'Contacted' ? 'selected' : ''}>🔵 Contacted</option>
+        <option value="In Progress" ${e?.status === 'In Progress' ? 'selected' : ''}>🟡 In Progress</option>
+        <option value="Completed" ${e?.status === 'Completed' ? 'selected' : ''}>🟢 Completed</option>
+        <option value="Cancelled" ${e?.status === 'Cancelled' ? 'selected' : ''}>⚪ Cancelled</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveEnquiry(${e?.enquiry_id||'null'})"><i class="fas fa-save"></i> ${e ? 'Update Enquiry' : 'Save Enquiry'}</button>
+    </div>
+  `);
+}
+
+window.saveEnquiry = async function(id) {
+  const name = document.getElementById('enq-name').value.trim();
+  const phone = document.getElementById('enq-phone').value.trim();
+  const target = document.getElementById('enq-target-name').value.trim();
+  const type = document.getElementById('enq-type').value;
+
+  if (!name || !phone) {
+    showToast('Customer Name and Phone are required', 'error');
+    return;
+  }
+
+  const body = {
+    enquiry_type: type,
+    destination_name: target,
+    package_name: type === 'Package' ? target : '',
+    name,
+    phone,
+    email: document.getElementById('enq-email').value.trim(),
+    hotel_rating: document.getElementById('enq-hotel').value,
+    start_date: document.getElementById('enq-start-date').value,
+    end_date: document.getElementById('enq-end-date').value,
+    adults: Number(document.getElementById('enq-adults').value) || 1,
+    children: Number(document.getElementById('enq-children').value) || 0,
+    duration_days: Number(document.getElementById('enq-duration').value) || 0,
+    notes: document.getElementById('enq-notes').value.trim(),
+    status: document.getElementById('enq-status').value
+  };
+
+  const res = id ? await api('PUT', `/enquiries/${id}`, body) : await api('POST', '/enquiries', body);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast(id ? 'Enquiry updated!' : 'Enquiry saved!', 'success');
+  closeModal(); loadEnquiries(); loadDashboard();
+};
+
 window.viewEnquiryModal = function(id) {
-  const e = enquiries.find(x => x.enquiry_id === id);
+  const e = enquiries.find(x => x.enquiry_id === id || x.id === id);
   if (!e) return;
 
   const placesList = Array.isArray(e.places_to_visit) && e.places_to_visit.length > 0
     ? e.places_to_visit.map(p => `<li style="margin-bottom:4px">📍 ${p}</li>`).join('')
-    : '<li style="color:#9ca3af">No specific places selected (Flexible)</li>';
+    : '<li style="color:#9ca3af">Flexible / All major attractions</li>';
 
-  const childAgesText = Array.isArray(e.children_ages) && e.children_ages.length > 0
-    ? e.children_ages.join(', ')
-    : 'None';
+  const cleanPhone = (e.phone || '').replace(/[^0-9]/g, '');
+  const destOrPkg = e.package_name || e.destination_name || e.destination || 'Custom Tour';
+  const typeText = e.enquiry_type || (e.package_name ? 'Package Enquiry' : 'Destination Enquiry');
 
-  openModal(`Trip Enquiry: ${e.name}`, `
+  openModal(`Enquiry Details: ${e.name || 'Lead'}`, `
     <div style="font-size:14px;line-height:1.6">
-      <div style="background:#f8fafc;padding:12px 16px;border-radius:8px;margin-bottom:16px">
-        <p><strong>Customer Name:</strong> ${e.name}</p>
-        <p><strong>Phone (WhatsApp):</strong> <a href="tel:${e.phone}" style="color:#ef4444">${e.phone}</a></p>
-        <p><strong>Email:</strong> ${e.email || 'Not provided'}</p>
-        <p><strong>Submitted Date:</strong> ${new Date(e.created_at).toLocaleString()}</p>
+      <!-- Customer Information Card -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:16px;border-radius:12px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <h4 style="font-size:16px;font-weight:700;color:#0f172a">${e.name || 'Anonymous Customer'}</h4>
+            <p style="color:#64748b;font-size:12px;margin-top:2px">Submitted on ${e.created_at ? new Date(e.created_at).toLocaleString() : 'Recent'}</p>
+          </div>
+          <span class="badge ${e.status === 'New' ? 'red' : (e.status === 'Completed' ? 'green' : 'blue')}">${e.status || 'New'}</span>
+        </div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+          <div><strong>📞 Phone:</strong> <a href="tel:${e.phone}" style="color:#2563eb;font-weight:600">${e.phone || 'N/A'}</a></div>
+          <div><strong>✉️ Email:</strong> <a href="mailto:${e.email}" style="color:#2563eb">${e.email || 'Not provided'}</a></div>
+        </div>
       </div>
 
-      <div style="margin-bottom:16px">
-        <h4 style="font-weight:700;margin-bottom:6px;color:#1e293b">Trip Details</h4>
-        <p><strong>Destination:</strong> ${e.destination_name || e.destination}</p>
-        <p><strong>Travel Dates:</strong> ${e.start_date || 'N/A'} to ${e.end_date || 'N/A'} (${e.duration_days} Days)</p>
-        <p><strong>Travelers:</strong> ${e.adults} Adults, ${e.children} Children (Child Ages: ${childAgesText})</p>
-        <p><strong>Hotel Preference:</strong> ${e.hotel_rating}</p>
+      <!-- Trip & Package Specifications -->
+      <div style="margin-bottom:16px;background:#fff;border:1px solid #f1f5f9;padding:14px;border-radius:10px">
+        <h4 style="font-weight:700;margin-bottom:10px;color:#1e293b;border-bottom:1px solid #f1f5f9;padding-bottom:6px">Trip Information</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+          <div><span style="color:#64748b">Enquiry Type:</span> <strong>${typeText}</strong></div>
+          <div><span style="color:#64748b">Destination / Package:</span> <strong style="color:#dc2626">${destOrPkg}</strong></div>
+          <div><span style="color:#64748b">Travel Dates:</span> <strong>${e.start_date || 'Flexible'} to ${e.end_date || 'Flexible'}</strong></div>
+          <div><span style="color:#64748b">Duration:</span> <strong>${e.duration_days ? e.duration_days + ' Days' : 'Custom'}</strong></div>
+          <div><span style="color:#64748b">Travelers:</span> <strong>${e.adults||1} Adults, ${e.children||0} Children</strong></div>
+          <div><span style="color:#64748b">Hotel Preference:</span> <strong>${e.hotel_rating || '3-Star'}</strong></div>
+        </div>
       </div>
 
+      <!-- Places to Visit -->
+      ${Array.isArray(e.places_to_visit) && e.places_to_visit.length ? `
       <div style="margin-bottom:16px">
-        <h4 style="font-weight:700;margin-bottom:6px;color:#1e293b">Selected Places to Visit</h4>
-        <ul style="padding-left:16px;list-style-type:none">
+        <h4 style="font-weight:700;margin-bottom:6px;color:#1e293b;font-size:13px">Selected Places / Activities:</h4>
+        <ul style="padding-left:16px;list-style-type:none;font-size:13px">
           ${placesList}
         </ul>
-      </div>
+      </div>` : ''}
 
-      ${e.notes ? `<div style="background:#fffbeb;border:1px solid #fef3c7;padding:12px;border-radius:8px"><strong>Special Requests / Notes:</strong><p style="margin-top:4px">${e.notes}</p></div>` : ''}
+      <!-- Special Notes -->
+      ${e.notes ? `<div style="background:#fffbeb;border:1px solid #fef3c7;padding:12px 14px;border-radius:10px;margin-bottom:16px">
+        <strong style="color:#92400e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Customer Requests & Notes:</strong>
+        <p style="color:#78350f;font-size:13px;white-space:pre-wrap">${e.notes}</p>
+      </div>` : ''}
     </div>
-    <div class="modal-actions" style="margin-top:20px">
+
+    <div class="modal-actions" style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
       <button class="btn-cancel" onclick="closeModal()">Close</button>
-      <a href="https://wa.me/${e.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('Hello '+e.name+', regarding your customized trip request to '+e.destination_name+'...')}" target="_blank" class="btn-primary" style="background:#25D366;text-decoration:none"><i class="fab fa-whatsapp"></i> Chat on WhatsApp</a>
+      ${cleanPhone ? `<a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent('Hello ' + (e.name||'') + ', regarding your enquiry for ' + destOrPkg + ' on Mangalam Travel & Tours...')}" target="_blank" class="btn-primary" style="background:#25D366;text-decoration:none;display:inline-flex;align-items:center;gap:6px"><i class="fab fa-whatsapp"></i> Chat on WhatsApp</a>` : ''}
+      <a href="tel:${e.phone}" class="btn-primary" style="background:#2563eb;text-decoration:none;display:inline-flex;align-items:center;gap:6px"><i class="fas fa-phone-alt"></i> Call Customer</a>
     </div>
   `);
 };
@@ -1284,6 +1493,8 @@ window.deleteEnquiry = async function(id) {
   showToast('Enquiry deleted', 'success');
   loadEnquiries(); loadDashboard();
 };
+
+document.getElementById('btn-add-enquiry')?.addEventListener('click', () => openEnquiryForm());
 
 // ── Section loaders map ───────────────────────────────────────────────────────
 const loaders = {

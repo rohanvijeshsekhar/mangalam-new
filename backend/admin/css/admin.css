@@ -642,6 +642,30 @@ body {
   color: #dc2626;
 }
 
+/* ── FILTER TABS ────────────────────────────────────────────── */
+.filter-tab {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.filter-tab:hover {
+  background: #f1f5f9;
+  color: #111827;
+  border-color: #cbd5e1;
+}
+.filter-tab.active {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+}
+
 /* ── RESPONSIVE ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); }

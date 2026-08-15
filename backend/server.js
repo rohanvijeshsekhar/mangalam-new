@@ -39,6 +39,7 @@ app.use('/api/testimonials', require('./routes/testimonials'));
 app.use('/api/partners',     require('./routes/partners'));
 app.use('/api/posters',      require('./routes/posters'));
 app.use('/api/enquiries',    require('./routes/enquiries'));
+app.use('/api/enquiry',      require('./routes/enquiries'));
 app.use('/api/collections',  require('./routes/collections'));
 app.use('/api/otp',          require('./routes/otp'));
 app.use('/api/upload',       require('./routes/upload'));
