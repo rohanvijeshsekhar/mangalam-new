@@ -864,22 +864,30 @@ function openBlogForm(b = null) {
   const today = new Date().toISOString().split('T')[0];
   openModal(b ? 'Edit Blog' : 'Add Blog', `
     <div class="form-group"><label>Title *</label><input id="b-title" value="${b?.title||''}" placeholder="Blog post title"></div>
-    <div class="form-group"><label>Date</label><input id="b-date" type="date" value="${b?.date||today}"></div>
-    <div class="form-group"><label>Card Image</label>${createImageUpload('b-card', b?.card_image||'')}</div>
-    <div class="form-group"><label>Content</label><textarea id="b-content" rows="6" placeholder="Blog content here...">${b?.content||''}</textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Category</label><input id="b-category" value="${b?.category||'Travel Guide'}" placeholder="e.g. Destination Guide, Travel Tips, Adventure"></div>
+      <div class="form-group"><label>Date</label><input id="b-date" type="date" value="${b?.date||today}"></div>
+    </div>
+    <div class="form-group"><label>Cover / Banner Image</label>${createImageUpload('b-card', b?.card_image||b?.banner_image||'')}</div>
+    <div class="form-group"><label>Short Overview / Excerpt (Optional)</label><textarea id="b-desc" rows="2" placeholder="Brief 1-2 sentence excerpt for cards...">${b?.description||''}</textarea></div>
+    <div class="form-group"><label>Full Article Content *</label><textarea id="b-content" rows="8" placeholder="Write or paste your article content here...">${b?.content||''}</textarea></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-primary" onclick="saveBlog(${b?.blog_id||'null'})"><i class="fas fa-save"></i> ${b ? 'Update' : 'Save'}</button>
     </div>`);
 }
 
-window.editBlog = function(id) { const b = blogs.find(x => x.blog_id === id); if (b) openBlogForm(b); };
+window.editBlog = function(id) { const b = blogs.find(x => x.blog_id === id || x.id === id); if (b) openBlogForm(b); };
 
 window.saveBlog = async function(id) {
+  const cardImg = document.getElementById('img-url-b-card')?.value || '';
   const body = {
     title: document.getElementById('b-title').value.trim(),
+    category: document.getElementById('b-category')?.value.trim() || 'Travel Guide',
     date: document.getElementById('b-date').value,
-    card_image: document.getElementById('img-url-b-card').value,
+    card_image: cardImg,
+    banner_image: cardImg,
+    description: document.getElementById('b-desc')?.value.trim() || '',
     content: document.getElementById('b-content').value.trim(),
   };
   if (!body.title) { showToast('Title required', 'error'); return; }
