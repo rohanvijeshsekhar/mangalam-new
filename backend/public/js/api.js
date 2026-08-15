@@ -257,8 +257,8 @@ function injectMobileNavStyles() {
       .responsive-float-header {
         display: block !important;
         background: #ffffff !important;
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08) !important;
-        padding-bottom: env(safe-area-inset-bottom, 4px) !important;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06) !important;
+        padding-bottom: env(safe-area-inset-bottom, 2px) !important;
         border-top: 1px solid #f1f5f9 !important;
         z-index: 1000 !important;
       }
@@ -268,7 +268,7 @@ function injectMobileNavStyles() {
         align-items: center !important;
         list-style: none !important;
         margin: 0 !important;
-        padding: 6px 8px 6px !important;
+        padding: 4px 6px 3px !important;
         position: relative !important;
       }
       .responsive-float-header li {
@@ -281,9 +281,10 @@ function injectMobileNavStyles() {
         align-items: center !important;
         text-decoration: none !important;
         color: #64748b !important;
-        font-size: 11px !important;
+        font-size: 10px !important;
         font-weight: 500 !important;
-        line-height: 1.2 !important;
+        line-height: 1.1 !important;
+        padding: 2px 0 !important;
         transition: color 0.15s ease !important;
       }
       .responsive-float-header a:hover,
@@ -291,9 +292,11 @@ function injectMobileNavStyles() {
         color: #0f172a !important;
         font-weight: 600 !important;
       }
-      .responsive-float-header i,
-      .responsive-float-header svg {
-        margin-bottom: 3px !important;
+      .responsive-float-header a > svg,
+      .responsive-float-header i {
+        width: 19px !important;
+        height: 19px !important;
+        margin-bottom: 2px !important;
       }
       .mobile-customize-item {
         position: relative !important;
@@ -303,7 +306,7 @@ function injectMobileNavStyles() {
       }
       .mobile-customize-button {
         position: relative !important;
-        top: -22px !important;
+        top: -12px !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -329,13 +332,13 @@ function injectMobileNavStyles() {
         margin: 0 !important;
       }
       .mobile-customize-icon svg {
-        width: 74px !important;
-        height: 74px !important;
+        width: 62px !important;
+        height: 62px !important;
         display: block !important;
-        filter: drop-shadow(0 6px 16px rgba(26, 172, 222, 0.45)) !important;
+        filter: drop-shadow(0 4px 12px rgba(26, 172, 222, 0.42)) !important;
       }
       .mobile-customize-dropdown {
-        bottom: 74px !important;
+        bottom: 64px !important;
       }
     }
   `;
