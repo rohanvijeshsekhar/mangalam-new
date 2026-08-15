@@ -131,11 +131,11 @@
 </header>
 
     <!-- Main Content Area -->
-    <main class="flex-grow py-6 sm:py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full relative z-10">
+    <main class="flex-grow pt-24 md:pt-28 pb-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full relative z-10">
 
-        <!-- Back to Home Button Above Header -->
-        <div class="mb-4">
-            <a href="index.html" class="inline-flex items-center gap-2.5 px-4 py-2.5 bg-white/95 backdrop-blur-sm hover:bg-white text-slate-800 font-bold rounded-2xl text-xs sm:text-sm border border-slate-200/90 shadow-sm hover:shadow transition-all group">
+        <!-- Back to Home Action Row -->
+        <div class="mb-5 flex items-center justify-between">
+            <a href="/" class="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white hover:bg-red-50 text-slate-800 hover:text-red-600 font-bold rounded-2xl text-sm border border-slate-200 shadow-sm hover:shadow transition-all duration-300 group">
                 <i class="fas fa-arrow-left text-red-500 group-hover:-translate-x-1 transition-transform"></i> Back to Home
             </a>
         </div>
@@ -146,9 +146,14 @@
                 <i class="fas fa-plane-departure"></i>
             </div>
             <div class="relative z-10">
-                <span class="inline-block bg-red-500/20 text-red-300 border border-red-500/30 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3">
-                    Custom Trip Booking
-                </span>
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <span class="inline-block bg-red-500/20 text-red-300 border border-red-500/30 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+                        Custom Trip Booking
+                    </span>
+                    <a href="/" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider border border-white/20 transition-all">
+                        <i class="fas fa-arrow-left text-yellow-400"></i> Back to Home
+                    </a>
+                </div>
                 <h1 class="text-2xl sm:text-4xl font-bold heading-font text-white" id="dest-title-display">
                     Customize Your Trip to <span class="text-red-400" id="dest-name-span">Destination</span>
                 </h1>
