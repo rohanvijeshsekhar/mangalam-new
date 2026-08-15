@@ -24,10 +24,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  container.innerHTML = attractions.map(a => {
+  const slugParam = MT.qParam('slug') || MT.qParam('destination') || '';
+  const destIdParam = MT.qParam('destination_id') || '';
+
+  let list = attractions;
+  if (slugParam) {
+    const slugClean = slugParam.toLowerCase().replace(/[-_]/g, ' ');
+    const filtered = attractions.filter(a => {
+      const dName = (a.destination_name || '').toLowerCase();
+      const aSlug = (a.slug_url || a.slug || '').toLowerCase();
+      return dName.includes(slugClean) || slugClean.includes(dName) || aSlug.includes(slugParam.toLowerCase());
+    });
+    if (filtered.length > 0) list = filtered;
+  }
+
+  container.innerHTML = list.map(a => {
     const title = a.name || a.title || 'Attraction';
     const slug = a.slug_url || a.slug || '';
-    const link = `attraction-details.html?slug=${slug || a.attraction_id}`;
+    const link = `attraction-details.html?slug=${encodeURIComponent(slug || a.id || a.attraction_id)}`;
     const img = MT.resolveImg(a.card_image || a.banner_image || a.image);
     const expType = a.experience_type || 'Cultural';
     const duration = a.duration || '2-3 Hours';

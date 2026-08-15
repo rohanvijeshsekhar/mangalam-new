@@ -11,6 +11,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   const typeParam   = MT.qParam('type') || 'package';
   const destIdParam = MT.qParam('destination_id');
 
+  if (typeParam === 'activities' || typeParam === 'activity' || typeParam === 'attraction' || typeParam === 'attractions') {
+    const slugSuffix = slugParam ? `?slug=${encodeURIComponent(slugParam)}` : (destIdParam ? `?destination_id=${encodeURIComponent(destIdParam)}` : '');
+    window.location.href = `attraction.html${slugSuffix}`;
+    return;
+  }
+  if (typeParam === 'ticket' || typeParam === 'tickets') {
+    const slugSuffix = slugParam ? `?slug=${encodeURIComponent(slugParam)}` : (destIdParam ? `?destination_id=${encodeURIComponent(destIdParam)}` : '');
+    window.location.href = `tickets.html${slugSuffix}`;
+    return;
+  }
+
   let activeDest = null;
   if (slugParam && dests && dests.length) {
     activeDest = dests.find(d => (d.slug_url || d.slug) === slugParam);
@@ -59,6 +70,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btn) setActive(btn);
   }
 
+  // Update Tab Links
+  const tabPackages = document.getElementById('tab-packages');
+  const tabTickets = document.getElementById('tab-tickets');
+  const tabActivity = document.getElementById('tab-activity');
+
+  function updateTabLinks(slug, destId) {
+    const slugSuffix = slug ? `?slug=${encodeURIComponent(slug)}` : (destId ? `?destination_id=${encodeURIComponent(destId)}` : '');
+    if (tabPackages) tabPackages.href = `packages.html${slugSuffix ? slugSuffix + '&type=package' : ''}`;
+    if (tabTickets) tabTickets.href = `tickets.html${slugSuffix}`;
+    if (tabActivity) tabActivity.href = `attraction.html${slugSuffix}`;
+  }
+
+  updateTabLinks(slugParam, activeDestId);
+
   renderPackages(allPkgs, activeDestId);
 
   // Filter click handler
@@ -66,6 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btn = e.target.closest('.dest-filter-btn');
     if (!btn) return;
     setActive(btn);
+    updateTabLinks(btn.dataset.slug, btn.dataset.destId);
     renderPackages(allPkgs, btn.dataset.destId);
   });
 
