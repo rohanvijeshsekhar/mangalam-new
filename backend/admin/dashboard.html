@@ -39,9 +39,6 @@
     <a href="#" class="nav-item" data-section="attractions">
       <i class="fas fa-camera"></i><span>Attractions</span>
     </a>
-    <a href="#" class="nav-item" data-section="tickets">
-      <i class="fas fa-ticket-alt"></i><span>Tickets</span>
-    </a>
     <a href="#" class="nav-item" data-section="blogs">
       <i class="fas fa-blog"></i><span>Blogs</span>
     </a>
@@ -117,10 +114,6 @@
         <div class="stat-icon" style="background:rgba(160,185,129,0.1);color:#10b981"><i class="fas fa-camera"></i></div>
         <div class="stat-info"><div class="stat-value" id="stat-attractions">—</div><div class="stat-label">Attractions</div></div>
       </div>
-      <div class="stat-card" data-section="tickets">
-        <div class="stat-icon" style="background:rgba(99,102,241,0.1);color:#6366f1"><i class="fas fa-ticket-alt"></i></div>
-        <div class="stat-info"><div class="stat-value" id="stat-tickets">—</div><div class="stat-label">Tickets</div></div>
-      </div>
       <div class="stat-card" data-section="blogs">
         <div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-blog"></i></div>
         <div class="stat-info"><div class="stat-value" id="stat-blogs">—</div><div class="stat-label">Blogs</div></div>
@@ -149,7 +142,6 @@
         <button class="quick-btn" data-section="destinations" data-action="add"><i class="fas fa-plus"></i> Add Destination</button>
         <button class="quick-btn" data-section="packages" data-action="add"><i class="fas fa-plus"></i> Add Package</button>
         <button class="quick-btn" data-section="collections" data-action="add"><i class="fas fa-plus"></i> Add Collection</button>
-        <button class="quick-btn" data-section="tickets" data-action="add"><i class="fas fa-plus"></i> Add Ticket</button>
         <button class="quick-btn" data-section="blogs" data-action="add"><i class="fas fa-plus"></i> Add Blog</button>
       </div>
     </div>
@@ -210,20 +202,6 @@
       <table class="data-table" id="tbl-attractions">
         <thead><tr><th>Image</th><th>Name</th><th>Experience Type</th><th>Duration</th><th>Price</th><th>Actions</th></tr></thead>
         <tbody id="tbody-attractions"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ── TICKETS SECTION ────────────────────────────────── -->
-  <section class="content-section hidden" id="section-tickets">
-    <div class="section-toolbar">
-      <h3 class="section-heading">All Tickets</h3>
-      <button class="btn-primary" id="btn-add-ticket"><i class="fas fa-plus"></i> Add Ticket</button>
-    </div>
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead><tr><th>Image</th><th>Title</th><th>Destination</th><th>Price</th><th>Actions</th></tr></thead>
-        <tbody id="tbody-tickets"></tbody>
       </table>
     </div>
   </section>

@@ -68,7 +68,6 @@ const sections = {
   packages:     { title: 'Packages',     subtitle: 'Manage holiday packages' },
   collections:  { title: 'Collections',  subtitle: 'Manage curated homepage package collections' },
   attractions:  { title: 'Attractions',  subtitle: 'Manage places and attraction experiences' },
-  tickets:      { title: 'Tickets',      subtitle: 'Manage attraction tickets' },
   blogs:        { title: 'Blogs',        subtitle: 'Manage blog posts' },
   testimonials: { title: 'Testimonials', subtitle: 'Manage customer reviews' },
   partners:     { title: 'Partners',     subtitle: 'Manage partner logos' },
@@ -114,7 +113,7 @@ document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
 async function loadDashboard() {
   const stats = await api('GET', '/stats');
   if (!stats) return;
-  ['destinations','packages','collections','attractions','tickets','blogs','testimonials','partners','posters'].forEach(k => {
+  ['destinations','packages','collections','attractions','blogs','testimonials','partners','posters'].forEach(k => {
     const el = document.getElementById(`stat-${k}`);
     if (el) el.textContent = stats[k] ?? 0;
   });
@@ -185,7 +184,6 @@ function openAddModal(section) {
     destinations: openDestinationForm,
     packages:     openPackageForm,
     collections:  openCollectionForm,
-    tickets:      openTicketForm,
     blogs:        openBlogForm,
     testimonials: openTestimonialForm,
     partners:     openPartnerForm,
@@ -1286,7 +1284,6 @@ const loaders = {
   packages:     () => { loadDestinations(); loadPackages(); },
   collections:  loadCollections,
   attractions:  loadAttractions,
-  tickets:      loadTickets,
   blogs:        loadBlogs,
   testimonials: loadTestimonials,
   partners:     loadPartners,

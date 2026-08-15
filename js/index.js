@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadPosters(),
     loadDestinations(),
     loadCollections(),
-    loadTickets(),
     loadTestimonials(),
     loadPartners(),
     loadBlogs()
@@ -136,34 +135,6 @@ async function loadDestinations() {
   });
 }
 
-async function loadTickets() {
-  const section = document.getElementById('home-tickets-section');
-  const carousel = document.getElementById('ticketsCarousel');
-  const list = document.querySelector('#ticketsCarousel .splide__list');
-  const viewAllBtn = document.getElementById('view-all-tickets-btn');
-
-  const tickets = await MT.apiGet('/api/tickets');
-  if (!tickets || !tickets.length) {
-    if (section) section.style.display = '';
-    if (viewAllBtn) viewAllBtn.style.display = 'none';
-    if (carousel) {
-      carousel.outerHTML = `
-        <div class="flex flex-col items-center justify-center py-8 text-center" data-aos="fade-up">
-            <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
-            </svg>
-            <h3 class="text-xl md:text-2xl font-bold text-slate-800 font-[Quicksand] mb-2">No Tickets Available</h3>
-            <p class="text-gray-500 font-dm-sans text-sm md:text-base">We are currently updating our tickets. Please check back later!</p>
-        </div>
-      `;
-    }
-    return;
-  }
-  if (!list) return;
-  if (section) section.style.display = '';
-  if (viewAllBtn) viewAllBtn.style.display = '';
-  list.innerHTML = tickets.map(t => R.ticketCard(t)).join('');
-}
 
 async function loadTestimonials() {
   const grid = document.getElementById('testimonials-grid');
@@ -247,19 +218,6 @@ function initCarousels() {
       }
     }
 
-    const tktEl = document.getElementById('ticketsCarousel');
-    if (tktEl) {
-      const cnt = tktEl.querySelectorAll('.splide__slide').length;
-      if (cnt > 0) {
-        new Splide('#ticketsCarousel', {
-          type: cnt > 4 ? 'loop' : 'slide',
-          perPage: Math.min(4, Math.max(1, cnt)),
-          gap: '1.5rem',
-          arrows: cnt > 1,
-          breakpoints: { 1024: { perPage: Math.min(3, Math.max(1, cnt)) }, 768: { perPage: Math.min(2, Math.max(1, cnt)) }, 480: { perPage: 1 } }
-        }).mount();
-      }
-    }
 
     const blogEl = document.getElementById('blogCarousel');
     if (blogEl) {
