@@ -66,6 +66,7 @@ function parseBannerImages(p) {
 const map = p => ({
   package_id:    p.id,
   package_name:  p.package_name,
+  footer_title:  p.footer_title || '',
   slug_url:      p.slug_url,
   card_image:    p.card_image || '',
   banner_image:  p.banner_image || p.inner_image || p.card_image || '',
@@ -101,15 +102,54 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', verifyToken, (req, res) => {
-  const { package_name, card_image, banner_image, banner_images, amount, nights, days, destination_id, type, overview, itinerary, inclusions, exclusions, terms, hotel_type, activities_count, transfers } = req.body;
+  const { package_name, footer_title, card_image, banner_image, banner_images, amount, nights, days, destination_id, type, overview, itinerary, inclusions, exclusions, terms, hotel_type, activities_count, transfers } = req.body;
   if (!package_name) return res.status(400).json({ error: 'package_name is required' });
-  const doc = store.insert('packages', { package_name, slug_url: slugify(package_name), card_image: card_image||'', banner_image: banner_image||'', banner_images: banner_images||[], amount: Number(amount)||0, nights: Number(nights)||0, days: Number(days)||0, destination_id: destination_id||null, type: type||'package', overview: overview||'', itinerary: itinerary||'', inclusions: inclusions||'', exclusions: exclusions||'', terms: terms||'', hotel_type: hotel_type||'4 Star Hotel', activities_count: activities_count||'5 Included', transfers: transfers||'Included' });
+  const doc = store.insert('packages', { 
+    package_name, 
+    footer_title: footer_title || '',
+    slug_url: slugify(package_name), 
+    card_image: card_image||'', 
+    banner_image: banner_image||'', 
+    banner_images: banner_images||[], 
+    amount: Number(amount)||0, 
+    nights: Number(nights)||0, 
+    days: Number(days)||0, 
+    destination_id: destination_id||null, 
+    type: type||'package', 
+    overview: overview||'', 
+    itinerary: itinerary||'', 
+    inclusions: inclusions||'', 
+    exclusions: exclusions||'', 
+    terms: terms||'', 
+    hotel_type: hotel_type||'4 Star Hotel', 
+    activities_count: activities_count||'5 Included', 
+    transfers: transfers||'Included' 
+  });
   res.status(201).json(map(doc));
 });
 
 router.put('/:id', verifyToken, (req, res) => {
-  const { package_name, card_image, banner_image, banner_images, amount, nights, days, destination_id, type, overview, itinerary, inclusions, exclusions, terms, hotel_type, activities_count, transfers } = req.body;
-  const updates = { package_name, card_image, banner_image, banner_images, amount: amount !== undefined ? Number(amount) : undefined, nights: nights !== undefined ? Number(nights) : undefined, days: days !== undefined ? Number(days) : undefined, destination_id, type, overview, itinerary, inclusions, exclusions, terms, hotel_type, activities_count, transfers };
+  const { package_name, footer_title, card_image, banner_image, banner_images, amount, nights, days, destination_id, type, overview, itinerary, inclusions, exclusions, terms, hotel_type, activities_count, transfers } = req.body;
+  const updates = { 
+    package_name, 
+    footer_title: footer_title !== undefined ? footer_title : '',
+    card_image, 
+    banner_image, 
+    banner_images, 
+    amount: amount !== undefined ? Number(amount) : undefined, 
+    nights: nights !== undefined ? Number(nights) : undefined, 
+    days: days !== undefined ? Number(days) : undefined, 
+    destination_id, 
+    type, 
+    overview, 
+    itinerary, 
+    inclusions, 
+    exclusions, 
+    terms, 
+    hotel_type, 
+    activities_count, 
+    transfers 
+  };
   if (package_name) updates.slug_url = slugify(package_name);
   const doc = store.update('packages', req.params.id, updates);
   if (!doc) return res.status(404).json({ error: 'Not found' });

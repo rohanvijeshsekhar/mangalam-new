@@ -113,54 +113,91 @@ async function loadNotice() {
   }
 }
 
-// ─── Footer destinations loader ───────────────────────────────────────────────
-async function loadFooterDests() {
-  const col1 = document.getElementById('footer-dests-1');
-  const col2 = document.getElementById('footer-dests-2');
-  const col3 = document.getElementById('footer-dests-3');
-  if (!col1 && !col2 && !col3) return;
-  const dests = await apiGet('/api/destinations');
-  if (!dests || !dests.length) return;
-  const top = dests.slice(0, 18);
-  const cols = [col1, col2, col3];
-  const per = Math.ceil(top.length / 3);
-  cols.forEach((col, i) => {
-    if (!col) return;
-    col.innerHTML = top.slice(i * per, (i + 1) * per).map(d => {
-      const name = d.destination_name || d.name || '';
-      const slug = d.slug_url || d.slug || '';
-      const url = slug ? `packages.html?slug=${encodeURIComponent(slug)}&type=package` : '#';
-      return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors">${name} Holiday Packages</a>`;
-    }).join('');
-  });
-}
+// ─── Footer destinations & packages loader ───────────────────────────────────
+async function loadFooterLinks() {
+  try {
+    const [dests, pkgs] = await Promise.all([
+      apiGet('/api/destinations'),
+      apiGet('/api/packages')
+    ]);
 
-// ─── Footer activities loader ─────────────────────────────────────────────────
-async function loadFooterActivities() {
-  const el = document.getElementById('footer-activities');
-  if (!el) return;
-  const acts = await apiGet('/api/activities');
-  if (!acts || !acts.length) return;
-  el.innerHTML = acts.slice(0, 8).map(a => {
-    const name = a.title || a.name || '';
-    const slug = a.slug_url || a.slug || '';
-    const url = slug ? `activity-details.html?slug=${encodeURIComponent(slug)}` : '#';
-    return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors">${name}</a>`;
-  }).join('');
-}
+    // 1. Top Destinations Links
+    if (Array.isArray(dests) && dests.length > 0) {
+      const destLinksHTML = dests.map(d => {
+        const label = d.footer_title || d.footer_label || `${d.destination_name || d.name} Holiday Packages`;
+        const slug = d.slug_url || d.slug || (d.destination_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const url = slug ? `packages.html?slug=${encodeURIComponent(slug)}&type=package` : 'packages.html';
+        return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">${label}</a>`;
+      });
 
-// ─── Footer tickets loader ────────────────────────────────────────────────────
-async function loadFooterTickets() {
-  const el = document.getElementById('footer-tickets');
-  if (!el) return;
-  const tkts = await apiGet('/api/tickets');
-  if (!tkts || !tkts.length) return;
-  el.innerHTML = tkts.slice(0, 8).map(t => {
-    const name = t.title || t.name || '';
-    const slug = t.slug_url || t.slug || '';
-    const url = slug ? `ticket-details.html?slug=${encodeURIComponent(slug)}` : '#';
-    return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors">${name}</a>`;
-  }).join('');
+      const col1 = document.getElementById('footer-dests-1');
+      const col2 = document.getElementById('footer-dests-2');
+      const col3 = document.getElementById('footer-dests-3');
+
+      if (col1 || col2 || col3) {
+        const per = Math.max(1, Math.ceil(destLinksHTML.length / 3));
+        if (col1) col1.innerHTML = destLinksHTML.slice(0, per).join('');
+        if (col2) col2.innerHTML = destLinksHTML.slice(per, per * 2).join('');
+        if (col3) col3.innerHTML = destLinksHTML.slice(per * 2).join('');
+      } else {
+        const allHeadings = Array.from(document.querySelectorAll('h3, h4, h5'));
+        const destHeading = allHeadings.find(h => {
+          const t = h.textContent.trim().toLowerCase();
+          return t.includes('top destination') || t === 'destinations';
+        });
+        if (destHeading && destHeading.nextElementSibling) {
+          const nextGrid = destHeading.nextElementSibling;
+          const per = Math.max(1, Math.ceil(destLinksHTML.length / 3));
+          nextGrid.className = 'grid grid-cols-1 md:grid-cols-3 gap-4';
+          nextGrid.innerHTML = `
+            <div id="footer-dests-1" class="space-y-2">${destLinksHTML.slice(0, per).join('')}</div>
+            <div id="footer-dests-2" class="space-y-2">${destLinksHTML.slice(per, per * 2).join('')}</div>
+            <div id="footer-dests-3" class="space-y-2">${destLinksHTML.slice(per * 2).join('')}</div>
+          `;
+        }
+      }
+    }
+
+    // 2. Holiday Packages Links
+    if (Array.isArray(pkgs) && pkgs.length > 0) {
+      const pkgLinksHTML = pkgs.map(p => {
+        const label = p.footer_title || p.footer_label || p.package_name || p.title || 'Holiday Package';
+        const pkgId = p.package_id || p.id || p.slug_url || '';
+        const url = pkgId ? `package-details.html?id=${encodeURIComponent(pkgId)}` : 'holiday-package.html';
+        return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">${label}</a>`;
+      });
+
+      const col1 = document.getElementById('footer-pkgs-1');
+      const col2 = document.getElementById('footer-pkgs-2');
+      const col3 = document.getElementById('footer-pkgs-3');
+
+      if (col1 || col2 || col3) {
+        const per = Math.max(1, Math.ceil(pkgLinksHTML.length / 3));
+        if (col1) col1.innerHTML = pkgLinksHTML.slice(0, per).join('');
+        if (col2) col2.innerHTML = pkgLinksHTML.slice(per, per * 2).join('');
+        if (col3) col3.innerHTML = pkgLinksHTML.slice(per * 2).join('');
+      } else {
+        const allHeadings = Array.from(document.querySelectorAll('h3, h4, h5'));
+        const pkgHeading = allHeadings.find(h => {
+          const t = h.textContent.trim().toLowerCase();
+          return t.includes('holiday package') || t.includes('top package') || t.includes('top activit');
+        });
+        if (pkgHeading && pkgHeading.nextElementSibling) {
+          pkgHeading.textContent = 'Holiday Packages';
+          const nextGrid = pkgHeading.nextElementSibling;
+          const per = Math.max(1, Math.ceil(pkgLinksHTML.length / 3));
+          nextGrid.className = 'grid grid-cols-1 md:grid-cols-3 gap-4';
+          nextGrid.innerHTML = `
+            <div id="footer-pkgs-1" class="space-y-2">${pkgLinksHTML.slice(0, per).join('')}</div>
+            <div id="footer-pkgs-2" class="space-y-2">${pkgLinksHTML.slice(per, per * 2).join('')}</div>
+            <div id="footer-pkgs-3" class="space-y-2">${pkgLinksHTML.slice(per * 2).join('')}</div>
+          `;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[Footer] Links load error:', err);
+  }
 }
 
 // ─── Destination dropdown populator (search bars on multiple pages) ───────────
@@ -340,9 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
   injectMobileNavStyles();
   loadDynamicSeo();
   loadNotice();
-  loadFooterDests();
-  loadFooterActivities();
-  loadFooterTickets();
+  loadFooterLinks();
   loadDestinationDropdowns();
 });
 

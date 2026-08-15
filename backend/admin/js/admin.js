@@ -226,6 +226,11 @@ function openDestinationForm(d = null) {
 
   const modalHtml = `
     <div class="form-group"><label>Destination / Country Name *</label><input id="d-name" value="${d?.destination_name||''}" placeholder="e.g. Dubai"></div>
+    <div class="form-group">
+      <label>Footer Link Title (Optional)</label>
+      <input id="d-footer-title" value="${d?.footer_title||d?.footer_label||''}" placeholder="e.g. Best Safari Ride in Dubai (Leave empty to use Destination Name)">
+      <small style="color:#64748b;font-size:11px">Custom text to display in website footer under 'Top Destinations' linking to this destination.</small>
+    </div>
     <div class="form-group"><label>Card Image</label>${createImageUpload('d-card', d?.card_image||'')}</div>
     <div class="form-group"><label>Inner/Banner Image</label>${createImageUpload('d-inner', d?.inner_image||'')}</div>
     <div class="form-group"><label>Description</label><textarea id="d-desc" placeholder="Short destination description">${d?.description||''}</textarea></div>
@@ -302,6 +307,7 @@ window.saveDestination = async function(id) {
 
   const body = {
     destination_name: document.getElementById('d-name').value.trim(),
+    footer_title: document.getElementById('d-footer-title')?.value.trim() || '',
     card_image: document.getElementById('img-url-d-card').value,
     inner_image: document.getElementById('img-url-d-inner').value,
     description: document.getElementById('d-desc').value.trim(),
@@ -407,6 +413,11 @@ function openPackageForm(p = null) {
 
   openModal(p ? 'Edit Package' : 'Add Package', `
     <div class="form-group"><label>Package Name *</label><input id="p-name" value="${p?.package_name||''}" placeholder="e.g. Extravagant Dubai Luxury Tour"></div>
+    <div class="form-group">
+      <label>Footer Link Title (Optional)</label>
+      <input id="p-footer-title" value="${p?.footer_title||p?.footer_label||''}" placeholder="e.g. 5-Star Dubai Luxury Tour (Leave empty to use Package Name)">
+      <small style="color:#64748b;font-size:11px">Custom text to display in website footer under 'Holiday Packages' linking to this package.</small>
+    </div>
     <div class="form-row-two">
       <div class="form-group"><label>Nights</label><input id="p-nights" type="number" value="${p?.nights||''}" placeholder="4"></div>
       <div class="form-group"><label>Days</label><input id="p-days" type="number" value="${p?.days||''}" placeholder="5"></div>
@@ -510,6 +521,7 @@ window.savePackage = async function(id) {
 
   const body = {
     package_name: document.getElementById('p-name').value.trim(),
+    footer_title: document.getElementById('p-footer-title')?.value.trim() || '',
     nights: document.getElementById('p-nights').value,
     days: document.getElementById('p-days').value,
     hotel_type: document.getElementById('p-hotel').value.trim() || '4 Star Hotel',

@@ -8,6 +8,7 @@ const slugify = t => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+
 const map = d => ({
   destination_id:   d.id,
   destination_name: d.destination_name,
+  footer_title:     d.footer_title || '',
   slug_url:         d.slug_url,
   card_image:       d.card_image || '',
   inner_image:      d.inner_image || '',
@@ -24,10 +25,11 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', verifyToken, (req, res) => {
-  const { destination_name, card_image, inner_image, description, places_to_visit } = req.body;
+  const { destination_name, footer_title, card_image, inner_image, description, places_to_visit } = req.body;
   if (!destination_name) return res.status(400).json({ error: 'destination_name is required' });
   const doc = store.insert('destinations', { 
     destination_name, 
+    footer_title: footer_title || '',
     slug_url: slugify(destination_name), 
     card_image: card_image||'', 
     inner_image: inner_image||'', 
@@ -38,8 +40,8 @@ router.post('/', verifyToken, (req, res) => {
 });
 
 router.put('/:id', verifyToken, (req, res) => {
-  const { destination_name, card_image, inner_image, description, places_to_visit } = req.body;
-  const updates = { destination_name, card_image, inner_image, description };
+  const { destination_name, footer_title, card_image, inner_image, description, places_to_visit } = req.body;
+  const updates = { destination_name, footer_title: footer_title !== undefined ? footer_title : '', card_image, inner_image, description };
   if (destination_name) updates.slug_url = slugify(destination_name);
   if (places_to_visit !== undefined) {
     updates.places_to_visit = Array.isArray(places_to_visit) ? places_to_visit : (typeof places_to_visit === 'string' ? places_to_visit.split('\n').map(s=>s.trim()).filter(Boolean) : []);
