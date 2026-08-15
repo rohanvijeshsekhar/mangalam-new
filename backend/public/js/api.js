@@ -247,8 +247,92 @@ function setLink(rel, href) {
   el.setAttribute('href', href);
 }
 
+// ─── Mobile Bottom Nav Styling Enhancement ──────────────────────────────────
+function injectMobileNavStyles() {
+  if (document.getElementById('mt-mobile-nav-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'mt-mobile-nav-styles';
+  style.textContent = `
+    @media (max-width: 768px) {
+      .responsive-float-header {
+        display: block !important;
+        background: #ffffff !important;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08) !important;
+        padding-bottom: env(safe-area-inset-bottom, 4px) !important;
+        border-top: 1px solid #f1f5f9 !important;
+        z-index: 1000 !important;
+      }
+      .responsive-float-header ul {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        list-style: none !important;
+        margin: 0 !important;
+        padding: 6px 8px 6px !important;
+        position: relative !important;
+      }
+      .responsive-float-header li {
+        flex: 1 !important;
+        text-align: center !important;
+      }
+      .responsive-float-header a {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-decoration: none !important;
+        color: #64748b !important;
+        font-size: 11px !important;
+        font-weight: 500 !important;
+        line-height: 1.2 !important;
+        transition: color 0.15s ease !important;
+      }
+      .responsive-float-header a:hover,
+      .responsive-float-header a.active {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+      }
+      .responsive-float-header i,
+      .responsive-float-header svg {
+        margin-bottom: 3px !important;
+      }
+      .mobile-customize-item {
+        position: relative !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+      }
+      .mobile-customize-button {
+        position: relative !important;
+        top: -20px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        background: #ffffff !important;
+        padding: 3px !important;
+        box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08), 0 6px 18px rgba(26, 172, 222, 0.35) !important;
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        z-index: 1002 !important;
+      }
+      .mobile-customize-button:active {
+        transform: scale(0.92) !important;
+      }
+      .mobile-customize-icon svg {
+        width: 58px !important;
+        height: 58px !important;
+        display: block !important;
+      }
+      .mobile-customize-dropdown {
+        bottom: 74px !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 // ─── Init common page elements ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  injectMobileNavStyles();
   loadDynamicSeo();
   loadNotice();
   loadFooterDests();
@@ -256,6 +340,11 @@ document.addEventListener('DOMContentLoaded', () => {
   loadFooterTickets();
   loadDestinationDropdowns();
 });
+
+// Also run immediately if DOM is ready
+if (document.readyState !== 'loading') {
+  injectMobileNavStyles();
+}
 
 // Export for use in page scripts
 window.MT = {
