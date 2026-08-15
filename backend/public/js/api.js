@@ -257,99 +257,70 @@ function injectMobileNavStyles() {
       .responsive-float-header {
         display: block !important;
         background: #ffffff !important;
-        box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.07) !important;
-        padding-bottom: env(safe-area-inset-bottom, 4px) !important;
-        border-top: 1px solid #f1f5f9 !important;
+        box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1) !important;
         z-index: 1000 !important;
-        height: 58px !important;
-        overflow: visible !important;
+        height: auto !important;
+        padding-bottom: env(safe-area-inset-bottom, 0px) !important;
       }
       .responsive-float-header ul {
         display: flex !important;
         justify-content: space-between !important;
-        align-items: center !important;
+        align-items: flex-end !important;
         list-style: none !important;
         margin: 0 !important;
-        padding: 4px 8px !important;
-        height: 100% !important;
-        position: relative !important;
+        padding: 8px 8px !important;
+        gap: 4px !important;
       }
       .responsive-float-header li {
         flex: 1 !important;
         text-align: center !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-      }
-      .responsive-float-header li.mobile-customize-item {
-        flex: 0 0 60px !important;
-        width: 60px !important;
-        max-width: 60px !important;
-        height: 0 !important;
-        position: relative !important;
-        overflow: visible !important;
       }
       .responsive-float-header a {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
-        justify-content: center !important;
         text-decoration: none !important;
-        color: #64748b !important;
-        font-size: 11px !important;
-        font-weight: 500 !important;
-        line-height: 1.1 !important;
-        padding: 2px 0 !important;
-        gap: 2px !important;
-        transition: color 0.15s ease !important;
+        color: #666666 !important;
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+        text-align: center !important;
       }
-      .responsive-float-header a:hover,
       .responsive-float-header a.active {
-        color: #0f172a !important;
-        font-weight: 600 !important;
+        color: #1f2937 !important;
       }
       .responsive-float-header a > svg,
       .responsive-float-header i {
-        width: 21px !important;
-        height: 21px !important;
-        margin-bottom: 1px !important;
-        display: block !important;
+        font-size: 20px !important;
+        width: 20px !important;
+        height: 20px !important;
+        margin-bottom: 4px !important;
+      }
+      .mobile-customize-item {
+        position: relative !important;
       }
       .mobile-customize-button {
-        position: absolute !important;
-        top: -24px !important;
+        position: relative !important;
+        top: -18px !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
+        text-decoration: none !important;
+        color: #1f2937 !important;
         background: transparent !important;
         border: none !important;
         padding: 0 !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-        border-radius: 50% !important;
-        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-        z-index: 1002 !important;
+      }
+      .mobile-customize-button:focus {
         outline: none !important;
       }
-      .mobile-customize-button:active {
-        transform: scale(0.92) !important;
-      }
-      .mobile-customize-icon {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: transparent !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
       .mobile-customize-icon svg {
-        width: 74px !important;
-        height: 74px !important;
+        width: 72px !important;
+        height: 72px !important;
         display: block !important;
-        filter: drop-shadow(0 6px 14px rgba(26, 172, 222, 0.42)) !important;
+        filter: drop-shadow(0 4px 12px rgba(26, 172, 222, 0.4)) !important;
       }
       .mobile-customize-dropdown {
-        bottom: 68px !important;
+        bottom: 80px !important;
       }
     }
   `;
