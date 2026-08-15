@@ -98,48 +98,31 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.get('/api/stats', async (req, res) => {
   try {
     const [
-      destinations,
-      packages,
-      collections,
-      attractions,
-      tickets,
-      blogs,
-      testimonials,
-      partners,
-      posters,
-      enquiries,
-      seo
+      destinations, packages, collections, attractions, tickets,
+      blogs, testimonials, partners, posters, enquiries, seo
     ] = await Promise.all([
-      store.count('destinations'),
-      store.count('packages'),
-      store.count('collections'),
-      store.count('attractions'),
-      store.count('tickets'),
-      store.count('blogs'),
-      store.count('testimonials'),
-      store.count('partners'),
-      store.count('posters'),
-      store.count('enquiries'),
-      store.count('seo')
+      store.count('destinations'), store.count('packages'), store.count('collections'),
+      store.count('attractions'), store.count('tickets'), store.count('blogs'),
+      store.count('testimonials'), store.count('partners'), store.count('posters'),
+      store.count('enquiries'), store.count('seo')
     ]);
-
-    res.json({
-      destinations,
-      packages,
-      collections,
-      attractions,
-      tickets,
-      blogs,
-      testimonials,
-      partners,
-      posters,
-      enquiries,
-      seo
-    });
+    res.json({ destinations, packages, collections, attractions, tickets, blogs, testimonials, partners, posters, enquiries, seo });
   } catch (err) {
     res.status(500).json({ error: 'Failed to retrieve stats' });
   }
 });
+
+// ── Debug: Check environment config (non-sensitive) ────────────────────────
+app.get('/api/debug/env', (req, res) => {
+  res.json({
+    cloudinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? '✅ set' : '❌ missing',
+    cloudinary_api_key:    process.env.CLOUDINARY_API_KEY    ? '✅ set' : '❌ missing',
+    cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET ? '✅ set' : '❌ missing',
+    db_host:               process.env.DB_HOST || '❌ missing',
+    node_env:              process.env.NODE_ENV || 'not set',
+  });
+});
+
 
 // ── Serve Main Website Homepage (index.html) ────────────────────────────────
 app.get('/', (req, res) => {
