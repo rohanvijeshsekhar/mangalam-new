@@ -525,6 +525,123 @@ body {
 .toast.success { background: #15803d; }
 .toast.error { background: #be123c; }
 
+/* ── PACKAGE PICKER FOR COLLECTIONS ─────────────────────────── */
+.pkg-picker-container {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-top: 6px;
+}
+.pkg-picker-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.pkg-search-input {
+  flex: 1;
+  min-width: 180px;
+  padding: 7px 12px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  outline: none;
+}
+.pkg-search-input:focus {
+  border-color: var(--accent);
+}
+.pkg-count-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  background: #e2e8f0;
+  padding: 4px 10px;
+  border-radius: 99px;
+}
+.pkg-grid-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.pkg-picker-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  position: relative;
+}
+.pkg-picker-card:hover {
+  border-color: #cbd5e1;
+  background: #fafafa;
+}
+.pkg-picker-card.selected {
+  border-color: var(--accent);
+  background: #fef2f2;
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.pkg-picker-card .pkg-check-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  font-size: 11px;
+  transition: all 0.15s;
+  background: #fff;
+}
+.pkg-picker-card.selected .pkg-check-indicator {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.pkg-picker-thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #e2e8f0;
+}
+.pkg-picker-info {
+  flex: 1;
+  min-width: 0;
+}
+.pkg-picker-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pkg-picker-meta {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.pkg-picker-price {
+  font-weight: 600;
+  color: #dc2626;
+}
+
 /* ── RESPONSIVE ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); }

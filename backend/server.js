@@ -39,6 +39,7 @@ app.use('/api/testimonials', require('./routes/testimonials'));
 app.use('/api/partners',     require('./routes/partners'));
 app.use('/api/posters',      require('./routes/posters'));
 app.use('/api/enquiries',    require('./routes/enquiries'));
+app.use('/api/collections',  require('./routes/collections'));
 app.use('/api/otp',          require('./routes/otp'));
 app.use('/api/upload',       require('./routes/upload'));
 
@@ -58,6 +59,7 @@ app.get('/api/stats', (req, res) => {
   res.json({
     destinations: store.count('destinations'),
     packages:     store.count('packages'),
+    collections:  store.count('collections'),
     attractions:  store.count('attractions'),
     tickets:      store.count('tickets'),
     blogs:        store.count('blogs'),

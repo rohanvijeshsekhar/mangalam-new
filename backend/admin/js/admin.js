@@ -66,6 +66,7 @@ const sections = {
   dashboard:    { title: 'Dashboard',    subtitle: 'Overview of your website data' },
   destinations: { title: 'Destinations', subtitle: 'Manage travel destinations' },
   packages:     { title: 'Packages',     subtitle: 'Manage holiday packages' },
+  collections:  { title: 'Collections',  subtitle: 'Manage curated homepage package collections' },
   attractions:  { title: 'Attractions',  subtitle: 'Manage places and attraction experiences' },
   tickets:      { title: 'Tickets',      subtitle: 'Manage attraction tickets' },
   blogs:        { title: 'Blogs',        subtitle: 'Manage blog posts' },
@@ -113,7 +114,7 @@ document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
 async function loadDashboard() {
   const stats = await api('GET', '/stats');
   if (!stats) return;
-  ['destinations','packages','attractions','tickets','blogs','testimonials','partners','posters'].forEach(k => {
+  ['destinations','packages','collections','attractions','tickets','blogs','testimonials','partners','posters'].forEach(k => {
     const el = document.getElementById(`stat-${k}`);
     if (el) el.textContent = stats[k] ?? 0;
   });
@@ -183,6 +184,7 @@ function openAddModal(section) {
   const forms = {
     destinations: openDestinationForm,
     packages:     openPackageForm,
+    collections:  openCollectionForm,
     tickets:      openTicketForm,
     blogs:        openBlogForm,
     testimonials: openTestimonialForm,
@@ -537,6 +539,240 @@ window.deletePackage = async function(id) {
 };
 
 document.getElementById('btn-add-package')?.addEventListener('click', () => { if (!destinations.length) loadDestinations().then(() => openPackageForm()); else openPackageForm(); });
+
+// ══════════════════════════════════════════════════════════════════════════════
+// COLLECTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+let collections = [];
+window._selectedPackageIds = [];
+window._allPackagesCache = [];
+
+async function loadCollections() {
+  collections = await api('GET', '/collections') || [];
+  const tbody = document.getElementById('tbody-collections');
+  if (!tbody) return;
+  if (!collections.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7"><i class="fas fa-layer-group" style="font-size:24px;color:#e5e7eb;display:block;margin-bottom:8px"></i>No collections yet. Click "Add Collection" to create your first curated package collection.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = collections.map(c => {
+    const pkgs = Array.isArray(c.packages) ? c.packages : [];
+    const pkgCount = pkgs.length;
+    const pkgNames = pkgs.length > 0
+      ? pkgs.map(p => `<span style="display:inline-block;background:#f1f5f9;color:#334155;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;margin:2px">${p.package_name}</span>`).join('')
+      : '<span style="color:#94a3b8;font-size:12px">No packages assigned</span>';
+
+    const statusBadge = c.active !== false
+      ? `<span class="badge green">Active</span>`
+      : `<span class="badge gray">Hidden</span>`;
+
+    return `
+      <tr>
+        <td><strong>${c.title}</strong><br><code style="font-size:11px;background:#f3f4f6;padding:2px 6px;border-radius:4px">${c.slug}</code></td>
+        <td><span class="text-truncate">${c.subtitle || '<span style="color:#d1d5db">—</span>'}</span></td>
+        <td><span class="badge blue">${pkgCount} Package${pkgCount === 1 ? '' : 's'}</span></td>
+        <td style="max-width:280px">${pkgNames}</td>
+        <td><strong>${c.order || 0}</strong></td>
+        <td>${statusBadge}</td>
+        <td><div class="table-actions">
+          <button class="btn-sm btn-edit" onclick="editCollection(${c.id})"><i class="fas fa-pen"></i> Edit</button>
+          <button class="btn-sm btn-delete" onclick="deleteCollection(${c.id})"><i class="fas fa-trash"></i></button>
+        </div></td>
+      </tr>`;
+  }).join('');
+}
+
+function renderPackagePickerCards(pkgs, selectedIds, filterQuery = '') {
+  if (!pkgs || !pkgs.length) {
+    return `<div style="grid-column:1/-1;text-align:center;padding:24px;color:#94a3b8;font-size:13px"><i class="fas fa-box-open" style="font-size:24px;display:block;margin-bottom:6px"></i>No packages available in the system. Create packages first in the Packages section.</div>`;
+  }
+
+  const query = (filterQuery || '').toLowerCase().trim();
+  const filtered = pkgs.filter(p => {
+    if (!query) return true;
+    const name = (p.package_name || '').toLowerCase();
+    const type = (p.type || '').toLowerCase();
+    return name.includes(query) || type.includes(query);
+  });
+
+  if (!filtered.length) {
+    return `<div style="grid-column:1/-1;text-align:center;padding:20px;color:#94a3b8;font-size:13px">No packages matching "${filterQuery}"</div>`;
+  }
+
+  return filtered.map(p => {
+    const isSelected = selectedIds.includes(Number(p.package_id || p.id));
+    const img = p.card_image || p.banner_image || '';
+    const imgTag = img ? `<img src="${img}" class="pkg-picker-thumb" onerror="this.src='./assets/images/logo-color.png'">` : `<div class="pkg-picker-thumb" style="display:flex;align-items:center;justify-content:center;color:#94a3b8"><i class="fas fa-image"></i></div>`;
+    const priceText = p.amount ? `₹ ${Number(p.amount).toLocaleString('en-IN')}` : 'Custom';
+    const durText = (p.nights || p.days) ? `${p.nights||0}N / ${p.days||0}D` : (p.type || 'Package');
+
+    return `
+      <div class="pkg-picker-card ${isSelected ? 'selected' : ''}" onclick="togglePackageForCollection(${p.package_id || p.id}, this)">
+        <div class="pkg-check-indicator">${isSelected ? '<i class="fas fa-check"></i>' : ''}</div>
+        ${imgTag}
+        <div class="pkg-picker-info">
+          <div class="pkg-picker-name" title="${p.package_name}">${p.package_name}</div>
+          <div class="pkg-picker-meta">
+            <span>${durText}</span> • <span class="pkg-picker-price">${priceText}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function openCollectionForm(c = null) {
+  // Ensure we have fresh packages list
+  const allPkgs = await api('GET', '/packages') || [];
+  window._allPackagesCache = allPkgs;
+  window._selectedPackageIds = Array.isArray(c?.package_ids) ? [...c.package_ids.map(Number)] : [];
+
+  const modalHtml = `
+    <div class="form-group">
+      <label>Collection Title / Heading *</label>
+      <input id="c-title" value="${(c?.title || '').replace(/"/g, '&quot;')}" placeholder="e.g. Honeymoon Special Packages, Summer Getaways, Upcoming Tours">
+    </div>
+    
+    <div class="form-row-two">
+      <div class="form-group">
+        <label>Subtitle / Description (Optional)</label>
+        <input id="c-subtitle" value="${(c?.subtitle || '').replace(/"/g, '&quot;')}" placeholder="e.g. Handcrafted romantic experiences for newlyweds">
+      </div>
+      <div class="form-group">
+        <label>Display Priority / Order</label>
+        <input id="c-order" type="number" value="${c?.order !== undefined ? c.order : 0}" placeholder="0 (Lower shows first)">
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:14px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600">
+        <input type="checkbox" id="c-active" ${c?.active !== false ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--accent)">
+        <span>Active (Display this collection on website homepage)</span>
+      </label>
+    </div>
+
+    <!-- Interactive Package Selector -->
+    <div class="form-group">
+      <label style="display:flex;align-items:center;justify-content:space-between;font-weight:700;margin-bottom:6px">
+        <span>Select Packages for this Collection</span>
+        <span class="pkg-count-badge" id="pkg-selected-counter">${window._selectedPackageIds.length} Selected</span>
+      </label>
+      <div class="pkg-picker-container">
+        <div class="pkg-picker-toolbar">
+          <input type="text" class="pkg-search-input" id="pkg-picker-search" placeholder="🔍 Search packages by name..." oninput="filterCollectionPackages(this.value)">
+          <button type="button" class="btn-sm btn-edit" onclick="selectAllCollectionPackages()"><i class="fas fa-check-double"></i> Select All</button>
+          <button type="button" class="btn-sm btn-cancel" onclick="clearAllCollectionPackages()"><i class="fas fa-times"></i> Clear All</button>
+        </div>
+        <div class="pkg-grid-picker" id="pkg-grid-picker">
+          ${renderPackagePickerCards(allPkgs, window._selectedPackageIds)}
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveCollection(${c?.id || 'null'})"><i class="fas fa-save"></i> ${c ? 'Update Collection' : 'Save Collection'}</button>
+    </div>`;
+
+  openModal(c ? 'Edit Collection' : 'Add Collection', modalHtml);
+  updateCollectionCounter();
+}
+
+window.togglePackageForCollection = function(pkgId, cardEl) {
+  pkgId = Number(pkgId);
+  const idx = window._selectedPackageIds.indexOf(pkgId);
+  if (idx > -1) {
+    window._selectedPackageIds.splice(idx, 1);
+    cardEl.classList.remove('selected');
+    cardEl.querySelector('.pkg-check-indicator').innerHTML = '';
+  } else {
+    window._selectedPackageIds.push(pkgId);
+    cardEl.classList.add('selected');
+    cardEl.querySelector('.pkg-check-indicator').innerHTML = '<i class="fas fa-check"></i>';
+  }
+  updateCollectionCounter();
+};
+
+window.filterCollectionPackages = function(query) {
+  const container = document.getElementById('pkg-grid-picker');
+  if (container && window._allPackagesCache) {
+    container.innerHTML = renderPackagePickerCards(window._allPackagesCache, window._selectedPackageIds, query);
+  }
+};
+
+window.selectAllCollectionPackages = function() {
+  if (!window._allPackagesCache) return;
+  window._selectedPackageIds = window._allPackagesCache.map(p => Number(p.package_id || p.id));
+  const searchVal = document.getElementById('pkg-picker-search')?.value || '';
+  filterCollectionPackages(searchVal);
+  updateCollectionCounter();
+};
+
+window.clearAllCollectionPackages = function() {
+  window._selectedPackageIds = [];
+  const searchVal = document.getElementById('pkg-picker-search')?.value || '';
+  filterCollectionPackages(searchVal);
+  updateCollectionCounter();
+};
+
+function updateCollectionCounter() {
+  const counter = document.getElementById('pkg-selected-counter');
+  if (counter) {
+    const len = window._selectedPackageIds ? window._selectedPackageIds.length : 0;
+    counter.textContent = `${len} Selected`;
+    counter.style.background = len > 0 ? '#dc2626' : '#e2e8f0';
+    counter.style.color = len > 0 ? '#fff' : '#4b5563';
+  }
+}
+
+window.editCollection = function(id) {
+  const c = collections.find(x => x.id === id);
+  if (c) openCollectionForm(c);
+};
+
+window.saveCollection = async function(id) {
+  const title = document.getElementById('c-title')?.value.trim();
+  const subtitle = document.getElementById('c-subtitle')?.value.trim();
+  const order = document.getElementById('c-order')?.value;
+  const active = document.getElementById('c-active')?.checked;
+
+  if (!title) {
+    showToast('Collection title is required', 'error');
+    return;
+  }
+
+  const body = {
+    title,
+    subtitle,
+    order: Number(order) || 0,
+    active: Boolean(active),
+    package_ids: window._selectedPackageIds || []
+  };
+
+  const res = id
+    ? await api('PUT', `/collections/${id}`, body)
+    : await api('POST', '/collections', body);
+
+  if (res?.error) {
+    showToast(res.error, 'error');
+    return;
+  }
+
+  showToast(id ? 'Collection updated!' : 'Collection added!', 'success');
+  closeModal();
+  loadCollections();
+  loadDashboard();
+};
+
+window.deleteCollection = async function(id) {
+  if (!confirm('Are you sure you want to delete this collection?')) return;
+  await api('DELETE', `/collections/${id}`);
+  showToast('Collection deleted', 'success');
+  loadCollections();
+  loadDashboard();
+};
+
+document.getElementById('btn-add-collection')?.addEventListener('click', () => openCollectionForm());
 
 // ══════════════════════════════════════════════════════════════════════════════
 // TICKETS
@@ -1048,6 +1284,7 @@ const loaders = {
   dashboard:    loadDashboard,
   destinations: loadDestinations,
   packages:     () => { loadDestinations(); loadPackages(); },
+  collections:  loadCollections,
   attractions:  loadAttractions,
   tickets:      loadTickets,
   blogs:        loadBlogs,

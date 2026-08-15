@@ -33,6 +33,9 @@
     <a href="#" class="nav-item" data-section="packages">
       <i class="fas fa-suitcase"></i><span>Packages</span>
     </a>
+    <a href="#" class="nav-item" data-section="collections">
+      <i class="fas fa-layer-group"></i><span>Collections</span>
+    </a>
     <a href="#" class="nav-item" data-section="attractions">
       <i class="fas fa-camera"></i><span>Attractions</span>
     </a>
@@ -106,8 +109,12 @@
         <div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-suitcase"></i></div>
         <div class="stat-info"><div class="stat-value" id="stat-packages">—</div><div class="stat-label">Packages</div></div>
       </div>
+      <div class="stat-card" data-section="collections">
+        <div class="stat-icon" style="background:rgba(168,85,247,0.1);color:#a855f7"><i class="fas fa-layer-group"></i></div>
+        <div class="stat-info"><div class="stat-value" id="stat-collections">—</div><div class="stat-label">Collections</div></div>
+      </div>
       <div class="stat-card" data-section="attractions">
-        <div class="stat-icon" style="background:rgba(16,185,129,0.1);color:#10b981"><i class="fas fa-camera"></i></div>
+        <div class="stat-icon" style="background:rgba(160,185,129,0.1);color:#10b981"><i class="fas fa-camera"></i></div>
         <div class="stat-info"><div class="stat-value" id="stat-attractions">—</div><div class="stat-label">Attractions</div></div>
       </div>
       <div class="stat-card" data-section="tickets">
@@ -141,6 +148,7 @@
       <div class="quick-grid">
         <button class="quick-btn" data-section="destinations" data-action="add"><i class="fas fa-plus"></i> Add Destination</button>
         <button class="quick-btn" data-section="packages" data-action="add"><i class="fas fa-plus"></i> Add Package</button>
+        <button class="quick-btn" data-section="collections" data-action="add"><i class="fas fa-plus"></i> Add Collection</button>
         <button class="quick-btn" data-section="tickets" data-action="add"><i class="fas fa-plus"></i> Add Ticket</button>
         <button class="quick-btn" data-section="blogs" data-action="add"><i class="fas fa-plus"></i> Add Blog</button>
       </div>
@@ -171,6 +179,23 @@
       <table class="data-table" id="tbl-packages">
         <thead><tr><th>Image</th><th>Name</th><th>Nights/Days</th><th>Price</th><th>Type</th><th>Actions</th></tr></thead>
         <tbody id="tbody-packages"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── COLLECTIONS SECTION ────────────────────────────── -->
+  <section class="content-section hidden" id="section-collections">
+    <div class="section-toolbar">
+      <div>
+        <h3 class="section-heading">Package Collections</h3>
+        <p style="font-size:13px;color:#6b7280;margin-top:2px">Curate packages into named collections displayed on the homepage below Destinations.</p>
+      </div>
+      <button class="btn-primary" id="btn-add-collection"><i class="fas fa-plus"></i> Add Collection</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="tbl-collections">
+        <thead><tr><th>Collection Title</th><th>Subtitle</th><th>Packages Count</th><th>Packages Included</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="tbody-collections"></tbody>
       </table>
     </div>
   </section>

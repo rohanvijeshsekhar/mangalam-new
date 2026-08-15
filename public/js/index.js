@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await Promise.all([
     loadPosters(),
     loadDestinations(),
+    loadCollections(),
     loadTickets(),
     loadTestimonials(),
     loadPartners(),
@@ -13,6 +14,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   ]);
   initCarousels();
 });
+
+async function loadCollections() {
+  const container = document.getElementById('collections-container');
+  if (!container) return;
+
+  const collections = await MT.apiGet('/api/collections?active=true');
+  if (!collections || !collections.length) {
+    container.innerHTML = '';
+    container.style.display = 'none';
+    return;
+  }
+
+  const validCollections = collections.filter(c => Array.isArray(c.packages) && c.packages.length > 0);
+  if (!validCollections.length) {
+    container.innerHTML = '';
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = '';
+  container.innerHTML = validCollections.map((c, idx) => R.collectionSection(c, idx)).join('');
+}
 
 async function loadPosters() {
   const section = document.getElementById('poster-section');

@@ -9,7 +9,7 @@ const bcrypt = require('bcryptjs');
 const DATA_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const COLLECTIONS = ['destinations', 'packages', 'tickets', 'blogs', 'testimonials', 'partners', 'users'];
+const COLLECTIONS = ['destinations', 'packages', 'tickets', 'blogs', 'testimonials', 'partners', 'users', 'collections'];
 
 // Initialize empty collection files if they don't exist
 COLLECTIONS.forEach(col => {

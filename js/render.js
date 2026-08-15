@@ -142,12 +142,47 @@
       </a>`;
     }
 
+    function collectionSection(col, idx = 0) {
+        if (!col) return '';
+        const title = col.title || 'Featured Collection';
+        const subtitle = col.subtitle || '';
+        const pkgs = Array.isArray(col.packages) ? col.packages : [];
+        if (!pkgs.length) return '';
+
+        const cardsHtml = pkgs.map(p => packageCard(p)).join('');
+
+        return `
+      <section class="collection-block container mx-auto px-4" data-aos="fade-up" data-aos-delay="${(idx % 3) * 100}">
+          <div class="mb-8 lg:mb-12">
+              <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                  <div>
+                      <div class="inline-flex items-center gap-2 px-3 py-1 bg-red-50 border border-red-200/60 rounded-full text-red-600 font-bold text-xs uppercase tracking-wider font-dm-sans mb-3">
+                          <i class="fas fa-sparkles text-[10px]"></i> Curated Collection
+                      </div>
+                      <h2 class="text-2xl lg:text-4xl font-bold text-gray-900 font-[Quicksand] leading-tight">
+                          ${title}
+                      </h2>
+                      ${subtitle ? `<p class="text-gray-500 font-dm-sans text-sm md:text-base mt-2 max-w-2xl">${subtitle}</p>` : ''}
+                  </div>
+                  <a href="packages.html" class="inline-flex items-center gap-2 text-sm font-bold text-red-600 hover:text-red-700 font-dm-sans group whitespace-nowrap">
+                      <span>Explore All Packages</span>
+                      <i class="fi fi-rr-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                  </a>
+              </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              ${cardsHtml}
+          </div>
+      </section>`;
+    }
+
     window.R = {
         destinationCard,
         ticketCard,
         blogCard,
         testimonialCard,
         partnerLogo,
-        packageCard
+        packageCard,
+        collectionSection
     };
 })(window);
