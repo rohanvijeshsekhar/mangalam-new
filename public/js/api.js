@@ -165,13 +165,21 @@ async function loadFooterTickets() {
 
 // ─── Destination dropdown populator (search bars on multiple pages) ───────────
 async function loadDestinationDropdowns() {
-  const dests = await apiGet('/api/destinations');
-  if (!dests || !Array.isArray(dests)) return;
+  let dests = await apiGet('/api/destinations');
+  if (!dests || !Array.isArray(dests) || dests.length === 0) {
+    dests = [
+      { destination_name: 'Dubai', slug_url: 'dubai' },
+      { destination_name: 'Singapore', slug_url: 'singapore' },
+      { destination_name: 'Malaysia', slug_url: 'malaysia' },
+      { destination_name: 'Thailand', slug_url: 'thailand' },
+      { destination_name: 'Bali', slug_url: 'bali' }
+    ];
+  }
   const seen = new Set();
   const uniqueDests = [];
   dests.forEach(d => {
     const name = (d.destination_name || d.name || d.title || '').trim();
-    const slug = (d.slug_url || d.slug || '').trim();
+    const slug = (d.slug_url || d.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-')).trim();
     if (name && !seen.has(name.toLowerCase())) {
       seen.add(name.toLowerCase());
       uniqueDests.push({ name, slug });
