@@ -50,7 +50,9 @@ async function uploadImage(file) {
   }
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Upload failed');
-  return `${API_ORIGIN}${data.url}`;
+  // Cloudinary returns absolute URLs (https://res.cloudinary.com/...)
+  // Local disk returns relative paths (/uploads/filename.jpg)
+  return data.url.startsWith('http') ? data.url : `${API_ORIGIN}${data.url}`;
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
