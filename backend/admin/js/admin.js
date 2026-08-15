@@ -178,7 +178,7 @@ function openModal(title, bodyHtml) {
 }
 function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
 document.getElementById('modal-close').addEventListener('click', closeModal);
-document.getElementById('modal-overlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
+// Do NOT close modal when clicking outside the modal box, so user data is never lost by accident.
 
 // ── Open add modal ─────────────────────────────────────────────────────────────
 function openAddModal(section) {
