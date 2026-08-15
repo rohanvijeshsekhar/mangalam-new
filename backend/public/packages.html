@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="author" content="Mangalam Travel & Tours" />
-    <meta name="copyright" content="Copyright Ã‚Â© Mangalam Travel & Tours">
+    <meta name="copyright" content="Copyright © Mangalam Travel & Tours">
     <meta name="robots" content="index,follow" />
     <meta name="theme-color" content="#dc2626" />
 
@@ -936,205 +935,6 @@
         </script>
 </head>
 <body class="font-dm-sans bg-white">
-    <script>
-        window.initialActiveTab = '';
-    </script>
-    <!-- Header -->
-    <header class="fixed top-0 left-0 w-full bg-white/95 backdrop-blur-md shadow-sm z-[999] transition-all duration-300">
-    
-    <div class="container mx-auto p-2">
-        <div class="flex items-center justify-between">
-            <!-- Logo -->
-            <div class="flex items-center space-x-2 w-[120px]">
-                <a href="/"><img src="./assets/images/logo-color.png" alt="Mangalam Travel & Tours" class="w-full h-full"></a>
-            </div>
-
-            <!-- Navigation -->
-            <nav class="hidden md:flex items-center space-x-8 relative">
-                <a href="/" class="text-gray-600 hover:text-gray-900 font-dm-sans transition-colors">Home</a>
-                <a href="/holiday-package.html" class="text-gray-900 font-bold font-dm-sans">Holiday Packages</a>
-                <!-- Services Dropdown -->
-                <div class="relative group">
-                    <button class="flex items-center gap-1 text-gray-600 hover:text-gray-900 font-dm-sans transition-colors focus:outline-none">
-                        Services 
-                        <i class="fi fi-rr-angle-small-down pt-1 flex items-center justify-center"></i>
-                    </button>
-                    <div class="absolute top-full -left-4 mt-0 w-64 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
-                        <div class="py-2">
-                            <a href="/flight-tickets.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
-                                Flight Tickets
-                            </a>
-                            <a href="/global-visa-services.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
-                                Visa Services
-                            </a>
-                            <a href="/travel-insurance.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">
-                                Travel Insurance
-                            </a>
-                align-items: flex-end;
-                list-style: none;
-                margin: 0;
-                padding: 8px 8px;
-                gap: 4px;
-            }
-
-            .responsive-float-header li {
-                flex: 1;
-                text-align: center;
-            }
-
-            .responsive-float-header a {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                text-decoration: none;
-                color: #666;
-                font-size: 10px;
-                line-height: 1.2;
-                text-align: center;
-            }
-
-            .responsive-float-header a.active {
-                color: #1f2937;
-            }
-
-            .responsive-float-header i {
-                font-size: 20px;
-                margin-bottom: 4px;
-            }
-
-            .mobile-customize-item {
-                position: relative;
-            }
-
-            .mobile-customize-button {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                text-decoration: none;
-                color: #1f2937;
-            }
-
-            .mobile-customize-button:focus {
-                outline: none;
-            }
-
-            .mobile-customize-icon svg {
-                width: 64px;
-                height: 64px;
-            }
-
-            .mobile-customize-dropdown {
-                position: absolute;
-                bottom: 80px;
-                left: 50%;
-                transform: translate(-50%, 12px);
-                width: min(320px, calc(100vw - 32px));
-                background: #ffffff;
-                border-radius: 18px;
-                box-shadow: 0 20px 45px rgba(15, 23, 42, 0.35);
-                padding: 18px 16px;
-                opacity: 0;
-                visibility: hidden;
-                pointer-events: none;
-                transition: all 0.25s ease;
-                z-index: 1100;
-                max-height: 65vh;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .mobile-customize-dropdown::before {
-                content: '';
-                position: absolute;
-                bottom: -12px;
-                left: 50%;
-                transform: translateX(-50%);
-                border-width: 12px 12px 0 12px;
-                border-style: solid;
-                border-color: #ffffff transparent transparent transparent;
-            }
-
-            .mobile-customize-dropdown-visible {
-                opacity: 1;
-                visibility: visible;
-                pointer-events: auto;
-                transform: translate(-50%, 0);
-            }
-
-            .mobile-customize-dropdown-header {
-                font-size: 14px;
-                font-weight: 600;
-                color: #111827;
-                margin-bottom: 12px;
-                text-align: left;
-            }
-
-            .mobile-customize-dropdown-list {
-                overflow-y: auto;
-                padding-right: 4px;
-            }
-
-            .mobile-customize-dropdown-item {
-                width: 100%;
-                display: block;
-                text-align: left;
-                padding: 12px 14px;
-                margin-bottom: 10px;
-                border-radius: 12px;
-                border: 1px solid #e5e7eb;
-                background: #ffffff;
-                font-size: 14px;
-                font-weight: 500;
-                color: #1f2937;
-                transition: all 0.2s ease;
-            }
-
-            .mobile-customize-dropdown-item:last-child {
-                margin-bottom: 0;
-            }
-
-            .mobile-customize-dropdown-item:hover,
-            .mobile-customize-dropdown-item:focus {
-                background: #f0f9ff;
-                border-color: #1aacde;
-                color: #0f172a;
-            }
-
-            .mobile-customize-dropdown-empty {
-                text-align: center;
-                font-size: 13px;
-                color: #6b7280;
-                padding: 18px 0;
-            }
-
-            .c-inside-alert {
-                display: none;
-            }
-        </style>
-        <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
-        <script>
-            tailwind.config = {
-                theme: {
-                    extend: {
-                        colors: {
-                            'warm-pink': '#FFF5F5',
-                            'dark-brown': '#8B4513',
-                            'gold': '#DAA520'
-                        },
-                        fontFamily: {
-                            'roxborough': ['Roxborough CF', 'serif'],
-                            'dm-sans': ['DM Sans', 'sans-serif']
-                        }
-                    }
-                }
-            }
-        </script>
-</head>
-<body class="font-dm-sans bg-white">
-    <script>
-        window.initialActiveTab = '';
-    </script>
-    <!-- Header -->
     <header class="fixed top-0 left-0 w-full bg-white/95 backdrop-blur-md shadow-sm z-[999] transition-all duration-300">
     
     <div class="container mx-auto p-2">
@@ -1186,8 +986,7 @@
     </div>
 </header>
 
-
-    <main class="pt-20 md:pt-24">-24">
+        <main class="pt-20 md:pt-24">
         <!-- Hero Section -->
         <section class="relative h-[45vh] min-h-[340px] overflow-hidden flex items-center justify-center" data-aos="fade-up">
             <div class="absolute inset-0" data-aos="zoom-in" data-aos-delay="100">
@@ -1200,7 +999,7 @@
                 <p id="dest-hero-desc" class="text-white/90 text-sm md:text-base mt-2 font-dm-sans max-w-xl mx-auto drop-shadow-sm"></p>
             </div>
 
-            <!-- Navigation Tabs (Packages and Attractions) -->
+            <!-- Navigation Tabs (Only Packages and Attractions) -->
             <div class="absolute bottom-0 left-0 w-full" data-aos="fade-up" data-aos-delay="250">
                 <div class="w-full max-w-sm mx-auto px-2 sm:px-0">
                     <div class="flex justify-around bg-white rounded-t-2xl overflow-x-auto no-scrollbar shadow-sm">
@@ -1248,9 +1047,7 @@
             </div>
         </section>
     </main>
-
-    <!-- Footer -->
-    <footer class="mb-20 lg:mb-0">
+<footer class="mb-20 lg:mb-0">
     <div class="bg-black text-white">
         <!-- Upper Destinations Section -->
         <section class="border-b border-gray-700 py-8">
@@ -1785,6 +1582,6 @@
 <script src="./js/api.js?v=20260815"></script>
 <script src="./js/render.js"></script>
 
-<script src="./js/packages.js?v=1785911578374"></script>
+<script src="./js/packages.js?v=1785911578356"></script>
 </body>
 </html>
