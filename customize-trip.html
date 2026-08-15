@@ -8,18 +8,79 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Quicksand:wght@500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'DM Sans', sans-serif; background-color: #f8fafc; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #f7f9fc;
+            position: relative;
+            min-height: 100vh;
+        }
         .heading-font { font-family: 'Quicksand', sans-serif; }
         .brand-font { font-family: 'Outfit', sans-serif; }
         .step-inactive { opacity: 0.4; filter: grayscale(1); }
         .step-active { opacity: 1; border-color: #ef4444; color: #ef4444; }
         .step-completed { background-color: #10b981; border-color: #10b981; color: white; }
+
+        /* ── Travel Illustration Background ── */
+        .travel-bg-wallpaper {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(239, 68, 68, 0.04) 0%, transparent 45%),
+                radial-gradient(circle at 85% 25%, rgba(14, 165, 233, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 50% 85%, rgba(245, 158, 11, 0.03) 0%, transparent 50%),
+                url('./assets/images/travel-doodle-bg.jpg');
+            background-size: 780px auto;
+            background-repeat: repeat;
+            background-position: center top;
+            opacity: 0.65;
+            mix-blend-mode: multiply;
+        }
+
+        /* Ambient floating keyframes */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        @keyframes planeFly {
+            0% { transform: translate(-30px, 15px) rotate(-5deg); }
+            50% { transform: translate(15px, -15px) rotate(5deg); }
+            100% { transform: translate(-30px, 15px) rotate(-5deg); }
+        }
+        .anim-float-1 { animation: floatSlow 8s ease-in-out infinite; }
+        .anim-float-2 { animation: floatSlow 10s ease-in-out infinite 2s; }
+        .anim-plane { animation: planeFly 14s ease-in-out infinite; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+<body class="bg-slate-50/80 text-slate-800 flex flex-col min-h-screen relative overflow-x-hidden">
+
+    <!-- Fixed Travel Illustration Background Wallpaper -->
+    <div class="travel-bg-wallpaper"></div>
+
+    <!-- Decorative Floating Travel Elements (Background Depth) -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <!-- Floating Compass Top-Left -->
+        <div class="absolute -left-12 top-28 text-slate-300/40 text-8xl anim-float-1 select-none">
+            <i class="fa-regular fa-compass"></i>
+        </div>
+        <!-- Floating Hot Air Balloon Top-Right -->
+        <div class="absolute -right-8 top-36 text-red-300/30 text-7xl anim-float-2 select-none">
+            <i class="fa-solid fa-hot-tub-person hidden"></i>
+            <svg class="w-24 h-24 text-red-400/20 fill-current" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm-1 18h2v2h-2v-2z"/></svg>
+        </div>
+        <!-- Floating Airplane Bottom-Left -->
+        <div class="absolute left-6 bottom-24 text-sky-400/25 text-6xl anim-plane select-none">
+            <i class="fa-solid fa-plane-departure"></i>
+        </div>
+        <!-- Globe Watermark Bottom-Right -->
+        <div class="absolute -right-12 bottom-12 text-slate-300/30 text-9xl anim-float-1 select-none">
+            <i class="fa-solid fa-earth-americas"></i>
+        </div>
+    </div>
 
     <!-- Top Banner / Navbar -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
             <a href="index.html" class="flex items-center gap-3">
                 <img src="./assets/images/logo-color.png" alt="Mangalam Logo" class="h-10 w-auto object-contain" onerror="this.src='./assets/images/logo-dark.png'">
@@ -36,17 +97,17 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-grow py-6 sm:py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full">
+    <main class="flex-grow py-6 sm:py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full relative z-10">
 
         <!-- Back to Home Button Above Header -->
         <div class="mb-4">
-            <a href="index.html" class="inline-flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-800 font-bold rounded-2xl text-xs sm:text-sm border border-slate-200 shadow-sm hover:shadow transition-all group">
+            <a href="index.html" class="inline-flex items-center gap-2.5 px-4 py-2.5 bg-white/95 backdrop-blur-sm hover:bg-white text-slate-800 font-bold rounded-2xl text-xs sm:text-sm border border-slate-200/90 shadow-sm hover:shadow transition-all group">
                 <i class="fas fa-arrow-left text-red-500 group-hover:-translate-x-1 transition-transform"></i> Back to Home
             </a>
         </div>
 
         <!-- Destination Header -->
-        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-red-950 text-white rounded-3xl p-6 sm:p-8 mb-8 shadow-xl relative overflow-hidden">
+        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-red-950 text-white rounded-3xl p-6 sm:p-8 mb-8 shadow-2xl relative overflow-hidden border border-slate-700/40">
             <div class="absolute -right-10 -bottom-10 opacity-10 text-white text-9xl pointer-events-none">
                 <i class="fas fa-plane-departure"></i>
             </div>
@@ -64,7 +125,7 @@
         </div>
 
         <!-- Stepper Indicator Bar -->
-        <div class="bg-white rounded-2xl p-4 sm:p-6 mb-8 shadow-sm border border-slate-200">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl p-4 sm:p-6 mb-8 shadow-md border border-slate-200/80">
             <div class="grid grid-cols-5 gap-2 text-center text-xs font-medium">
                 <!-- Step 1 Indicator -->
                 <div id="step-ind-1" class="flex flex-col items-center gap-1.5 cursor-pointer">
@@ -95,7 +156,7 @@
         </div>
 
         <!-- Wizard Step Containers -->
-        <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-lg border border-slate-200 min-h-[420px] flex flex-col justify-between">
+        <div class="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-2xl shadow-slate-300/40 border border-slate-200/80 min-h-[420px] flex flex-col justify-between">
             
             <!-- STEP 1: TRIP DATES -->
             <div id="step-content-1" class="step-panel">
