@@ -16,11 +16,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = `attraction.html${slugSuffix}`;
     return;
   }
-  if (typeParam === 'ticket' || typeParam === 'tickets') {
-    const slugSuffix = slugParam ? `?slug=${encodeURIComponent(slugParam)}` : (destIdParam ? `?destination_id=${encodeURIComponent(destIdParam)}` : '');
-    window.location.href = `tickets.html${slugSuffix}`;
-    return;
-  }
 
   let activeDest = null;
   if (slugParam && dests && dests.length) {
@@ -72,13 +67,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Update Tab Links
   const tabPackages = document.getElementById('tab-packages');
-  const tabTickets = document.getElementById('tab-tickets');
   const tabActivity = document.getElementById('tab-activity');
 
   function updateTabLinks(slug, destId) {
     const slugSuffix = slug ? `?slug=${encodeURIComponent(slug)}` : (destId ? `?destination_id=${encodeURIComponent(destId)}` : '');
     if (tabPackages) tabPackages.href = `packages.html${slugSuffix ? slugSuffix + '&type=package' : ''}`;
-    if (tabTickets) tabTickets.href = `tickets.html${slugSuffix}`;
     if (tabActivity) tabActivity.href = `attraction.html${slugSuffix}`;
   }
 

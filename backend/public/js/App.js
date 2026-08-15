@@ -535,7 +535,7 @@
     }
 
     function switchTab(tab) {
-        const tabs = ['packages', 'tickets', 'activity'];
+        const tabs = ['packages', 'activity'];
         tabs.forEach(t => {
             const section = document.getElementById(`section-${t}`);
             const btn = document.getElementById(`tab-${t}`);

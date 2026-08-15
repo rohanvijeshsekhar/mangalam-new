@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div>
                   <h2 class="text-xl font-bold font-[Quicksand] text-gray-900">What's Included in Experience</h2>
-                  <span class="text-xs text-gray-500 font-dm-sans">Services, tickets & entry passes included</span>
+                  <span class="text-xs text-gray-500 font-dm-sans">Services & activity details included</span>
                 </div>
               </div>
               <ul class="space-y-3.5 font-dm-sans">
@@ -176,15 +176,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             ${price ? `
               <div class="border-b border-gray-100 pb-6">
-                <span class="text-xs uppercase tracking-wider text-gray-400 font-bold font-dm-sans block mb-1">Ticket / Experience Price</span>
+                <span class="text-xs uppercase tracking-wider text-gray-400 font-bold font-dm-sans block mb-1">Starting Price</span>
                 <div class="text-4xl font-extrabold text-gray-900 font-[Quicksand]">${price}</div>
-                <span class="text-sm text-gray-500 font-dm-sans">per person inclusive of entry pass</span>
+                <span class="text-sm text-gray-500 font-dm-sans">per person</span>
               </div>
             ` : ''}
 
             <div class="space-y-4">
               <h3 class="text-xl font-bold font-[Quicksand] text-gray-900">Book / Enquiry Form</h3>
-              <p class="text-sm text-gray-500 font-dm-sans">Submit your details to reserve entry tickets or get instant pricing.</p>
+              <p class="text-sm text-gray-500 font-dm-sans">Submit your details to reserve your experience or get instant pricing.</p>
               
               <form id="attraction-enquiry-form" class="space-y-4 pt-2">
                 <input type="hidden" name="package_name" value="${title}">
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                   <input type="tel" name="customer_phone" placeholder="+91 9876543210" required class="block w-full rounded-xl border border-gray-200 py-3.5 px-4 font-dm-sans text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-gray-50/50">
                 </div>
                 <button type="submit" class="w-full bg-red-600 text-white py-4 rounded-2xl font-bold font-dm-sans hover:bg-red-700 transition-all shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 text-base">
-                  <i class="fa-solid fa-paper-plane"></i> Book Attraction Ticket
+                  <i class="fa-solid fa-paper-plane"></i> Book / Send Enquiry
                 </button>
                 <div id="attraction-enq-alert" class="hidden text-center py-3 rounded-xl text-sm font-dm-sans"></div>
               </form>
@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="border-t border-gray-100 pt-6 space-y-3 text-xs text-gray-500 font-dm-sans">
               <div class="flex items-center gap-3">
                 <i class="fa-solid fa-shield-halved text-emerald-600 text-base"></i>
-                <span>Instant E-Ticket Confirmation</span>
+                <span>Instant Booking Confirmation</span>
               </div>
               <div class="flex items-center gap-3">
                 <i class="fa-solid fa-headset text-red-600 text-base"></i>
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         form.reset();
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Book Attraction Ticket';
+        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Book / Send Enquiry';
       }
     });
   }

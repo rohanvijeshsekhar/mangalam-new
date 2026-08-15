@@ -1005,26 +1005,19 @@
                 <p id="dest-hero-desc" class="text-white/90 text-sm md:text-base mt-2 font-dm-sans max-w-xl mx-auto drop-shadow-sm"></p>
             </div>
 
-            <!-- Navigation Tabs -->
+            <!-- Navigation Tabs (Only Packages and Attractions) -->
             <div class="absolute bottom-0 left-0 w-full" data-aos="fade-up" data-aos-delay="250">
-                <div class="w-full max-w-md mx-auto px-2 sm:px-0">
-                    <div class="flex justify-between sm:justify-center bg-white rounded-t-2xl overflow-x-auto no-scrollbar">
-                        <div class="relative flex-1 sm:flex-none text-center">
-                            <a href="packages.html" id="tab-packages" class="px-4 sm:px-8 py-3 sm:py-4 font-semibold text-[15px] sm:text-lg text-gray-900 transition-colors block whitespace-nowrap">
+                <div class="w-full max-w-sm mx-auto px-2 sm:px-0">
+                    <div class="flex justify-around bg-white rounded-t-2xl overflow-x-auto no-scrollbar shadow-sm">
+                        <div class="relative flex-1 text-center">
+                            <a href="packages.html" id="tab-packages" class="px-6 sm:px-10 py-3 sm:py-4 font-semibold text-[15px] sm:text-lg text-gray-900 transition-colors block whitespace-nowrap">
                                 Packages
                             </a>
                             <div id="indicator-packages" class="absolute top-0 left-1/2 transform -translate-x-1/2 w-16 sm:w-20 h-1 bg-red-600 rounded-full"></div>
                         </div>
 
-                        <div class="relative flex-1 sm:flex-none text-center">
-                            <a href="tickets.html" id="tab-tickets" class="px-4 sm:px-8 py-3 sm:py-4 font-semibold text-[15px] sm:text-lg text-gray-500 hover:text-gray-900 transition-colors block whitespace-nowrap">
-                                Tickets
-                            </a>
-                            <div id="indicator-tickets" class="absolute top-0 left-1/2 transform -translate-x-1/2 w-16 sm:w-20 h-1 bg-red-600 rounded-full hidden"></div>
-                        </div>
-
-                        <div class="relative flex-1 sm:flex-none text-center">
-                            <a href="attraction.html" id="tab-activity" class="px-4 sm:px-8 py-3 sm:py-4 font-semibold text-[15px] sm:text-lg text-gray-500 hover:text-gray-900 transition-colors block whitespace-nowrap">
+                        <div class="relative flex-1 text-center">
+                            <a href="attraction.html" id="tab-activity" class="px-6 sm:px-10 py-3 sm:py-4 font-semibold text-[15px] sm:text-lg text-gray-500 hover:text-gray-900 transition-colors block whitespace-nowrap">
                                 Attractions
                             </a>
                             <div id="indicator-activity" class="absolute top-0 left-1/2 transform -translate-x-1/2 w-16 sm:w-20 h-1 bg-red-600 rounded-full hidden"></div>
@@ -1043,19 +1036,6 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="packages-grid">
                     <!-- Packages injected by packages.js -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Tickets Tab Section -->
-        <section id="section-tickets" class="py-16 bg-gray-50" data-aos="fade-up">
-            <div class="container mx-auto px-4">
-                <div class="mb-8 text-center" data-aos="fade-up" data-aos-delay="100">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2" data-aos="fade-up" data-aos-delay="150">Popular Tickets In <span class="text-red-600"></span></h2>
-                    <p class="text-gray-600" data-aos="fade-up" data-aos-delay="200"></p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="tickets-grid">
-                    <!-- Tickets injected by packages.js -->
                 </div>
             </div>
         </section>
@@ -1080,7 +1060,7 @@
         <!-- Upper Destinations Section -->
         <section class="border-b border-gray-700 py-8">
             <div class="container mx-auto px-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 py-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10 py-2">
                     <div>
                         <h3 class="text-lg font-bold mb-4 text-white">Top Destinations</h3>
                         <div id="footer-dests" class="space-y-2">
@@ -1091,12 +1071,6 @@
                         <h3 class="text-lg font-bold mb-4 text-white">Holiday Packages</h3>
                         <div id="footer-pkgs" class="space-y-2">
                             <p class="text-gray-400 text-sm">Loading packages...</p>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold mb-4 text-white">Top Tickets</h3>
-                        <div id="footer-tickets" class="space-y-2">
-                            <p class="text-gray-400 text-sm">Loading tickets...</p>
                         </div>
                     </div>
                 </div>

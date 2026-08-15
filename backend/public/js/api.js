@@ -113,13 +113,12 @@ async function loadNotice() {
   }
 }
 
-// ─── Footer destinations, packages & tickets loader ──────────────────────────
+// ─── Footer destinations & packages loader ──────────────────────────────────
 async function loadFooterLinks() {
   try {
-    const [dests, pkgs, tkts] = await Promise.all([
+    const [dests, pkgs] = await Promise.all([
       apiGet('/api/destinations'),
-      apiGet('/api/packages'),
-      apiGet('/api/tickets')
+      apiGet('/api/packages')
     ]);
 
     // 1. Top Destinations
@@ -145,23 +144,12 @@ async function loadFooterLinks() {
       }).join('');
     }
 
-    // 3. Top Tickets
-    let tktLinksHTML = '<p class="text-gray-400 text-sm">No tickets available</p>';
-    if (Array.isArray(tkts) && tkts.length > 0) {
-      tktLinksHTML = tkts.slice(0, 10).map(t => {
-        const label = t.title || t.name || 'Attraction Ticket';
-        const id = t.ticket_id || t.id || t.slug_url || '';
-        const url = id ? `ticket-details.html?id=${encodeURIComponent(id)}` : 'attraction.html';
-        return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">${label}</a>`;
-      }).join('');
-    }
-
-    // Target upper footer section across all pages and format as 3 side-by-side columns (Image 2 style)
+    // Target upper footer section across all pages and format as 2 side-by-side columns
     const upperSection = document.querySelector('footer section.border-b, footer section:first-child');
     if (upperSection) {
       const container = upperSection.querySelector('.container') || upperSection;
       container.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 py-2">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 py-2">
             <div>
                 <h3 class="text-lg font-bold mb-4 text-white">Top Destinations</h3>
                 <div class="space-y-2">${destLinksHTML}</div>
@@ -169,10 +157,6 @@ async function loadFooterLinks() {
             <div>
                 <h3 class="text-lg font-bold mb-4 text-white">Holiday Packages</h3>
                 <div class="space-y-2">${pkgLinksHTML}</div>
-            </div>
-            <div>
-                <h3 class="text-lg font-bold mb-4 text-white">Top Tickets</h3>
-                <div class="space-y-2">${tktLinksHTML}</div>
             </div>
         </div>
       `;

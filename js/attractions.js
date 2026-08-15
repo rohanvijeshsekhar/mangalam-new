@@ -3,7 +3,7 @@
  * Loads attraction items from /api/attractions and renders premium box cards
  */
 document.addEventListener('DOMContentLoaded', async () => {
-  const container = document.getElementById('attractions-grid') || document.getElementById('tickets-grid');
+  const container = document.getElementById('attractions-grid');
   if (!container) return;
 
   container.innerHTML = `
