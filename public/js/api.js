@@ -300,7 +300,7 @@ function injectMobileNavStyles() {
       }
       .mobile-customize-button {
         position: relative !important;
-        top: -18px !important;
+        top: -6px !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -314,13 +314,13 @@ function injectMobileNavStyles() {
         outline: none !important;
       }
       .mobile-customize-icon svg {
-        width: 72px !important;
-        height: 72px !important;
+        width: 62px !important;
+        height: 62px !important;
         display: block !important;
-        filter: drop-shadow(0 4px 12px rgba(26, 172, 222, 0.4)) !important;
+        filter: drop-shadow(0 4px 10px rgba(26, 172, 222, 0.35)) !important;
       }
       .mobile-customize-dropdown {
-        bottom: 80px !important;
+        bottom: 70px !important;
       }
     }
   `;
