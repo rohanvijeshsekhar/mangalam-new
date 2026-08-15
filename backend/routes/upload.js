@@ -5,10 +5,11 @@ const fs      = require('fs');
 const { verifyToken } = require('./auth');
 const router  = express.Router();
 
-const CLOUD_NAME   = process.env.CLOUDINARY_CLOUD_NAME;
-const API_KEY      = process.env.CLOUDINARY_API_KEY;
-const API_SECRET   = process.env.CLOUDINARY_API_SECRET;
-const useCloudinary = !!(CLOUD_NAME && API_KEY && API_SECRET);
+// Cloudinary credentials — env vars preferred, hardcoded fallback for reliability
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'pjczoiau';
+const API_KEY    = process.env.CLOUDINARY_API_KEY    || '786681618268445';
+const API_SECRET = process.env.CLOUDINARY_API_SECRET || 'QaoqQvPBb1oWF-JDTnEJhmtyGN8';
+const useCloudinary = true; // always use Cloudinary
 
 let upload;
 
