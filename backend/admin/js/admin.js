@@ -1793,12 +1793,13 @@ let galleryList = [];
 let currentGallerySearch = '';
 
 async function loadGallery() {
-  galleryList = await api('GET', '/gallery') || [];
+  const data = await api('GET', '/gallery');
+  galleryList = Array.isArray(data) ? data : (data?.data || data?.items || []);
   renderGalleryTable();
 }
 
 function renderGalleryTable() {
-  const tbody = document.getElementById('tbody-gallery') || document.getElementById('tbl-gallery-body');
+  const tbody = document.getElementById('tbody-gallery') || document.getElementById('tbl-gallery-body') || document.querySelector('.gallery-tbl-body');
   if (!tbody) return;
 
   let filtered = Array.isArray(galleryList) ? [...galleryList] : [];
@@ -1825,7 +1826,8 @@ function renderGalleryTable() {
         <td><span style="color:#94a3b8;font-size:12px">${g.created_at ? new Date(g.created_at).toLocaleDateString('en-IN') : '-'}</span></td>
         <td>
           <div class="table-actions">
-            <button class="btn-sm btn-delete" onclick="deleteGallery(${id})" title="Delete"><i class="fas fa-trash"></i> Delete</button>
+            <button class="btn-sm btn-edit" onclick="editGallery(${id})" title="Edit Photo"><i class="fas fa-pen"></i> Edit</button>
+            <button class="btn-sm btn-delete" onclick="deleteGallery(${id})" title="Delete Photo"><i class="fas fa-trash"></i> Delete</button>
           </div>
         </td>
       </tr>
@@ -1833,31 +1835,39 @@ function renderGalleryTable() {
   }).join('');
 }
 
-function openGalleryForm() {
-  openModal('Upload New Tour Photo', `
-    <form id="form-gallery" onsubmit="saveGallery(event)">
+window.editGallery = function(id) {
+  const g = galleryList.find(x => x.id === id || x.gallery_id === id);
+  if (g) openGalleryForm(g);
+};
+
+function openGalleryForm(g = null) {
+  const id = g ? (g.id || g.gallery_id) : null;
+  openModal(g ? 'Edit Tour Photo' : 'Upload New Tour Photo', `
+    <form id="form-gallery" onsubmit="saveGallery(event, ${id})">
       <div class="form-group">
         <label>Photo Title *</label>
-        <input id="g-title" placeholder="e.g. Kerala Backwaters Tour / Dubai Desert Safari" required>
+        <input id="g-title" value="${escapeHtml(g?.title || '')}" placeholder="e.g. Kerala Backwaters Tour / Dubai Desert Safari" required>
       </div>
       <div class="form-group">
         <label>Photo Image *</label>
-        ${createImageUpload('gallery-img', '')}
+        ${createImageUpload('gallery-img', g?.image || '')}
       </div>
       <div class="form-group">
         <label>Caption / Short Description</label>
-        <textarea id="g-caption" rows="2" placeholder="Brief memory notes about this tour moment..."></textarea>
+        <textarea id="g-caption" rows="2" placeholder="Brief memory notes about this tour moment...">${escapeHtml(g?.caption || '')}</textarea>
       </div>
       <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px">
         <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
-        <button type="submit" class="btn-primary">Save Photo</button>
+        <button type="submit" class="btn-primary">${g ? 'Update Photo' : 'Save Photo'}</button>
       </div>
     </form>
   `);
 }
 
-window.saveGallery = async function(e) {
-  e.preventDefault();
+window.openGalleryForm = openGalleryForm;
+
+window.saveGallery = async function(e, id = null) {
+  if (e) e.preventDefault();
   const title = document.getElementById('g-title').value.trim();
   const image = document.getElementById('img-url-gallery-img')?.value || '';
   const caption = document.getElementById('g-caption').value.trim();
@@ -1867,17 +1877,25 @@ window.saveGallery = async function(e) {
     return;
   }
 
-  const res = await api('POST', '/gallery', { title, image, caption });
+  const payload = { title: title || 'Tour Moment', image, caption };
+  const res = id
+    ? await api('PUT', `/gallery/${id}`, payload)
+    : await api('POST', '/gallery', payload);
+
   if (res?.error) { showToast(res.error, 'error'); return; }
-  showToast('Photo uploaded successfully to Gallery!', 'success');
-  closeModal(); loadGallery(); loadDashboard();
+  showToast(id ? 'Photo updated successfully!' : 'Photo uploaded successfully to Gallery!', 'success');
+  closeModal();
+  await loadGallery();
+  loadDashboard();
 };
 
 window.deleteGallery = async function(id) {
   if (!confirm('Delete this photo from Gallery?')) return;
-  await api('DELETE', `/gallery/${id}`);
-  showToast('Photo deleted', 'success');
-  loadGallery(); loadDashboard();
+  const res = await api('DELETE', `/gallery/${id}`);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast('Photo deleted from Gallery', 'success');
+  await loadGallery();
+  loadDashboard();
 };
 
 document.getElementById('btn-add-gallery')?.addEventListener('click', () => openGalleryForm());

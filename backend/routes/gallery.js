@@ -73,6 +73,24 @@ router.post('/', verifyToken, async (req, res) => {
   }
 });
 
+// PUT /api/gallery/:id (Protected)
+router.put('/:id', verifyToken, async (req, res) => {
+  try {
+    await ensureGalleryTable();
+    const { title, image, caption } = req.body;
+    const updates = {};
+    if (title !== undefined) updates.title = title;
+    if (image !== undefined) updates.image = image;
+    if (caption !== undefined) updates.caption = caption;
+
+    const doc = await store.update('gallery', req.params.id, updates);
+    res.json(map(doc || { id: req.params.id, ...updates }));
+  } catch (e) {
+    console.error('[Gallery PUT error]:', e);
+    res.status(500).json({ error: 'Failed to update gallery item' });
+  }
+});
+
 // DELETE /api/gallery/:id (Protected)
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
