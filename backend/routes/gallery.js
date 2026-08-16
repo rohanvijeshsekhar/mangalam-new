@@ -1,5 +1,6 @@
 const express = require('express');
 const store   = require('../db/store');
+const { query } = require('../db/mysql');
 const { verifyToken } = require('./auth');
 const router  = express.Router();
 
@@ -12,7 +13,7 @@ const map = g => ({
   created_at: g.created_at
 });
 
-// Sample fallback gallery images for initial state
+// Fallback sample photos if empty
 const SAMPLE_GALLERY = [
   { id: 1, title: 'Kerala Backwaters Tour', image: './assets/images/banner1.webp', caption: 'Happy travelers experiencing the serene Alleppey backwaters houseboats.', created_at: new Date().toISOString() },
   { id: 2, title: 'Dubai Desert Safari', image: './assets/images/res-activity-banner.webp', caption: 'Thrilling dune bashing and sunset desert camp in Dubai.', created_at: new Date().toISOString() },
@@ -22,9 +23,28 @@ const SAMPLE_GALLERY = [
   { id: 6, title: 'Swiss Alps Expedition', image: './assets/images/package-1.webp', caption: 'Unforgettable mountain railway journey in Mount Titlis.', created_at: new Date().toISOString() }
 ];
 
+// Ensure table exists in MySQL
+async function ensureGalleryTable() {
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS gallery (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) DEFAULT '',
+        image VARCHAR(500) NOT NULL,
+        caption VARCHAR(255) DEFAULT '',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+  } catch (e) {
+    console.error('[Gallery DB init warning]:', e.message);
+  }
+}
+
 // GET /api/gallery
 router.get('/', async (req, res) => {
   try {
+    await ensureGalleryTable();
     const items = await store.getAll('gallery');
     if (!items || items.length === 0) {
       return res.json(SAMPLE_GALLERY);
@@ -38,6 +58,7 @@ router.get('/', async (req, res) => {
 // POST /api/gallery (Protected)
 router.post('/', verifyToken, async (req, res) => {
   try {
+    await ensureGalleryTable();
     const { title, image, caption } = req.body;
     if (!image) return res.status(400).json({ error: 'image is required' });
     const doc = await store.insert('gallery', {
@@ -47,6 +68,7 @@ router.post('/', verifyToken, async (req, res) => {
     });
     res.status(201).json(map(doc));
   } catch (e) {
+    console.error('[Gallery POST error]:', e);
     res.status(500).json({ error: 'Failed to create gallery item' });
   }
 });
@@ -54,6 +76,7 @@ router.post('/', verifyToken, async (req, res) => {
 // DELETE /api/gallery/:id (Protected)
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
+    await ensureGalleryTable();
     await store.remove('gallery', req.params.id);
     res.json({ message: 'Deleted' });
   } catch (e) {

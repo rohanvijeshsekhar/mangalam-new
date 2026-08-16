@@ -1789,26 +1789,44 @@ window.deleteSeo = async function(id) {
 document.getElementById('btn-add-seo')?.addEventListener('click', () => openSeoForm());
 
 // ── Gallery ──────────────────────────────────────────────────────────────────
+let galleryList = [];
+let currentGallerySearch = '';
+
 async function loadGallery() {
-  const items = await api('GET', '/gallery');
-  const tbody = document.getElementById('tbl-gallery-body');
+  galleryList = await api('GET', '/gallery') || [];
+  renderGalleryTable();
+}
+
+function renderGalleryTable() {
+  const tbody = document.getElementById('tbody-gallery') || document.getElementById('tbl-gallery-body');
   if (!tbody) return;
-  if (!Array.isArray(items) || items.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:#9ca3af">No gallery photos added yet. Click "Upload New Tour Photo" to add.</td></tr>';
+
+  let filtered = Array.isArray(galleryList) ? [...galleryList] : [];
+  if (currentGallerySearch) {
+    const q = currentGallerySearch.toLowerCase();
+    filtered = filtered.filter(g =>
+      (g.title || '').toLowerCase().includes(q) ||
+      (g.caption || '').toLowerCase().includes(q)
+    );
+  }
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5" style="text-align:center;padding:32px;color:#9ca3af"><i class="fas fa-images" style="font-size:24px;color:#e5e7eb;display:block;margin-bottom:8px"></i>No gallery photos found. Click "Upload New Tour Photo" to add.</td></tr>';
     return;
   }
 
-  tbody.innerHTML = items.map(g => {
+  tbody.innerHTML = filtered.map(g => {
+    const id = g.id || g.gallery_id;
     return `
       <tr>
+        <td>${imgCell(g.image)}</td>
+        <td><strong style="color:#0f172a">${escapeHtml(g.title || 'Tour Moment')}</strong></td>
+        <td><span style="color:#64748b;font-size:13px;max-width:260px;display:block;overflow:hidden;text-overflow:ellipsis">${escapeHtml(g.caption || '-')}</span></td>
+        <td><span style="color:#94a3b8;font-size:12px">${g.created_at ? new Date(g.created_at).toLocaleDateString('en-IN') : '-'}</span></td>
         <td>
-          ${imgCell(g.image)}
-        </td>
-        <td style="font-weight:600">${escapeHtml(g.title || 'Tour Moment')}</td>
-        <td style="color:#64748b;max-width:250px">${escapeHtml(g.caption || '-')}</td>
-        <td style="color:#94a3b8;font-size:12px">${g.created_at ? new Date(g.created_at).toLocaleDateString() : '-'}</td>
-        <td>
-          <button class="btn-action btn-delete" onclick="deleteGallery(${g.id})" title="Delete"><i class="fas fa-trash"></i></button>
+          <div class="table-actions">
+            <button class="btn-sm btn-delete" onclick="deleteGallery(${id})" title="Delete"><i class="fas fa-trash"></i> Delete</button>
+          </div>
         </td>
       </tr>
     `;
@@ -1852,17 +1870,21 @@ window.saveGallery = async function(e) {
   const res = await api('POST', '/gallery', { title, image, caption });
   if (res?.error) { showToast(res.error, 'error'); return; }
   showToast('Photo uploaded successfully to Gallery!', 'success');
-  closeModal(); loadGallery();
+  closeModal(); loadGallery(); loadDashboard();
 };
 
 window.deleteGallery = async function(id) {
   if (!confirm('Delete this photo from Gallery?')) return;
   await api('DELETE', `/gallery/${id}`);
   showToast('Photo deleted', 'success');
-  loadGallery();
+  loadGallery(); loadDashboard();
 };
 
 document.getElementById('btn-add-gallery')?.addEventListener('click', () => openGalleryForm());
+document.getElementById('search-gallery')?.addEventListener('input', (e) => {
+  currentGallerySearch = (e.target.value || '').trim();
+  renderGalleryTable();
+});
 
 // ── Section loaders map ───────────────────────────────────────────────────────
 const loaders = {
