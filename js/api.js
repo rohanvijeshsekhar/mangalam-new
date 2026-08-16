@@ -408,24 +408,28 @@ async function loadHomePartners() {
     let list = await apiGet('/api/partners');
     if (!Array.isArray(list) || !list.length) {
       list = [
-        { name: 'Emirates Airlines', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Emirates_logo.svg/320px-Emirates_logo.svg.png' },
-        { name: 'Singapore Airlines', image: 'https://upload.wikimedia.org/wikipedia/en/thumb/6/6b/Singapore_Airlines_Logo_2.svg/320px-Singapore_Airlines_Logo_2.svg.png' },
-        { name: 'Qatar Airways', image: 'https://upload.wikimedia.org/wikipedia/en/thumb/9/9b/Qatar_Airways_Logo.svg/320px-Qatar_Airways_Logo.svg.png' },
-        { name: 'Marriott Bonvoy', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Marriott_Logo.svg/320px-Marriott_Logo.svg.png' },
-        { name: 'Air India', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Air_India_2023.svg/320px-Air_India_2023.svg.png' },
-        { name: 'Etihad Airways', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Etihad_Airways_Logo.svg/320px-Etihad_Airways_Logo.svg.png' },
-        { name: 'Hilton Hotels', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Hilton_Hotels_%26_Resorts_logo.svg/320px-Hilton_Hotels_%26_Resorts_logo.svg.png' },
-        { name: 'Taj Hotels & Resorts', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Taj_Hotels_logo.svg/320px-Taj_Hotels_logo.svg.png' }
+        { name: 'Emirates Airlines' },
+        { name: 'Singapore Airlines' },
+        { name: 'Qatar Airways' },
+        { name: 'Marriott Bonvoy' },
+        { name: 'Air India' },
+        { name: 'Etihad Airways' },
+        { name: 'Hilton Hotels' },
+        { name: 'Taj Hotels & Resorts' }
       ];
     }
 
     container.innerHTML = list.map(p => {
-      const imgUrl = resolveImg(p.image);
+      const name = p.name || p.partner_name || 'Partner';
+      const rawImg = (p.image || p.logo || '').trim();
+      const isDummyLogo = !rawImg || rawImg.includes('logo-color.png') || rawImg.includes('partner-placeholder.png');
+      const imgUrl = !isDummyLogo ? resolveImg(rawImg) : null;
+
       return `
-        <div class="partner-card flex-shrink-0" title="${p.name || 'Partner'}">
+        <div class="partner-card flex-shrink-0" title="${name}">
           ${imgUrl 
-            ? `<img src="${imgUrl}" alt="${p.name || 'Partner'}" class="max-h-12 max-w-[125px] w-auto object-contain transition-transform duration-300 hover:scale-105" loading="lazy" onerror="this.outerHTML='<span class=\\'font-bold text-gray-700 text-xs text-center font-dm-sans\\'>${p.name || 'Partner'}</span>'">`
-            : `<span class="font-bold text-gray-700 text-xs text-center font-dm-sans">${p.name || 'Partner'}</span>`
+            ? `<img src="${imgUrl}" alt="${name}" class="max-h-12 max-w-[130px] w-auto object-contain transition-transform duration-300 hover:scale-105" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'font-bold text-slate-800 text-xs md:text-sm text-center font-dm-sans leading-snug\\'>${name}</span>';">`
+            : `<span class="font-bold text-slate-800 text-xs md:text-sm text-center font-dm-sans leading-snug">${name}</span>`
           }
         </div>
       `;

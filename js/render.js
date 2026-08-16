@@ -136,12 +136,17 @@
     }
 
     function partnerLogo(partner) {
-        const img = MT.resolveImg(partner.image || partner.logo) || './assets/images/partner-placeholder.png';
         const name = partner.name || partner.partner_name || 'Partner';
+        const rawImg = (partner.image || partner.logo || '').trim();
+        const isDummyLogo = !rawImg || rawImg.includes('logo-color.png') || rawImg.includes('partner-placeholder.png');
+        const imgUrl = !isDummyLogo ? MT.resolveImg(rawImg) : null;
 
         return `
-      <div class="bg-white rounded-2xl p-4 border border-gray-100 flex items-center justify-center h-20 shadow-sm hover:shadow-md transition-shadow">
-          <img src="${img}" alt="${name}" class="max-h-12 max-w-full object-contain filter grayscale hover:grayscale-0 transition-all">
+      <div class="partner-card flex items-center justify-center p-4 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-white shadow-sm hover:shadow-md transition-all h-24 min-w-[160px]">
+          ${imgUrl 
+            ? `<img src="${imgUrl}" alt="${name}" class="max-h-12 max-w-full object-contain filter grayscale hover:grayscale-0 transition-all" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'font-bold text-slate-800 text-xs md:text-sm text-center font-dm-sans leading-snug\\'>${name}</span>';">`
+            : `<span class="font-bold text-slate-800 text-xs md:text-sm text-center font-dm-sans leading-snug">${name}</span>`
+          }
       </div>`;
     }
 
