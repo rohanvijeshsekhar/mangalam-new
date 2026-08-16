@@ -49,36 +49,36 @@
 
         return `
       <a href="${destinationUrl}" class="block group h-full select-none">
-        <div class="relative rounded-3xl bg-white shadow-md hover:shadow-xl transition-all duration-500 flex flex-col h-[430px] group-hover:-translate-y-1.5">
+        <div class="relative rounded-3xl bg-white shadow-md hover:shadow-xl transition-all duration-500 flex flex-col h-[420px] group-hover:-translate-y-1.5 overflow-visible">
           
-          <!-- Top Hero Image Container (rounded top) -->
-          <div class="relative w-full h-[200px] rounded-t-3xl overflow-hidden bg-slate-100 flex-shrink-0">
+          <!-- Top Hero Image Container (2/3 of container height) -->
+          <div class="relative w-full h-[280px] rounded-t-3xl overflow-hidden bg-slate-100 flex-shrink-0">
             <img src="${imgPath}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null; this.src='./assets/images/destination-placeholder.jpg';">
           </div>
 
-          <!-- Bottom Overlapping White Content Box -->
-          <div class="relative bg-white rounded-t-3xl rounded-b-3xl -mt-6 p-6 pt-7 flex flex-col justify-between flex-1 z-10 shadow-sm">
+          <!-- Bottom Overlapping White Content Box (1/3 of container height) -->
+          <div class="relative bg-white rounded-t-3xl rounded-b-3xl -mt-6 p-4 sm:p-5 pt-6 flex flex-col justify-between flex-1 z-10 shadow-sm">
             
             <!-- Round Flag Badge Floating on Top-Left -->
-            <div class="absolute -top-5 left-6 w-11 h-11 rounded-full bg-white shadow-md border border-slate-100 flex items-center justify-center p-1.5 flex-shrink-0 z-20 overflow-hidden">
+            <div class="absolute -top-5 left-5 sm:left-6 w-11 h-11 rounded-full bg-white shadow-md border border-slate-100 flex items-center justify-center p-1.5 flex-shrink-0 z-20 overflow-hidden">
               <img src="${flagUrl}" alt="${title} Flag" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'">
             </div>
 
             <div>
               <!-- Subtitle / Places Count -->
-              <span class="text-slate-500 font-medium text-xs sm:text-sm tracking-tight block mb-1 mt-1">${placesText}</span>
+              <span class="text-slate-400 font-medium text-[11px] sm:text-xs tracking-tight block mb-0.5 mt-0.5">${placesText}</span>
               
               <!-- Pink Accent Title -->
-              <h3 class="text-2xl font-bold font-[Quicksand] text-pink-600 mb-2 leading-tight group-hover:text-rose-600 transition-colors capitalize">${title}</h3>
+              <h3 class="text-xl sm:text-2xl font-bold font-[Quicksand] text-pink-600 mb-1 leading-tight group-hover:text-rose-600 transition-colors capitalize">${title}</h3>
               
               <!-- Description Text -->
-              <p class="text-slate-600 text-xs sm:text-sm leading-relaxed font-dm-sans line-clamp-2">${rawDesc || 'Explore famous attractions, rich culture, and curated travel experiences.'}</p>
+              <p class="text-slate-500 text-xs leading-snug font-dm-sans line-clamp-1 sm:line-clamp-2">${rawDesc || 'Explore famous attractions, rich culture, and curated travel experiences.'}</p>
             </div>
 
             <!-- Footer Divider & Explore Link -->
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
-              <span class="font-bold text-slate-800 text-sm flex items-center gap-2 group-hover:text-pink-600 transition-colors">
-                Explore <i class="fas fa-arrow-right text-xs group-hover:translate-x-1.5 transition-transform duration-300"></i>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between mt-auto">
+              <span class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-1.5 group-hover:text-pink-600 transition-colors">
+                Explore <i class="fas fa-arrow-right text-[10px] sm:text-xs group-hover:translate-x-1.5 transition-transform duration-300"></i>
               </span>
             </div>
           </div>

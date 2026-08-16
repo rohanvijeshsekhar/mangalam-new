@@ -188,10 +188,10 @@ function initCarousels() {
           pauseOnHover: true,
           pauseOnFocus: true,
           breakpoints: {
-            1199: { perPage: 4 },
-            991: { perPage: 3 },
-            767: { perPage: 2 },
-            575: { perPage: 1 }
+            1199: { perPage: 4, arrows: true },
+            991: { perPage: 3, arrows: true },
+            767: { perPage: 2, arrows: false },
+            575: { perPage: 1, arrows: false }
           }
         }).mount();
       }
