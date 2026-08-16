@@ -3,23 +3,73 @@
  */
 
 (function (window) {
+    function getCountryFlag(destName) {
+      const name = (destName || '').toLowerCase();
+      if (name.includes('india')) return '🇮🇳';
+      if (name.includes('dubai') || name.includes('uae') || name.includes('abu dhabi')) return '🇦🇪';
+      if (name.includes('singapore')) return '🇸🇬';
+      if (name.includes('thailand') || name.includes('phuket') || name.includes('bangkok')) return '🇹🇭';
+      if (name.includes('bali') || name.includes('indonesia')) return '🇮🇩';
+      if (name.includes('malaysia') || name.includes('kuala lumpur')) return '🇲🇾';
+      if (name.includes('switzerland') || name.includes('swiss')) return '🇨🇭';
+      if (name.includes('paris') || name.includes('france')) return '🇫🇷';
+      if (name.includes('vietnam')) return '🇻🇳';
+      if (name.includes('maldives')) return '🇲🇻';
+      if (name.includes('sri lanka')) return '🇱🇰';
+      if (name.includes('japan') || name.includes('tokyo')) return '🇯🇵';
+      if (name.includes('turkey') || name.includes('istanbul')) return '🇹🇷';
+      return '📍';
+    }
+
     function destinationCard(destination) {
         if (!destination) return '';
         const dSlug = destination.slug_url || destination.slug || '';
         const destinationUrl = dSlug ? `packages.html?slug=${encodeURIComponent(dSlug)}&type=package` : 'curated-itineraries.html';
         const title = destination.destination_name || destination.title || destination.name || '';
         const rawDesc = (destination.description || '').replace(/<[^>]*>?/gm, '').trim();
-        const destImg = destination.card_image || destination.image || '';
+        const destImg = destination.card_image || destination.inner_image || destination.image || '';
         const imgPath = MT.resolveImg(destImg) || './assets/images/destination-placeholder.jpg';
+        
+        const placesCount = Array.isArray(destination.places_to_visit) && destination.places_to_visit.length > 0 
+          ? destination.places_to_visit.length 
+          : '';
+        const placesText = placesCount ? `${placesCount}+ Tourist Places` : 'Top Tourist Destination';
+        const flagEmoji = getCountryFlag(title);
 
         return `
-      <a href="${destinationUrl}" class="relative rounded-3xl overflow-hidden h-[400px] block cursor-pointer group">
-          <img src="${imgPath}" alt="${title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-          <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-              <h3 class="text-3xl font-bold mb-3 font-[Quicksand]">${title}</h3>
-              ${rawDesc ? `<p class="text-base leading-relaxed font-dm-sans line-clamp-2">${rawDesc}</p>` : ''}
+      <a href="${destinationUrl}" class="block group h-full">
+        <div class="relative rounded-3xl overflow-hidden bg-white border border-slate-100 shadow-xl hover:shadow-2xl transition-all duration-500 h-[440px] flex flex-col group-hover:-translate-y-1.5">
+          <!-- Top Hero Image Container -->
+          <div class="relative w-full h-[210px] overflow-hidden flex-shrink-0 bg-slate-100">
+            <img src="${imgPath}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null; this.src='./assets/images/destination-placeholder.jpg';">
           </div>
+
+          <!-- Bottom Content Card (Overlapping) -->
+          <div class="relative bg-white rounded-t-3xl -mt-6 p-6 flex flex-col justify-between flex-1 z-10">
+            <!-- Round Flag Badge Floating on Top-Left -->
+            <div class="absolute -top-6 left-6 w-12 h-12 rounded-full bg-white shadow-md border border-slate-100 flex items-center justify-center text-xl flex-shrink-0 z-20">
+              ${flagEmoji}
+            </div>
+
+            <div>
+              <!-- Subtitle / Places Count -->
+              <span class="text-slate-700 font-semibold text-xs sm:text-sm tracking-tight block mb-1 mt-2">${placesText}</span>
+              
+              <!-- Pink Accent Title -->
+              <h3 class="text-2xl font-bold font-[Quicksand] text-pink-600 mb-2 leading-tight group-hover:text-rose-600 transition-colors">${title}</h3>
+              
+              <!-- Description Text -->
+              <p class="text-slate-600 text-xs sm:text-sm leading-relaxed font-dm-sans line-clamp-2">${rawDesc || 'Explore famous attractions, rich culture, and curated travel experiences.'}</p>
+            </div>
+
+            <!-- Footer Divider & Explore Link -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
+              <span class="font-bold text-slate-800 text-sm flex items-center gap-2 group-hover:text-pink-600 transition-colors">
+                Explore <i class="fas fa-arrow-right text-xs group-hover:translate-x-1.5 transition-transform duration-300"></i>
+              </span>
+            </div>
+          </div>
+        </div>
       </a>`;
     }
 
