@@ -17,6 +17,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-bold-rounded/css/uicons-bold-rounded.css'>
     
     <style>
         html, body {
@@ -30,50 +32,68 @@
             display: none !important; width: 0 !important; height: 0 !important;
         }
         *, html, body { -ms-overflow-style: none !important; scrollbar-width: none !important; }
-        .gallery-card {
-            break-inside: avoid;
-            margin-bottom: 1.5rem;
-        }
     </style>
 </head>
 <body class="font-dm-sans text-gray-700 antialiased overflow-x-hidden p-0 m-0 relative w-full min-h-screen bg-slate-50 flex flex-col justify-between">
 
     <div class="relative w-full">
-        <!-- Main Fixed Top Header -->
-        <header id="mainHeader" class="fixed left-0 right-0 top-0 z-[60] bg-white/95 backdrop-blur-md shadow-sm transition-all duration-300" style="display: flex; align-items: center; min-height:64px">
-            <nav class="container mx-auto px-4 py-2 flex items-center justify-between">
+        <!-- Main Header Navbar -->
+        <header class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100">
+            <nav class="container mx-auto p-2 flex items-center justify-between">
+                <!-- Logo -->
                 <div class="flex items-center">
-                    <a href="/index.html" class="flex items-center w-[140px] sm:w-[170px]">
-                        <img src="./assets/images/logo-color.png" alt="Mangalam Travel & Tours" class="w-full h-auto object-contain">
-                    </a>
+                    <div class="text-gray-900">
+                        <div class="flex items-center mb-1 w-[130px] sm:w-[150px]">
+                            <a href="/index.html"><img src="./assets/images/logo-color.png" alt="Mangalam Tours Logo" class="w-full h-auto object-contain"></a>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="hidden lg:flex items-center space-x-6 text-sm font-medium">
-                    <a href="/index.html" class="text-gray-700 hover:text-pink-600 transition-colors">Home</a>
-                    <a href="/holiday-package.html" class="text-gray-700 hover:text-pink-600 transition-colors">Holiday Packages</a>
-                    <a href="/attraction.html" class="text-gray-700 hover:text-pink-600 transition-colors">Attractions</a>
-                    <a href="/tickets.html" class="text-gray-700 hover:text-pink-600 transition-colors">Flight Tickets</a>
-                    <a href="/gallery.html" class="text-pink-600 font-bold border-b-2 border-pink-600 pb-0.5">Gallery</a>
-                    <a href="/contact.html" class="text-gray-700 hover:text-pink-600 transition-colors">Contact</a>
+                <!-- Navigation Links Pill -->
+                <div class="hidden md:flex space-x-8 border border-gray-200 bg-white/90 backdrop-blur-sm px-5 py-2.5 rounded-full font-dm-sans shadow-sm">
+                    <a href="/index.html" class="text-gray-700 hover:text-sky-500 transition-colors font-dm-sans font-medium">Home</a>
+                    <a href="/holiday-package.html" class="text-gray-700 hover:text-sky-500 transition-colors font-dm-sans font-medium">Holiday Packages</a>
+                    
+                    <!-- Services Dropdown -->
+                    <div class="relative group">
+                        <button class="flex items-center gap-1 text-gray-700 hover:text-sky-500 transition-colors font-dm-sans font-medium focus:outline-none">
+                            Services
+                            <i class="fi fi-rr-angle-small-down pt-1 flex items-center justify-center"></i>
+                        </button>
+                        <div class="absolute top-full -left-4 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+                            <div class="py-2 text-left">
+                                <a href="/flight-tickets.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium text-base">Flight Tickets</a>
+                                <a href="/global-visa-services.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium text-base">Visa Services</a>
+                                <a href="/travel-insurance.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium text-base">Travel Insurance</a>
+                                <a href="/miscellaneous.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium text-base">Miscellaneous Services</a>
+                                <a href="/mice-tourism.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium text-base">MICE Tourism</a>
+                                <a href="/cruises.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium text-base">Cruises</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="/attraction.html" class="text-gray-700 hover:text-sky-500 transition-colors font-dm-sans font-medium">Attractions</a>
                 </div>
 
-                <!-- Top Right Dropdown Grid Menu Icon -->
-                <div class="relative flex items-center gap-3">
-                    <button id="btnGridMenu" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200/80 flex items-center justify-center text-slate-700 transition-all shadow-sm focus:outline-none" aria-label="Menu">
-                        <i class="fas fa-th-large text-lg"></i>
-                    </button>
+                <!-- Top Right Corner Grid Menu Icon -->
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <div id="menuDropdownTrigger" class="p-2.5 border border-gray-200 bg-white rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-50 shadow-sm transition-all duration-300 group">
+                            <i class="fi fi-br-grid text-gray-700 text-lg group-hover:scale-110 transition-transform duration-300 flex items-center justify-center"></i>
+                        </div>
 
-                    <!-- Dropdown Box -->
-                    <div id="gridMenuDropdown" class="hidden absolute right-0 top-12 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 z-50 animate-fade-in">
-                        <a href="/about.html" class="block px-4 py-2.5 rounded-xl text-slate-700 hover:bg-pink-50 hover:text-pink-600 font-medium transition-colors">About Us</a>
-                        <a href="/contact.html" class="block px-4 py-2.5 rounded-xl text-slate-700 hover:bg-pink-50 hover:text-pink-600 font-medium transition-colors">Contact</a>
-                        <a href="/blog.html" class="block px-4 py-2.5 rounded-xl text-slate-700 hover:bg-pink-50 hover:text-pink-600 font-medium transition-colors">Blog</a>
-                        <a href="/gallery.html" class="block px-4 py-2.5 rounded-xl bg-pink-50 text-pink-600 font-bold transition-colors">Gallery</a>
-                        <a href="/career.html" class="block px-4 py-2.5 rounded-xl text-slate-700 hover:bg-pink-50 hover:text-pink-600 font-medium transition-colors">Career</a>
-                        <div class="my-1.5 border-t border-slate-100"></div>
-                        <a href="https://agents.mangalamtravel.com/Config/Login/Agent" target="_blank" class="block px-4 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100 font-medium transition-colors flex items-center justify-between">
-                            <span>Agent Portal</span> <i class="fas fa-external-link-alt text-xs text-slate-400"></i>
-                        </a>
+                        <!-- Dropdown Modal -->
+                        <div id="menuDropdown" class="hidden absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden ring-1 ring-black/5 origin-top-right transition-all duration-200">
+                            <div class="py-2">
+                                <a href="/about.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">About</a>
+                                <a href="/contact.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">Contact</a>
+                                <a href="/blog.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">Blog</a>
+                                <a href="/gallery.html" class="block px-5 py-3 text-pink-600 bg-pink-50 font-bold transition-colors font-dm-sans">Gallery</a>
+                                <a href="/career.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-sky-500 transition-colors font-dm-sans font-medium">Career</a>
+                                <div class="h-px bg-gray-100 mx-2 my-1"></div>
+                                <a href="https://agents.mangalamtravel.com/Config/Login/Agent" target="_blank" class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors font-dm-sans font-medium">Agent Login Portal</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -170,16 +190,16 @@
     <script class="js-script">
         document.getElementById('year').textContent = new Date().getFullYear();
 
-        // Top Right Grid Menu Toggle
-        const btnGrid = document.getElementById('btnGridMenu');
-        const menuDropdown = document.getElementById('gridMenuDropdown');
-        if (btnGrid && menuDropdown) {
-            btnGrid.addEventListener('click', (e) => {
+        // Top Right Grid Menu Dropdown Toggle
+        const trigger = document.getElementById('menuDropdownTrigger');
+        const menu = document.getElementById('menuDropdown');
+        if (trigger && menu) {
+            trigger.addEventListener('click', (e) => {
                 e.stopPropagation();
-                menuDropdown.classList.toggle('hidden');
+                menu.classList.toggle('hidden');
             });
-            document.addEventListener('click', () => menuDropdown.classList.add('hidden'));
-            menuDropdown.addEventListener('click', (e) => e.stopPropagation());
+            document.addEventListener('click', () => menu.classList.add('hidden'));
+            menu.addEventListener('click', (e) => e.stopPropagation());
         }
 
         // Lightbox Handler

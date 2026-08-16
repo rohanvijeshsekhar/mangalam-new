@@ -1799,11 +1799,10 @@ async function loadGallery() {
   }
 
   tbody.innerHTML = items.map(g => {
-    const imgUrl = g.image || './assets/images/destination-placeholder.jpg';
     return `
       <tr>
         <td>
-          <img src="${imgUrl}" style="width:70px;height:50px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0" onerror="this.src='./assets/images/destination-placeholder.jpg'">
+          ${imgCell(g.image)}
         </td>
         <td style="font-weight:600">${escapeHtml(g.title || 'Tour Moment')}</td>
         <td style="color:#64748b;max-width:250px">${escapeHtml(g.caption || '-')}</td>
