@@ -250,7 +250,8 @@
     <script src="./js/api.js"></script>
 
     <script class="js-script">
-        document.getElementById('year').textContent = new Date().getFullYear();
+        const yrEl = document.getElementById('year');
+        if (yrEl) yrEl.textContent = new Date().getFullYear();
 
         // Top Right Grid Menu Dropdown Toggle
         const trigger = document.getElementById('menuDropdownTrigger');
