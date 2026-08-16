@@ -59,6 +59,9 @@
     <a href="#" class="nav-item" data-section="posters">
       <i class="fas fa-image"></i><span>Promos & Banners</span>
     </a>
+    <a href="#" class="nav-item" data-section="gallery">
+      <i class="fas fa-images"></i><span>Photo Gallery</span>
+    </a>
     <a href="#" class="nav-item" data-section="settings">
       <i class="fas fa-cog"></i><span>Settings</span>
     </a>
@@ -337,6 +340,31 @@
   </section>
 
   <!-- ── SETTINGS SECTION ───────────────────────────────── -->
+  <!-- Section: Gallery -->
+  <section class="content-section hidden" id="section-gallery">
+    <div class="section-toolbar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="search-gallery" placeholder="Search gallery photos...">
+      </div>
+      <button class="btn-primary" id="btn-add-gallery"><i class="fas fa-plus"></i> Upload New Tour Photo</button>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Photo</th>
+            <th>Title</th>
+            <th>Caption</th>
+            <th>Date Added</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbl-gallery-body"></tbody>
+      </table>
+    </div>
+  </section>
+
   <section class="content-section hidden" id="section-settings">
     <h3 class="section-heading" style="margin-bottom:24px">Settings</h3>
     <div class="settings-card">

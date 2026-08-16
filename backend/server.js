@@ -41,6 +41,7 @@ app.use('/api/tickets',      require('./routes/tickets'));
 app.use('/api/blogs',        require('./routes/blogs'));
 app.use('/api/testimonials', require('./routes/testimonials'));
 app.use('/api/partners',     require('./routes/partners'));
+app.use('/api/gallery',      require('./routes/gallery'));
 app.use('/api/posters',      require('./routes/posters'));
 app.use('/api/banners',      require('./routes/posters'));
 const enquiriesRouter = require('./routes/enquiries');

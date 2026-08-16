@@ -76,6 +76,7 @@ const sections = {
   testimonials: { title: 'Testimonials', subtitle: 'Manage customer reviews' },
   partners:     { title: 'Partners',     subtitle: 'Manage partner logos' },
   posters:      { title: 'Promotional Banners', subtitle: 'Manage promotional banners and slider images' },
+  gallery:      { title: 'Photo Gallery', subtitle: 'Manage tour & traveler photos' },
   settings:     { title: 'Settings',     subtitle: 'Admin account & configuration' },
 };
 
@@ -1787,6 +1788,83 @@ window.deleteSeo = async function(id) {
 
 document.getElementById('btn-add-seo')?.addEventListener('click', () => openSeoForm());
 
+// ── Gallery ──────────────────────────────────────────────────────────────────
+async function loadGallery() {
+  const items = await api('GET', '/gallery');
+  const tbody = document.getElementById('tbl-gallery-body');
+  if (!tbody) return;
+  if (!Array.isArray(items) || items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:#9ca3af">No gallery photos added yet. Click "Upload New Tour Photo" to add.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = items.map(g => {
+    const imgUrl = g.image || './assets/images/destination-placeholder.jpg';
+    return `
+      <tr>
+        <td>
+          <img src="${imgUrl}" style="width:70px;height:50px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0" onerror="this.src='./assets/images/destination-placeholder.jpg'">
+        </td>
+        <td style="font-weight:600">${escapeHtml(g.title || 'Tour Moment')}</td>
+        <td style="color:#64748b;max-width:250px">${escapeHtml(g.caption || '-')}</td>
+        <td style="color:#94a3b8;font-size:12px">${g.created_at ? new Date(g.created_at).toLocaleDateString() : '-'}</td>
+        <td>
+          <button class="btn-action btn-delete" onclick="deleteGallery(${g.id})" title="Delete"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openGalleryForm() {
+  openModal('Upload New Tour Photo', `
+    <form id="form-gallery" onsubmit="saveGallery(event)">
+      <div class="form-group">
+        <label>Photo Title *</label>
+        <input id="g-title" placeholder="e.g. Kerala Backwaters Tour / Dubai Desert Safari" required>
+      </div>
+      <div class="form-group">
+        <label>Photo Image *</label>
+        ${createImageUpload('gallery-img', '')}
+      </div>
+      <div class="form-group">
+        <label>Caption / Short Description</label>
+        <textarea id="g-caption" rows="2" placeholder="Brief memory notes about this tour moment..."></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px">
+        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn-primary">Save Photo</button>
+      </div>
+    </form>
+  `);
+}
+
+window.saveGallery = async function(e) {
+  e.preventDefault();
+  const title = document.getElementById('g-title').value.trim();
+  const image = document.getElementById('img-url-gallery-img')?.value || '';
+  const caption = document.getElementById('g-caption').value.trim();
+
+  if (!image) {
+    showToast('Please select or upload a photo image', 'error');
+    return;
+  }
+
+  const res = await api('POST', '/gallery', { title, image, caption });
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast('Photo uploaded successfully to Gallery!', 'success');
+  closeModal(); loadGallery();
+};
+
+window.deleteGallery = async function(id) {
+  if (!confirm('Delete this photo from Gallery?')) return;
+  await api('DELETE', `/gallery/${id}`);
+  showToast('Photo deleted', 'success');
+  loadGallery();
+};
+
+document.getElementById('btn-add-gallery')?.addEventListener('click', () => openGalleryForm());
+
 // ── Section loaders map ───────────────────────────────────────────────────────
 const loaders = {
   dashboard:    loadDashboard,
@@ -1799,6 +1877,7 @@ const loaders = {
   testimonials: loadTestimonials,
   partners:     loadPartners,
   posters:      loadPosters,
+  gallery:      loadGallery,
   enquiries:    loadEnquiries,
   settings:     () => {},
 };

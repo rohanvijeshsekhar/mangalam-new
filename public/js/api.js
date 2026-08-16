@@ -520,6 +520,27 @@ async function loadHomePosters() {
 }
 
 // ─── Init common page elements ────────────────────────────────────────────────
+async function loadHomeGallery() {
+  const grid = document.getElementById('home-gallery-grid');
+  if (!grid) return;
+  try {
+    const photos = await apiGet('/api/gallery');
+    if (!Array.isArray(photos) || photos.length === 0) return;
+    const items = photos.slice(0, 8);
+    grid.innerHTML = items.map(p => `
+      <a href="/gallery.html" class="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 block h-48 sm:h-60 border border-slate-100 bg-slate-100">
+        <img src="${p.image || './assets/images/destination-placeholder.jpg'}" alt="${p.title || 'Traveler Photo'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null; this.src='./assets/images/destination-placeholder.jpg';">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-3.5 flex flex-col justify-end">
+          <h4 class="text-white font-bold text-xs sm:text-sm font-[Quicksand] truncate">${p.title || 'Tour Moment'}</h4>
+          ${p.caption ? `<p class="text-slate-300 text-[11px] line-clamp-1 mt-0.5">${p.caption}</p>` : ''}
+        </div>
+      </a>
+    `).join('');
+  } catch (e) {
+    console.warn('[Gallery] Failed to load homepage gallery:', e);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   injectMobileNavStyles();
   loadDynamicSeo();
@@ -529,6 +550,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHomePosters();
   loadHomeTestimonials();
   loadHomePartners();
+  loadHomeGallery();
 });
 
 // Also run immediately if DOM is ready
@@ -537,13 +559,12 @@ if (document.readyState !== 'loading') {
   loadHomePosters();
   loadHomeTestimonials();
   loadHomePartners();
+  loadHomeGallery();
 }
 
 // Export for use in page scripts
 window.MT = {
   apiGet, apiPost, resolveImg, showSkeleton, showError,
   fmtPrice, truncate, slugify, qParam,
-  loadHomePosters, loadHomeTestimonials, loadHomePartners
+  loadHomePosters, loadHomeTestimonials, loadHomePartners, loadHomeGallery
 };
-
-
