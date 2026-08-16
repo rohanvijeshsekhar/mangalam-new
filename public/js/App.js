@@ -679,12 +679,12 @@
                     interval: 2500,
                     pauseOnHover: true,
                     pauseOnFocus: true,
-                    arrows: false,
+                    arrows: true,
                     pagination: false,
                     breakpoints: {
-                        1024: { perPage: 3, gap: '1rem' },
-                        768: { perPage: 2, gap: '1rem' },
-                        640: { perPage: 1, gap: '0.75rem' }
+                        1024: { perPage: 3, gap: '1rem', arrows: true },
+                        768: { perPage: 2, gap: '1rem', arrows: false },
+                        640: { perPage: 1, gap: '0.75rem', arrows: false }
                     }
                 }
             },

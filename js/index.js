@@ -179,7 +179,7 @@ function initCarousels() {
           type: cnt > 1 ? 'loop' : 'slide',
           perPage: 4,
           gap: '1.5rem',
-          arrows: false,
+          arrows: true,
           pagination: false,
           drag: true,
           keyboard: true,
@@ -188,8 +188,8 @@ function initCarousels() {
           pauseOnHover: true,
           pauseOnFocus: true,
           breakpoints: {
-            1199: { perPage: 4, arrows: false },
-            991: { perPage: 3, arrows: false },
+            1199: { perPage: 4, arrows: true },
+            991: { perPage: 3, arrows: true },
             767: { perPage: 2, arrows: false },
             575: { perPage: 1, arrows: false }
           }

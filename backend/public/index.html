@@ -1968,17 +1968,70 @@
 
 
                             <style>
+                                /* Global Native Scrollbar Removal */
+                                *::-webkit-scrollbar,
+                                html::-webkit-scrollbar,
+                                body::-webkit-scrollbar,
+                                .splide__track::-webkit-scrollbar,
+                                .splide__list::-webkit-scrollbar,
+                                .no-scrollbar::-webkit-scrollbar {
+                                    display: none !important;
+                                    width: 0 !important;
+                                    height: 0 !important;
+                                }
+                                *,
+                                html,
+                                body,
+                                .splide__track,
+                                .splide__list,
+                                .no-scrollbar {
+                                    -ms-overflow-style: none !important;
+                                    scrollbar-width: none !important;
+                                }
+
                                 #destinationCarousel {
+                                    position: relative;
                                     overflow: visible;
                                 }
                                 #destinationCarousel .splide__track {
                                     overflow: visible !important;
-                                    padding-top: 20px !important;
-                                    padding-bottom: 20px !important;
+                                    padding-top: 15px !important;
+                                    padding-bottom: 25px !important;
                                 }
-                                #destinationCarousel .splide__arrow,
                                 #destinationCarousel .splide__arrows {
-                                    display: none !important;
+                                    display: block;
+                                }
+                                #destinationCarousel .splide__arrow {
+                                    background: #ffffff !important;
+                                    border: 1px solid #e2e8f0 !important;
+                                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+                                    opacity: 0.95 !important;
+                                    width: 2.75rem !important;
+                                    height: 2.75rem !important;
+                                    border-radius: 9999px !important;
+                                    transition: all 0.3s ease !important;
+                                    z-index: 30 !important;
+                                }
+                                #destinationCarousel .splide__arrow:hover {
+                                    background: #db2777 !important;
+                                    border-color: #db2777 !important;
+                                    color: #ffffff !important;
+                                    opacity: 1 !important;
+                                }
+                                #destinationCarousel .splide__arrow svg {
+                                    fill: currentColor !important;
+                                }
+                                #destinationCarousel .splide__arrow--prev {
+                                    left: -0.75rem !important;
+                                }
+                                #destinationCarousel .splide__arrow--next {
+                                    right: -0.75rem !important;
+                                }
+                                @media (max-width: 767px) {
+                                    #destinationCarousel .splide__arrows,
+                                    #destinationCarousel .splide__arrow {
+                                        display: none !important;
+                                    }
                                 }
                                 @keyframes continuousMarquee {
                                     0% { transform: translateX(0); }
