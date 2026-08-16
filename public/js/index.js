@@ -176,14 +176,17 @@ function initCarousels() {
       const cnt = destEl.querySelectorAll('.splide__slide').length;
       if (cnt > 0) {
         new Splide('#destinationCarousel', {
-          type: cnt > 4 ? 'loop' : 'slide',
+          type: cnt > 1 ? 'loop' : 'slide',
           perPage: 4,
           gap: '1.5rem',
           arrows: true,
           pagination: false,
           drag: true,
           keyboard: true,
-          autoplay: false,
+          autoplay: true,
+          interval: 2500,
+          pauseOnHover: true,
+          pauseOnFocus: true,
           breakpoints: {
             1199: { perPage: 4 },
             991: { perPage: 3 },

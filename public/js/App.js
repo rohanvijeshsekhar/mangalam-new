@@ -676,7 +676,7 @@
                     gap: '1.5rem',
                     padding: '0',
                     autoplay: true,
-                    interval: 3000,
+                    interval: 2500,
                     pauseOnHover: true,
                     pauseOnFocus: true,
                     arrows: true,
