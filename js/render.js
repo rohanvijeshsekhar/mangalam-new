@@ -4,28 +4,37 @@
 
 (function (window) {
     function getCountryFlag(destName) {
-      const name = (destName || '').toLowerCase();
-      if (name.includes('india')) return '🇮🇳';
-      if (name.includes('dubai') || name.includes('uae') || name.includes('abu dhabi')) return '🇦🇪';
+      const name = (destName || '').toLowerCase().trim();
+      if (name.includes('india') || name.includes('kerala') || name.includes('goa') || name.includes('delhi') || name.includes('kashmir') || name.includes('manali') || name.includes('rajasthan')) return '🇮🇳';
+      if (name.includes('dubai') || name.includes('uae') || name.includes('abu dhabi') || name.includes('sharjah')) return '🇦🇪';
       if (name.includes('singapore')) return '🇸🇬';
-      if (name.includes('thailand') || name.includes('phuket') || name.includes('bangkok')) return '🇹🇭';
-      if (name.includes('bali') || name.includes('indonesia')) return '🇮🇩';
-      if (name.includes('malaysia') || name.includes('kuala lumpur')) return '🇲🇾';
-      if (name.includes('switzerland') || name.includes('swiss')) return '🇨🇭';
+      if (name.includes('thailand') || name.includes('phuket') || name.includes('bangkok') || name.includes('pattaya') || name.includes('krabi')) return '🇹🇭';
+      if (name.includes('bali') || name.includes('indonesia') || name.includes('jakarta')) return '🇮🇩';
+      if (name.includes('malaysia') || name.includes('kuala lumpur') || name.includes('langkawi') || name.includes('genting')) return '🇲🇾';
+      if (name.includes('switzerland') || name.includes('swiss') || name.includes('zurich')) return '🇨🇭';
       if (name.includes('paris') || name.includes('france')) return '🇫🇷';
-      if (name.includes('vietnam')) return '🇻🇳';
+      if (name.includes('vietnam') || name.includes('hanoi') || name.includes('da nang')) return '🇻🇳';
       if (name.includes('maldives')) return '🇲🇻';
-      if (name.includes('sri lanka')) return '🇱🇰';
+      if (name.includes('sri lanka') || name.includes('colombo')) return '🇱🇰';
       if (name.includes('japan') || name.includes('tokyo')) return '🇯🇵';
       if (name.includes('turkey') || name.includes('istanbul')) return '🇹🇷';
-      return '📍';
+      if (name.includes('nepal') || name.includes('kathmandu')) return '🇳🇵';
+      if (name.includes('egypt') || name.includes('cairo')) return '🇪🇬';
+      if (name.includes('london') || name.includes('uk') || name.includes('britain') || name.includes('england')) return '🇬🇧';
+      if (name.includes('usa') || name.includes('america') || name.includes('new york')) return '🇺🇸';
+      if (name.includes('australia') || name.includes('sydney')) return '🇦🇺';
+      if (name.includes('greece') || name.includes('athens') || name.includes('santorini')) return '🇬🇷';
+      if (name.includes('italy') || name.includes('rome') || name.includes('venice')) return '🇮🇹';
+      if (name.includes('spain') || name.includes('barcelona') || name.includes('madrid')) return '🇪🇸';
+      return '✈️';
     }
 
     function destinationCard(destination) {
         if (!destination) return '';
         const dSlug = destination.slug_url || destination.slug || '';
         const destinationUrl = dSlug ? `packages.html?slug=${encodeURIComponent(dSlug)}&type=package` : 'curated-itineraries.html';
-        const title = destination.destination_name || destination.title || destination.name || '';
+        const rawTitle = destination.destination_name || destination.title || destination.name || '';
+        const title = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
         const rawDesc = (destination.description || '').replace(/<[^>]*>?/gm, '').trim();
         const destImg = destination.card_image || destination.inner_image || destination.image || '';
         const imgPath = MT.resolveImg(destImg) || './assets/images/destination-placeholder.jpg';
@@ -37,26 +46,28 @@
         const flagEmoji = getCountryFlag(title);
 
         return `
-      <a href="${destinationUrl}" class="block group h-full">
-        <div class="relative rounded-3xl overflow-hidden bg-white border border-slate-100 shadow-xl hover:shadow-2xl transition-all duration-500 h-[440px] flex flex-col group-hover:-translate-y-1.5">
-          <!-- Top Hero Image Container -->
-          <div class="relative w-full h-[210px] overflow-hidden flex-shrink-0 bg-slate-100">
+      <a href="${destinationUrl}" class="block group h-full select-none">
+        <div class="relative rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col h-[440px] group-hover:-translate-y-1.5 border border-slate-100/80">
+          
+          <!-- Top Hero Image Container (rounded top) -->
+          <div class="relative w-full h-[210px] rounded-t-3xl overflow-hidden bg-slate-100 flex-shrink-0">
             <img src="${imgPath}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null; this.src='./assets/images/destination-placeholder.jpg';">
           </div>
 
-          <!-- Bottom Content Card (Overlapping) -->
-          <div class="relative bg-white rounded-t-3xl -mt-6 p-6 flex flex-col justify-between flex-1 z-10">
+          <!-- Bottom Overlapping White Content Box -->
+          <div class="relative bg-white rounded-t-3xl rounded-b-3xl -mt-6 p-6 pt-7 flex flex-col justify-between flex-1 z-10">
+            
             <!-- Round Flag Badge Floating on Top-Left -->
-            <div class="absolute -top-6 left-6 w-12 h-12 rounded-full bg-white shadow-md border border-slate-100 flex items-center justify-center text-xl flex-shrink-0 z-20">
+            <div class="absolute -top-5 left-6 w-11 h-11 rounded-full bg-white shadow-md border border-slate-100 flex items-center justify-center text-xl flex-shrink-0 z-20">
               ${flagEmoji}
             </div>
 
             <div>
               <!-- Subtitle / Places Count -->
-              <span class="text-slate-700 font-semibold text-xs sm:text-sm tracking-tight block mb-1 mt-2">${placesText}</span>
+              <span class="text-slate-500 font-medium text-xs sm:text-sm tracking-tight block mb-1 mt-1">${placesText}</span>
               
               <!-- Pink Accent Title -->
-              <h3 class="text-2xl font-bold font-[Quicksand] text-pink-600 mb-2 leading-tight group-hover:text-rose-600 transition-colors">${title}</h3>
+              <h3 class="text-2xl font-bold font-[Quicksand] text-pink-600 mb-2 leading-tight group-hover:text-rose-600 transition-colors capitalize">${title}</h3>
               
               <!-- Description Text -->
               <p class="text-slate-600 text-xs sm:text-sm leading-relaxed font-dm-sans line-clamp-2">${rawDesc || 'Explore famous attractions, rich culture, and curated travel experiences.'}</p>
@@ -69,6 +80,7 @@
               </span>
             </div>
           </div>
+
         </div>
       </a>`;
     }
