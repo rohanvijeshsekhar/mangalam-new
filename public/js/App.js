@@ -679,7 +679,7 @@
                     interval: 2500,
                     pauseOnHover: true,
                     pauseOnFocus: true,
-                    arrows: true,
+                    arrows: false,
                     pagination: false,
                     breakpoints: {
                         1024: { perPage: 3, gap: '1rem' },
