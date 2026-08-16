@@ -1979,25 +1979,36 @@
                                     display: flex;
                                     gap: 24px;
                                     width: max-content;
-                                    animation: continuousMarquee 45s linear infinite;
+                                    animation: continuousMarquee 90s linear infinite;
                                 }
                                 .marquee-container:hover .marquee-track {
                                     animation-play-state: paused;
                                 }
                                 .testimonial-card {
-                                    width: 380px;
+                                    width: 340px;
                                     max-width: 85vw;
+                                    height: 220px;
                                     flex-shrink: 0;
                                     background: #ffffff;
-                                    border-radius: 24px;
-                                    padding: 26px;
+                                    border-radius: 20px;
+                                    padding: 20px 22px;
                                     border: 1px solid #f1f5f9;
                                     box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
                                     transition: transform 0.3s ease, box-shadow 0.3s ease;
+                                    display: flex;
+                                    flex-direction: column;
+                                    justify-content: space-between;
                                 }
                                 .testimonial-card:hover {
                                     transform: translateY(-4px);
                                     box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.09);
+                                }
+                                .testimonial-text {
+                                    display: -webkit-box;
+                                    -webkit-line-clamp: 3;
+                                    -webkit-box-orient: vertical;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
                                 }
                                 .partner-card {
                                     flex: 0 0 calc(16.666% - 17px);

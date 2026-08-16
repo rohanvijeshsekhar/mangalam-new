@@ -372,7 +372,7 @@ async function loadHomeTestimonials() {
                 <i class="fas fa-quote-right"></i>
               </div>
             </div>
-            <p class="text-gray-700 font-dm-sans text-sm leading-relaxed mb-5 italic">
+            <p class="text-gray-700 font-dm-sans text-sm leading-relaxed mb-3 italic testimonial-text">
               "${t.feedback || 'Outstanding experience with Mangalam Travel & Tours!'}"
             </p>
           </div>
