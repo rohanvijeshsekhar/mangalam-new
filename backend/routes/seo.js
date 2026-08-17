@@ -147,7 +147,7 @@ function syncSeoToStaticHtml(entry) {
   }
 }
 
-// POST create new SEO entry (Admin)
+// POST create or upsert SEO entry (Admin)
 router.post('/', verifyToken, async (req, res) => {
   try {
     const { page_route, page_name, meta_title, meta_description, meta_keywords, canonical_url, og_image, robots, status } = req.body;
@@ -155,24 +155,48 @@ router.post('/', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'Page Route and Meta Title are required.' });
     }
 
-    const doc = await store.insert('seo', {
-      page_route: page_route.startsWith('/') ? page_route.trim() : `/${page_route.trim()}`,
-      page_name: page_name || 'Custom Page',
-      meta_title: meta_title.trim(),
-      meta_description: meta_description?.trim() || '',
-      meta_keywords: meta_keywords?.trim() || '',
-      canonical_url: canonical_url?.trim() || '',
-      og_image: og_image?.trim() || '',
-      robots: robots || 'index, follow',
-      status: status || 'Active'
-    });
+    const cleanRoute = page_route.startsWith('/') ? page_route.trim() : `/${page_route.trim()}`;
+    
+    // Check if route already exists in SEO table
+    let existing = null;
+    try {
+      existing = await store.getOne('seo', 'WHERE LOWER(page_route) = ?', [cleanRoute.toLowerCase()]);
+    } catch (_) {}
+
+    let doc;
+    if (existing && existing.id) {
+      doc = await store.update('seo', existing.id, {
+        page_route: cleanRoute,
+        page_name: page_name || existing.page_name || 'Custom Page',
+        meta_title: meta_title.trim(),
+        meta_description: meta_description?.trim() || '',
+        meta_keywords: meta_keywords?.trim() || '',
+        canonical_url: canonical_url?.trim() || '',
+        og_image: og_image?.trim() || '',
+        robots: robots || 'index, follow',
+        status: status || 'Active'
+      });
+    } else {
+      doc = await store.insert('seo', {
+        page_route: cleanRoute,
+        page_name: page_name || 'Custom Page',
+        meta_title: meta_title.trim(),
+        meta_description: meta_description?.trim() || '',
+        meta_keywords: meta_keywords?.trim() || '',
+        canonical_url: canonical_url?.trim() || '',
+        og_image: og_image?.trim() || '',
+        robots: robots || 'index, follow',
+        status: status || 'Active'
+      });
+    }
 
     const mapped = map(doc);
-    syncSeoToStaticHtml(mapped);
+    try { syncSeoToStaticHtml(mapped); } catch (e) { console.warn('[SEO] sync error:', e); }
 
-    res.status(201).json({ success: true, message: 'SEO configuration added!', seo: mapped });
+    res.status(201).json({ success: true, message: existing ? 'SEO configuration updated!' : 'SEO configuration added!', seo: mapped });
   } catch (e) {
-    res.status(500).json({ error: 'Failed to create SEO config' });
+    console.error('[SEO Save Error]:', e);
+    res.status(500).json({ error: e.message || 'Failed to save SEO config' });
   }
 });
 
@@ -196,11 +220,12 @@ router.put('/:id', verifyToken, async (req, res) => {
     if (!doc) return res.status(404).json({ error: 'SEO record not found' });
 
     const mapped = map(doc);
-    syncSeoToStaticHtml(mapped);
+    try { syncSeoToStaticHtml(mapped); } catch (e) { console.warn('[SEO] sync error:', e); }
 
     res.json({ success: true, message: 'SEO configuration updated!', seo: mapped });
   } catch (e) {
-    res.status(500).json({ error: 'Failed to update SEO config' });
+    console.error('[SEO Update Error]:', e);
+    res.status(500).json({ error: e.message || 'Failed to update SEO config' });
   }
 });
 
@@ -210,6 +235,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
     await store.remove('seo', req.params.id);
     res.json({ success: true, message: 'SEO record deleted!' });
   } catch (e) {
+    console.error('[SEO Delete Error]:', e);
     res.status(500).json({ error: 'Failed to delete SEO config' });
   }
 });
