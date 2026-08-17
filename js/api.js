@@ -383,6 +383,61 @@ function injectMobileNavStyles() {
         transform: scale(0.97) !important;
       }
     }
+
+    /* Fixed Aspect Ratio & Anti-Zoom for Promotional Banners */
+    #poster-section {
+      overflow: hidden !important;
+    }
+    #posterCarousel {
+      overflow: hidden !important;
+      border-radius: 20px !important;
+    }
+    #posterCarousel .splide__track {
+      overflow: hidden !important;
+      border-radius: 20px !important;
+    }
+    #posterCarousel .splide__slide {
+      position: relative !important;
+      overflow: hidden !important;
+      border-radius: 20px !important;
+    }
+    .poster-banner-wrapper {
+      position: relative !important;
+      width: 100% !important;
+      height: 180px !important;
+      overflow: hidden !important;
+      border-radius: 18px !important;
+      background: #0f172a !important;
+    }
+    @media (min-width: 640px) {
+      .poster-banner-wrapper {
+        height: 240px !important;
+        border-radius: 22px !important;
+      }
+    }
+    @media (min-width: 768px) {
+      .poster-banner-wrapper {
+        height: 300px !important;
+        border-radius: 26px !important;
+      }
+    }
+    @media (min-width: 1024px) {
+      .poster-banner-wrapper {
+        height: 360px !important;
+        border-radius: 28px !important;
+      }
+    }
+    .poster-banner-wrapper img {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+      object-fit: cover !important;
+      object-position: center !important;
+      display: block !important;
+      transform: none !important;
+      transition: none !important;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -509,10 +564,15 @@ async function loadHomePartners() {
 }
 
 // ─── Home Page Promotional Banners / Posters ──────────────────────────────────
+let _posterSplideInstance = null;
+
 async function loadHomePosters() {
   const section = document.getElementById('poster-section');
   const list = document.getElementById('poster-list');
-  if (!section || !list) return;
+  const carouselEl = document.getElementById('posterCarousel');
+  if (!section || !list || !carouselEl) return;
+  if (section._isLoading) return;
+  section._isLoading = true;
 
   try {
     let posters = await apiGet('/api/posters') || await apiGet('/api/banners');
@@ -533,6 +593,11 @@ async function loadHomePosters() {
       ];
     }
 
+    if (_posterSplideInstance) {
+      try { _posterSplideInstance.destroy(true); } catch (_) {}
+      _posterSplideInstance = null;
+    }
+
     list.innerHTML = posters.map(p => {
       const img = resolveImg(p.image);
       const alt = p.alt_text || p.title || p.name || 'Special Travel Offer';
@@ -540,8 +605,8 @@ async function loadHomePosters() {
       const endTag = p.link ? `</a>` : `</div>`;
       return `
         <li class="splide__slide">
-          <div class="rounded-3xl overflow-hidden shadow-lg h-auto max-h-[380px] bg-gray-900">
-            ${tag}<img src="${img}" alt="${alt}" class="w-full h-full object-cover object-center max-h-[380px]" onerror="this.src='https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1600&q=80'">${endTag}
+          <div class="poster-banner-wrapper rounded-2xl sm:rounded-3xl overflow-hidden shadow-md bg-slate-900 w-full h-[180px] sm:h-[240px] md:h-[300px] lg:h-[360px] relative">
+            ${tag}<img src="${img}" alt="${alt}" class="w-full h-full object-cover object-center block" loading="eager" onerror="this.src='https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1600&q=80'">${endTag}
           </div>
         </li>
       `;
@@ -549,22 +614,31 @@ async function loadHomePosters() {
 
     section.style.display = '';
 
-    if (window.Splide && document.getElementById('posterCarousel') && !document.getElementById('posterCarousel').classList.contains('is-active')) {
+    if (window.Splide) {
       const cnt = posters.length;
       if (cnt > 0) {
-        new Splide('#posterCarousel', {
+        _posterSplideInstance = new Splide('#posterCarousel', {
           type: cnt > 1 ? 'loop' : 'slide',
           autoplay: cnt > 1,
           interval: 4500,
-          speed: 800,
+          speed: 600,
           arrows: cnt > 1,
-          pagination: true,
-          perPage: 1
-        }).mount();
+          pagination: cnt > 1,
+          perPage: 1,
+          drag: cnt > 1,
+          pauseOnHover: true,
+          pauseOnFocus: false,
+          autoWidth: false,
+          autoHeight: false,
+          waitForTransition: true
+        });
+        _posterSplideInstance.mount();
       }
     }
   } catch (err) {
     console.warn('[Posters] Load error:', err);
+  } finally {
+    section._isLoading = false;
   }
 }
 
