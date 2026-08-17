@@ -63,6 +63,18 @@ function showToast(msg, type = 'success') {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ── Escape HTML Helper ────────────────────────────────────────────────────────
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+window.escapeHtml = escapeHtml;
+
 // ── Navigation ────────────────────────────────────────────────────────────────
 const sections = {
   dashboard:    { title: 'Dashboard',    subtitle: 'Overview of your website data' },
@@ -118,7 +130,7 @@ document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
 async function loadDashboard() {
   const stats = await api('GET', '/stats');
   if (!stats) return;
-  ['destinations','packages','collections','attractions','blogs','testimonials','partners','posters','enquiries','seo'].forEach(k => {
+  ['destinations','packages','collections','attractions','blogs','testimonials','partners','posters','gallery','enquiries','seo'].forEach(k => {
     const el = document.getElementById(`stat-${k}`);
     if (el) el.textContent = stats[k] ?? 0;
   });
@@ -194,6 +206,8 @@ function openAddModal(section) {
     blogs:        openBlogForm,
     testimonials: openTestimonialForm,
     partners:     openPartnerForm,
+    posters:      openPosterForm,
+    gallery:      openGalleryForm,
   };
   forms[section]?.();
 }
@@ -1868,9 +1882,13 @@ window.openGalleryForm = openGalleryForm;
 
 window.saveGallery = async function(e, id = null) {
   if (e) e.preventDefault();
-  const title = document.getElementById('g-title').value.trim();
-  const image = document.getElementById('img-url-gallery-img')?.value || '';
-  const caption = document.getElementById('g-caption').value.trim();
+  const titleEl = document.getElementById('g-title');
+  const imageEl = document.getElementById('img-url-gallery-img');
+  const captionEl = document.getElementById('g-caption');
+
+  const title = titleEl ? titleEl.value.trim() : '';
+  const image = imageEl ? imageEl.value.trim() : '';
+  const caption = captionEl ? captionEl.value.trim() : '';
 
   if (!image) {
     showToast('Please select or upload a photo image', 'error');
@@ -1878,12 +1896,13 @@ window.saveGallery = async function(e, id = null) {
   }
 
   const payload = { title: title || 'Tour Moment', image, caption };
-  const res = id
-    ? await api('PUT', `/gallery/${id}`, payload)
+  const targetId = (id && id !== 'null' && id !== 'undefined') ? id : null;
+  const res = targetId
+    ? await api('PUT', `/gallery/${targetId}`, payload)
     : await api('POST', '/gallery', payload);
 
   if (res?.error) { showToast(res.error, 'error'); return; }
-  showToast(id ? 'Photo updated successfully!' : 'Photo uploaded successfully to Gallery!', 'success');
+  showToast(targetId ? 'Photo updated successfully!' : 'Photo uploaded successfully to Gallery!', 'success');
   closeModal();
   await loadGallery();
   loadDashboard();

@@ -15,15 +15,15 @@ const map = g => ({
 
 // Fallback sample photos if empty
 const SAMPLE_GALLERY = [
-  { id: 1, title: 'Kerala Backwaters Tour', image: './assets/images/banner1.webp', caption: 'Happy travelers experiencing the serene Alleppey backwaters houseboats.', created_at: new Date().toISOString() },
-  { id: 2, title: 'Dubai Desert Safari', image: './assets/images/res-activity-banner.webp', caption: 'Thrilling dune bashing and sunset desert camp in Dubai.', created_at: new Date().toISOString() },
-  { id: 3, title: 'Singapore City Sightseeing', image: './assets/images/activity-banner.webp', caption: 'Explorers visiting Gardens by the Bay and Marina Bay Sands.', created_at: new Date().toISOString() },
-  { id: 4, title: 'Thailand Beach Getaway', image: './assets/images/banner2.webp', caption: 'Tropical island hopping trip in Phuket & Krabi.', created_at: new Date().toISOString() },
-  { id: 5, title: 'Bali Cultural Discovery', image: './assets/images/banner3.webp', caption: 'Traditional temple visit and rice terrace views in Ubud.', created_at: new Date().toISOString() },
-  { id: 6, title: 'Swiss Alps Expedition', image: './assets/images/package-1.webp', caption: 'Unforgettable mountain railway journey in Mount Titlis.', created_at: new Date().toISOString() }
+  { title: 'Kerala Backwaters Tour', image: './assets/images/banner1.webp', caption: 'Happy travelers experiencing the serene Alleppey backwaters houseboats.' },
+  { title: 'Dubai Desert Safari', image: './assets/images/res-activity-banner.webp', caption: 'Thrilling dune bashing and sunset desert camp in Dubai.' },
+  { title: 'Singapore City Sightseeing', image: './assets/images/activity-banner.webp', caption: 'Explorers visiting Gardens by the Bay and Marina Bay Sands.' },
+  { title: 'Thailand Beach Getaway', image: './assets/images/banner2.webp', caption: 'Tropical island hopping trip in Phuket & Krabi.' },
+  { title: 'Bali Cultural Discovery', image: './assets/images/banner3.webp', caption: 'Traditional temple visit and rice terrace views in Ubud.' },
+  { title: 'Swiss Alps Expedition', image: './assets/images/package-1.webp', caption: 'Unforgettable mountain railway journey in Mount Titlis.' }
 ];
 
-// Ensure table exists in MySQL
+// Ensure table exists in MySQL and seed default items if empty
 async function ensureGalleryTable() {
   try {
     await query(`
@@ -36,6 +36,17 @@ async function ensureGalleryTable() {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
+
+    const countRes = await query(`SELECT COUNT(*) as cnt FROM gallery`);
+    if (countRes && countRes[0] && Number(countRes[0].cnt) === 0) {
+      for (const item of SAMPLE_GALLERY) {
+        await query(`INSERT INTO gallery (title, image, caption) VALUES (?, ?, ?)`, [
+          item.title,
+          item.image,
+          item.caption
+        ]);
+      }
+    }
   } catch (e) {
     console.error('[Gallery DB init warning]:', e.message);
   }
@@ -46,12 +57,9 @@ router.get('/', async (req, res) => {
   try {
     await ensureGalleryTable();
     const items = await store.getAll('gallery');
-    if (!items || items.length === 0) {
-      return res.json(SAMPLE_GALLERY);
-    }
-    res.json(items.map(map));
+    res.json((items || []).map(map));
   } catch (e) {
-    res.json(SAMPLE_GALLERY);
+    res.json([]);
   }
 });
 

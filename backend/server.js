@@ -100,14 +100,14 @@ app.get('/api/stats', async (req, res) => {
   try {
     const [
       destinations, packages, collections, attractions, tickets,
-      blogs, testimonials, partners, posters, enquiries, seo
+      blogs, testimonials, partners, posters, gallery, enquiries, seo
     ] = await Promise.all([
       store.count('destinations'), store.count('packages'), store.count('collections'),
       store.count('attractions'), store.count('tickets'), store.count('blogs'),
       store.count('testimonials'), store.count('partners'), store.count('posters'),
-      store.count('enquiries'), store.count('seo')
+      store.count('gallery'), store.count('enquiries'), store.count('seo')
     ]);
-    res.json({ destinations, packages, collections, attractions, tickets, blogs, testimonials, partners, posters, enquiries, seo });
+    res.json({ destinations, packages, collections, attractions, tickets, blogs, testimonials, partners, posters, gallery, enquiries, seo });
   } catch (err) {
     res.status(500).json({ error: 'Failed to retrieve stats' });
   }
