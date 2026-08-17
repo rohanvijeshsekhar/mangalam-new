@@ -319,24 +319,36 @@ function injectMobileNavStyles() {
         position: relative !important;
       }
       #mobileServicesDropdown {
-        bottom: calc(100% + 14px) !important;
-        right: 4px !important;
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 99999 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-end !important;
+        pointer-events: auto !important;
       }
-      #mobileServicesDropdown a {
+      #mobileServicesDropdown.hidden {
+        display: none !important;
+      }
+      #mobileServicesDropdown .services-bottom-sheet {
+        background: #ffffff !important;
+        border-top-left-radius: 28px !important;
+        border-top-right-radius: 28px !important;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25) !important;
+        max-height: 70vh !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        overflow: hidden !important;
+      }
+      #mobileServicesDropdown a.service-grid-card {
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
-        justify-content: flex-start !important;
         text-align: left !important;
-        font-size: 13px !important;
-        line-height: 1.4 !important;
-        color: #374151 !important;
-        gap: 12px !important;
-        padding: 10px 16px !important;
-      }
-      #mobileServicesDropdown a:hover {
-        background-color: #f9fafb !important;
-        color: #0284c7 !important;
+        padding: 12px 12px !important;
+        border-radius: 16px !important;
+        gap: 10px !important;
+        text-decoration: none !important;
       }
     }
   `;
@@ -647,6 +659,15 @@ function initMenuDropdowns() {
           servicesDropdown.classList.remove('hidden');
         }
       }
+      return;
+    }
+
+    // Close Mobile Services bottom sheet via close button or backdrop
+    const closeServices = e.target.closest('#closeMobileServicesBtn, #mobileServicesBackdrop');
+    if (closeServices) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.querySelectorAll('#mobileServicesDropdown').forEach(d => d.classList.add('hidden'));
       return;
     }
 
