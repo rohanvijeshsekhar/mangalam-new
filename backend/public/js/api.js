@@ -562,27 +562,45 @@ async function loadHomeGallery() {
     if (splideList) splideList.innerHTML = splideHtml;
     if (grid) grid.innerHTML = gridHtml;
 
-    if (window.Splide && splideElem && !splideElem.classList.contains('is-active')) {
-      new Splide('#home-gallery-splide', {
-        type: items.length > 1 ? 'loop' : 'slide',
-        autoplay: true,
-        interval: 2800,
-        speed: 800,
-        arrows: items.length > 1,
-        pagination: false,
-        pauseOnHover: true,
-        pauseOnFocus: true,
-        perPage: 4,
-        gap: '1.25rem',
-        breakpoints: {
-          1024: { perPage: 3 },
-          768: { perPage: 2 },
-          480: { perPage: 1.2, gap: '0.75rem' }
-        }
-      }).mount();
+    const initSplide = () => {
+      if (window.Splide && splideElem && !splideElem.classList.contains('is-active')) {
+        new Splide('#home-gallery-splide', {
+          type: items.length > 1 ? 'loop' : 'slide',
+          autoplay: true,
+          interval: 2800,
+          speed: 800,
+          arrows: items.length > 1,
+          pagination: false,
+          pauseOnHover: true,
+          pauseOnFocus: true,
+          perPage: 4,
+          gap: '1.25rem',
+          breakpoints: {
+            1024: { perPage: 3 },
+            768: { perPage: 2, gap: '0.75rem' },
+            480: { perPage: 1.5, gap: '0.75rem' }
+          }
+        }).mount();
+        if (grid) grid.classList.add('hidden');
+      } else if (grid) {
+        grid.classList.remove('hidden');
+      }
+    };
+
+    if (window.Splide) {
+      initSplide();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js';
+      script.onload = initSplide;
+      script.onerror = () => {
+        if (grid) grid.classList.remove('hidden');
+      };
+      document.head.appendChild(script);
     }
   } catch (e) {
     console.warn('[Gallery] Failed to load homepage gallery:', e);
+    if (grid) grid.classList.remove('hidden');
   }
 }
 
