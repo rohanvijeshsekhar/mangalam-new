@@ -523,10 +523,11 @@ async function loadHomePosters() {
 
 // ─── Init common page elements ────────────────────────────────────────────────
 async function loadHomeGallery() {
-  const grid = document.getElementById('home-gallery-grid');
+  const container = document.getElementById('home-gallery-scroll');
   const splideList = document.getElementById('home-gallery-splide-list');
   const splideElem = document.getElementById('home-gallery-splide');
-  if (!grid && !splideList) return;
+  // support both old splide markup and new scroll strip
+  if (!container && !splideList) return;
 
   try {
     const photos = await apiGet('/api/gallery');
@@ -534,73 +535,74 @@ async function loadHomeGallery() {
 
     const items = photos.slice(0, 12);
 
-    const splideHtml = items.map(p => `
-      <li class="splide__slide">
-        <a href="/gallery.html" class="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 block aspect-[4/5] border border-slate-100 bg-slate-100" style="aspect-ratio: 4 / 5;">
-          <img src="${p.image || './assets/images/destination-placeholder.jpg'}" alt="${p.title || 'Traveler Photo'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null; this.src='./assets/images/destination-placeholder.jpg';">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
-            <span class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center text-xs mb-1.5 self-end">
-              <i class="fas fa-search-plus"></i>
-            </span>
-            <h4 class="text-white font-bold text-sm font-[Quicksand] truncate drop-shadow-sm">${p.title || 'Tour Moment'}</h4>
-            ${p.caption ? `<p class="text-slate-200 text-xs line-clamp-1 mt-0.5 drop-shadow-sm">${p.caption}</p>` : ''}
-          </div>
-        </a>
-      </li>
-    `).join('');
-
-    const gridHtml = items.map(p => `
-      <a href="/gallery.html" class="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 block aspect-[4/5] border border-slate-100 bg-slate-100" style="aspect-ratio: 4 / 5;">
-        <img src="${p.image || './assets/images/destination-placeholder.jpg'}" alt="${p.title || 'Traveler Photo'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null; this.src='./assets/images/destination-placeholder.jpg';">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
-          <h4 class="text-white font-bold text-sm font-[Quicksand] truncate drop-shadow-sm">${p.title || 'Tour Moment'}</h4>
-          ${p.caption ? `<p class="text-slate-300 text-xs line-clamp-1 mt-0.5 drop-shadow-sm">${p.caption}</p>` : ''}
+    const cardHtml = items.map(p => `
+      <a href="/gallery.html"
+         class="gallery-scroll-card group relative rounded-2xl overflow-hidden shadow-md block bg-slate-100 flex-shrink-0"
+         style="width:200px; aspect-ratio:4/5;">
+        <img src="${p.image || './assets/images/destination-placeholder.jpg'}"
+             alt="${p.title || 'Traveler Photo'}"
+             loading="lazy"
+             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+             onerror="this.onerror=null;this.src='./assets/images/destination-placeholder.jpg';">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 flex flex-col justify-end">
+          <h4 class="text-white font-bold text-xs font-[Quicksand] truncate drop-shadow-sm">${p.title || 'Tour Moment'}</h4>
+          ${p.caption ? `<p class="text-slate-200 text-[10px] line-clamp-1 mt-0.5">${p.caption}</p>` : ''}
         </div>
       </a>
     `).join('');
 
-    if (splideList) splideList.innerHTML = splideHtml;
-    if (grid) grid.innerHTML = gridHtml;
+    if (container) {
+      container.innerHTML = cardHtml;
+    }
 
-    const initSplide = () => {
-      if (window.Splide && splideElem && !splideElem.classList.contains('is-active')) {
-        new Splide('#home-gallery-splide', {
-          type: items.length > 1 ? 'loop' : 'slide',
-          autoplay: true,
-          interval: 2800,
-          speed: 800,
-          arrows: items.length > 1,
-          pagination: false,
-          pauseOnHover: true,
-          pauseOnFocus: true,
-          perPage: 4,
-          gap: '1.25rem',
-          breakpoints: {
-            1024: { perPage: 3 },
-            768: { perPage: 2, gap: '0.75rem' },
-            480: { perPage: 1.5, gap: '0.75rem' }
-          }
-        }).mount();
-        if (grid) grid.classList.add('hidden');
-      } else if (grid) {
-        grid.classList.remove('hidden');
-      }
-    };
+    // Also populate Splide list if present (for desktop auto-scroll)
+    if (splideList) {
+      splideList.innerHTML = items.map(p => `
+        <li class="splide__slide">
+          <a href="/gallery.html" class="group relative rounded-2xl overflow-hidden shadow-md block bg-slate-100" style="aspect-ratio:4/5;">
+            <img src="${p.image || './assets/images/destination-placeholder.jpg'}"
+                 alt="${p.title || 'Traveler Photo'}"
+                 loading="lazy"
+                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                 onerror="this.onerror=null;this.src='./assets/images/destination-placeholder.jpg';">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
+              <h4 class="text-white font-bold text-sm font-[Quicksand] truncate drop-shadow-sm">${p.title || 'Tour Moment'}</h4>
+              ${p.caption ? `<p class="text-slate-200 text-xs line-clamp-1 mt-0.5">${p.caption}</p>` : ''}
+            </div>
+          </a>
+        </li>
+      `).join('');
 
-    if (window.Splide) {
-      initSplide();
-    } else {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js';
-      script.onload = initSplide;
-      script.onerror = () => {
-        if (grid) grid.classList.remove('hidden');
+      const tryInitSplide = () => {
+        if (window.Splide && splideElem && !splideElem.classList.contains('is-active')) {
+          new Splide('#home-gallery-splide', {
+            type: 'loop',
+            autoplay: true,
+            interval: 2800,
+            speed: 800,
+            arrows: true,
+            pagination: false,
+            pauseOnHover: true,
+            perPage: 4,
+            gap: '1.25rem',
+            breakpoints: {
+              1024: { perPage: 3 },
+              768: { perPage: 2, gap: '0.75rem' },
+              480: { perPage: 1.5, gap: '0.75rem' }
+            }
+          }).mount();
+        }
       };
-      document.head.appendChild(script);
+
+      if (window.Splide) {
+        tryInitSplide();
+      } else {
+        window.addEventListener('load', tryInitSplide);
+        setTimeout(tryInitSplide, 1500);
+      }
     }
   } catch (e) {
     console.warn('[Gallery] Failed to load homepage gallery:', e);
-    if (grid) grid.classList.remove('hidden');
   }
 }
 
