@@ -66,6 +66,91 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+const fs = require('fs');
+const path = require('path');
+
+function syncSeoToStaticHtml(entry) {
+  if (!entry || !entry.page_route) return;
+  let filename = entry.page_route === '/' ? 'index.html' : entry.page_route.replace(/^\//, '');
+  if (!filename.endsWith('.html')) filename += '.html';
+
+  const pathsToCheck = [
+    path.join(__dirname, '../../', filename),
+    path.join(__dirname, '../public', filename),
+    path.join(__dirname, '../../public', filename)
+  ];
+
+  for (const filePath of pathsToCheck) {
+    if (fs.existsSync(filePath)) {
+      try {
+        let content = fs.readFileSync(filePath, 'utf8');
+
+        // Update or insert <title>
+        if (entry.meta_title) {
+          if (/<title>[\s\S]*?<\/title>/i.test(content)) {
+            content = content.replace(/<title>[\s\S]*?<\/title>/i, `<title>${entry.meta_title}</title>`);
+          }
+          if (/<meta\s+name="title"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+name="title"\s+content="[^"]*"/i, `<meta name="title" content="${entry.meta_title}"`);
+          }
+          if (/<meta\s+property="og:title"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+property="og:title"\s+content="[^"]*"/i, `<meta property="og:title" content="${entry.meta_title}"`);
+          }
+          if (/<meta\s+name="twitter:title"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+name="twitter:title"\s+content="[^"]*"/i, `<meta name="twitter:title" content="${entry.meta_title}"`);
+          }
+        }
+
+        // Update or insert <meta name="description">
+        if (entry.meta_description) {
+          if (/<meta\s+name="description"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+name="description"\s+content="[^"]*"/i, `<meta name="description" content="${entry.meta_description}"`);
+          }
+          if (/<meta\s+property="og:description"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+property="og:description"\s+content="[^"]*"/i, `<meta property="og:description" content="${entry.meta_description}"`);
+          }
+          if (/<meta\s+name="twitter:description"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+name="twitter:description"\s+content="[^"]*"/i, `<meta name="twitter:description" content="${entry.meta_description}"`);
+          }
+        }
+
+        // Update or insert <meta name="keywords">
+        if (entry.meta_keywords) {
+          if (/<meta\s+name="keywords"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+name="keywords"\s+content="[^"]*"/i, `<meta name="keywords" content="${entry.meta_keywords}"`);
+          }
+        }
+
+        // Update or insert <link rel="canonical">
+        if (entry.canonical_url) {
+          if (/<link\s+rel="canonical"\s+href="[^"]*"/i.test(content)) {
+            content = content.replace(/<link\s+rel="canonical"\s+href="[^"]*"/i, `<link rel="canonical" href="${entry.canonical_url}"`);
+          } else if (/<link\s+href="[^"]*"\s+rel="canonical"/i.test(content)) {
+            content = content.replace(/<link\s+href="[^"]*"\s+rel="canonical"/i, `<link rel="canonical" href="${entry.canonical_url}"`);
+          }
+          if (/<meta\s+property="og:url"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+property="og:url"\s+content="[^"]*"/i, `<meta property="og:url" content="${entry.canonical_url}"`);
+          }
+          if (/<meta\s+name="twitter:url"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+name="twitter:url"\s+content="[^"]*"/i, `<meta name="twitter:url" content="${entry.canonical_url}"`);
+          }
+        }
+
+        // Update or insert <meta name="robots">
+        if (entry.robots) {
+          if (/<meta\s+name="robots"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+name="robots"\s+content="[^"]*"/i, `<meta name="robots" content="${entry.robots}"`);
+          }
+        }
+
+        fs.writeFileSync(filePath, content, 'utf8');
+      } catch (err) {
+        console.warn('[SEO Sync] Error updating static HTML:', filePath, err);
+      }
+    }
+  }
+}
+
 // POST create new SEO entry (Admin)
 router.post('/', verifyToken, async (req, res) => {
   try {
@@ -86,7 +171,10 @@ router.post('/', verifyToken, async (req, res) => {
       status: status || 'Active'
     });
 
-    res.status(201).json({ success: true, message: 'SEO configuration added!', seo: map(doc) });
+    const mapped = map(doc);
+    syncSeoToStaticHtml(mapped);
+
+    res.status(201).json({ success: true, message: 'SEO configuration added!', seo: mapped });
   } catch (e) {
     res.status(500).json({ error: 'Failed to create SEO config' });
   }
@@ -110,7 +198,11 @@ router.put('/:id', verifyToken, async (req, res) => {
 
     const doc = await store.update('seo', req.params.id, updates);
     if (!doc) return res.status(404).json({ error: 'SEO record not found' });
-    res.json({ success: true, message: 'SEO configuration updated!', seo: map(doc) });
+
+    const mapped = map(doc);
+    syncSeoToStaticHtml(mapped);
+
+    res.json({ success: true, message: 'SEO configuration updated!', seo: mapped });
   } catch (e) {
     res.status(500).json({ error: 'Failed to update SEO config' });
   }

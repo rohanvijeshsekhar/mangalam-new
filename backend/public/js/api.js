@@ -204,11 +204,12 @@ async function loadDynamicSeo() {
   try {
     const pathname = window.location.pathname || '/';
     const cleanPath = pathname === '/' || pathname.endsWith('/index.html') ? '/' : pathname;
-    const seo = await apiGet(`/seo/match?route=${encodeURIComponent(cleanPath)}`);
+    const seo = await apiGet(`/api/seo/match?route=${encodeURIComponent(cleanPath)}`);
     if (!seo || !seo.id) return;
 
     if (seo.meta_title) {
       document.title = seo.meta_title;
+      setMeta('title', 'name', seo.meta_title);
       setMeta('og:title', 'property', seo.meta_title);
       setMeta('twitter:title', 'name', seo.meta_title);
     }
@@ -226,6 +227,7 @@ async function loadDynamicSeo() {
     if (seo.canonical_url) {
       setLink('canonical', seo.canonical_url);
       setMeta('og:url', 'property', seo.canonical_url);
+      setMeta('twitter:url', 'name', seo.canonical_url);
     }
     if (seo.og_image) {
       const resolved = resolveImg(seo.og_image);
@@ -235,6 +237,9 @@ async function loadDynamicSeo() {
     }
   } catch (_) {}
 }
+
+// Call immediately so request fires in parallel
+loadDynamicSeo();
 
 function setMeta(nameOrProp, attr, content) {
   if (!content) return;
