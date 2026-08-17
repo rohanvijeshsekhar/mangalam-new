@@ -35,26 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Process fields
         const title = blog.title || 'Travel Blog';
-    document.title = `${title} | Mangalam Travel & Tours`;
-    const blogDesc = (blog.meta_description || blog.description || blog.content || '').replace(/<[^>]*>?/gm, '').slice(0, 160);
-    const blogCanonical = `https://mangalamtravel.com/blog-details.html?slug=${encodeURIComponent(blog.slug_url || blog.slug || slug)}`;
-    const setMetaTag = (nameOrProp, attr, val) => {
-      if (!val) return;
-      let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
-      if (!el) { el = document.createElement('meta'); el.setAttribute(attr, nameOrProp); document.head.appendChild(el); }
-      el.setAttribute('content', val);
-    };
-    setMetaTag('description', 'name', blogDesc);
-    setMetaTag('title', 'name', `${title} | Mangalam Travel & Tours`);
-    setMetaTag('og:title', 'property', `${title} | Mangalam Travel & Tours`);
-    setMetaTag('og:description', 'property', blogDesc);
-    setMetaTag('og:url', 'property', blogCanonical);
-    setMetaTag('twitter:title', 'name', `${title} | Mangalam Travel & Tours`);
-    setMetaTag('twitter:description', 'name', blogDesc);
-    setMetaTag('twitter:url', 'name', blogCanonical);
-    let bLinkEl = document.querySelector('link[rel="canonical"]');
-    if (!bLinkEl) { bLinkEl = document.createElement('link'); bLinkEl.setAttribute('rel', 'canonical'); document.head.appendChild(bLinkEl); }
-    bLinkEl.setAttribute('href', blogCanonical);
+    document.title = title;
 
     const imgStr = blog.banner_image || blog.card_image || (blog.images && blog.images.length > 0 ? (typeof blog.images[0] === 'object' ? (blog.images[0].file_name || blog.images[0].name || blog.images[0].image) : blog.images[0]) : '');
     const bannerImg = MT.resolveImg(imgStr) || './assets/images/banner-img.webp';

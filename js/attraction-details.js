@@ -36,26 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const desc     = d.description || d.overview || '';
   const included = d.included || '';
 
-    document.title = `${title} | Mangalam Travel & Tours`;
-  const attDesc = (d.meta_description || d.description || d.overview || `Experience ${title} in ${dest}. Best ticket rates, instant booking.`).replace(/<[^>]*>?/gm, '').slice(0, 160);
-  const attCanonical = `https://mangalamtravel.com/attraction-details.html?slug=${encodeURIComponent(d.slug_url || d.slug || slug)}`;
-  const setMetaTag = (nameOrProp, attr, val) => {
-    if (!val) return;
-    let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
-    if (!el) { el = document.createElement('meta'); el.setAttribute(attr, nameOrProp); document.head.appendChild(el); }
-    el.setAttribute('content', val);
-  };
-  setMetaTag('description', 'name', attDesc);
-  setMetaTag('title', 'name', `${title} | Mangalam Travel & Tours`);
-  setMetaTag('og:title', 'property', `${title} | Mangalam Travel & Tours`);
-  setMetaTag('og:description', 'property', attDesc);
-  setMetaTag('og:url', 'property', attCanonical);
-  setMetaTag('twitter:title', 'name', `${title} | Mangalam Travel & Tours`);
-  setMetaTag('twitter:description', 'name', attDesc);
-  setMetaTag('twitter:url', 'name', attCanonical);
-  let attLinkEl = document.querySelector('link[rel="canonical"]');
-  if (!attLinkEl) { attLinkEl = document.createElement('link'); attLinkEl.setAttribute('rel', 'canonical'); document.head.appendChild(attLinkEl); }
-  attLinkEl.setAttribute('href', attCanonical);
+    document.title = title;
 
   // Experience badge color mappings
   const expColors = {

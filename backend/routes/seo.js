@@ -37,16 +37,12 @@ router.get('/match', async (req, res) => {
     
     // Find exact match or normalized match
     let matched = all.find(s => s.page_route.toLowerCase() === normalizedRoute);
-    if (!matched && (normalizedRoute === '' || normalizedRoute === '/index.html' || normalizedRoute === '/index.php')) {
-      matched = all.find(s => s.page_route === '/' || s.page_route === '/index.html');
+    if (!matched && (normalizedRoute === '' || normalizedRoute === '/' || normalizedRoute === '/index.html' || normalizedRoute === '/index.php')) {
+      matched = all.find(s => s.page_route.toLowerCase() === '/' || s.page_route.toLowerCase() === '/index.html');
     }
     if (!matched) {
       const base = normalizedRoute.replace(/\.html$/i, '');
       matched = all.find(s => s.page_route.replace(/\.html$/i, '').toLowerCase() === base);
-    }
-
-    if (!matched) {
-      matched = all.find(s => s.page_route === '/') || all[0] || null;
     }
 
     res.json(matched || {});

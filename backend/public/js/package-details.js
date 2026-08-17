@@ -47,29 +47,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const detail = await MT.apiGet(`/api/packages/${pkg.id || pkg.package_id}`);
   const d = detail || pkg;
 
-    const title      = d.package_name || d.title || d.name || '';
-  if (title) {
-    document.title = `${title} — Holiday Package | Mangalam Travel & Tours`;
-    const desc = (d.meta_description || d.description || d.overview || `Explore ${title} with Mangalam Travel & Tours. Complete itinerary, hotel details, and best prices.`).replace(/<[^>]*>?/gm, '').slice(0, 160);
-    const canonical = `https://mangalamtravel.com/package-details.html?slug=${encodeURIComponent(d.slug_url || d.slug || rawParam)}`;
-    const setMetaTag = (nameOrProp, attr, val) => {
-      if (!val) return;
-      let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
-      if (!el) { el = document.createElement('meta'); el.setAttribute(attr, nameOrProp); document.head.appendChild(el); }
-      el.setAttribute('content', val);
-    };
-    setMetaTag('description', 'name', desc);
-    setMetaTag('title', 'name', `${title} — Mangalam Travel & Tours`);
-    setMetaTag('og:title', 'property', `${title} — Mangalam Travel & Tours`);
-    setMetaTag('og:description', 'property', desc);
-    setMetaTag('og:url', 'property', canonical);
-    setMetaTag('twitter:title', 'name', `${title} — Mangalam Travel & Tours`);
-    setMetaTag('twitter:description', 'name', desc);
-    setMetaTag('twitter:url', 'name', canonical);
-    let linkEl = document.querySelector('link[rel="canonical"]');
-    if (!linkEl) { linkEl = document.createElement('link'); linkEl.setAttribute('rel', 'canonical'); document.head.appendChild(linkEl); }
-    linkEl.setAttribute('href', canonical);
-  }
+    const title = d.package_name || d.title || d.name || '';
+  if (title) document.title = title;
   
   // Extract banner images list (up to 4 images)
   let rawBanners = d.banner_images || [];
