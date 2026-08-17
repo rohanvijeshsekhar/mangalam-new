@@ -275,15 +275,17 @@ function injectMobileNavStyles() {
       }
       .responsive-float-header ul {
         display: flex !important;
-        justify-content: space-between !important;
-        align-items: flex-end !important;
+        justify-content: space-around !important;
+        align-items: center !important;
         list-style: none !important;
         margin: 0 !important;
-        padding: 8px 8px !important;
-        gap: 4px !important;
+        padding: 10px 4px !important;
+        gap: 0 !important;
+        width: 100% !important;
       }
       .responsive-float-header li {
-        flex: 1 !important;
+        flex: 1 1 25% !important;
+        max-width: 25% !important;
         text-align: center !important;
       }
       .responsive-float-header a {
