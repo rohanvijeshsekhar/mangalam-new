@@ -325,20 +325,43 @@ function injectMobileNavStyles() {
         display: flex !important;
         flex-direction: column !important;
         justify-content: flex-end !important;
-        pointer-events: auto !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+        transition: visibility 0.35s ease !important;
       }
-      #mobileServicesDropdown.hidden {
-        display: none !important;
+      #mobileServicesDropdown.is-open {
+        pointer-events: auto !important;
+        visibility: visible !important;
+      }
+      #mobileServicesDropdown #mobileServicesBackdrop {
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(0, 0, 0, 0.45) !important;
+        backdrop-filter: blur(3px) !important;
+        -webkit-backdrop-filter: blur(3px) !important;
+        opacity: 0 !important;
+        transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      }
+      #mobileServicesDropdown.is-open #mobileServicesBackdrop {
+        opacity: 1 !important;
       }
       #mobileServicesDropdown .services-bottom-sheet {
+        position: relative !important;
         background: #ffffff !important;
         border-top-left-radius: 28px !important;
         border-top-right-radius: 28px !important;
-        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25) !important;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.22) !important;
         max-height: 70vh !important;
         width: 100% !important;
         margin: 0 auto !important;
         overflow: hidden !important;
+        z-index: 10 !important;
+        transform: translateY(102%) !important;
+        transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1) !important;
+        will-change: transform !important;
+      }
+      #mobileServicesDropdown.is-open .services-bottom-sheet {
+        transform: translateY(0) !important;
       }
       #mobileServicesDropdown a.service-grid-card {
         display: flex !important;
@@ -349,6 +372,10 @@ function injectMobileNavStyles() {
         border-radius: 16px !important;
         gap: 10px !important;
         text-decoration: none !important;
+        transition: transform 0.15s ease, background-color 0.2s ease !important;
+      }
+      #mobileServicesDropdown a.service-grid-card:active {
+        transform: scale(0.97) !important;
       }
     }
   `;
@@ -620,6 +647,27 @@ async function loadHomeGallery() {
   }
 }
 
+function openMobileServices(dropdown) {
+  if (!dropdown) dropdown = document.getElementById('mobileServicesDropdown');
+  if (!dropdown) return;
+  dropdown.classList.remove('hidden');
+  // force reflow so transition plays smoothly
+  void dropdown.offsetHeight;
+  dropdown.classList.add('is-open');
+}
+
+function closeMobileServices(dropdown) {
+  const list = dropdown ? [dropdown] : document.querySelectorAll('#mobileServicesDropdown');
+  list.forEach(d => {
+    d.classList.remove('is-open');
+    setTimeout(() => {
+      if (!d.classList.contains('is-open')) {
+        d.classList.add('hidden');
+      }
+    }, 380);
+  });
+}
+
 function initMenuDropdowns() {
   if (window._menuDropdownsBound) return;
   window._menuDropdownsBound = true;
@@ -637,7 +685,8 @@ function initMenuDropdowns() {
 
       if (dropdown) {
         const isHidden = dropdown.classList.contains('hidden');
-        document.querySelectorAll('#menuDropdown, #menuDropdown2, #mobileServicesDropdown').forEach(d => d.classList.add('hidden'));
+        document.querySelectorAll('#menuDropdown, #menuDropdown2').forEach(d => d.classList.add('hidden'));
+        closeMobileServices();
         if (isHidden) {
           dropdown.classList.remove('hidden');
         }
@@ -653,10 +702,11 @@ function initMenuDropdowns() {
       const servicesDropdown = document.getElementById('mobileServicesDropdown') ||
                                servicesTrigger.parentElement?.querySelector('#mobileServicesDropdown');
       if (servicesDropdown) {
-        const isHidden = servicesDropdown.classList.contains('hidden');
-        document.querySelectorAll('#menuDropdown, #menuDropdown2, #mobileServicesDropdown').forEach(d => d.classList.add('hidden'));
-        if (isHidden) {
-          servicesDropdown.classList.remove('hidden');
+        document.querySelectorAll('#menuDropdown, #menuDropdown2').forEach(d => d.classList.add('hidden'));
+        if (servicesDropdown.classList.contains('is-open')) {
+          closeMobileServices(servicesDropdown);
+        } else {
+          openMobileServices(servicesDropdown);
         }
       }
       return;
@@ -667,7 +717,7 @@ function initMenuDropdowns() {
     if (closeServices) {
       e.preventDefault();
       e.stopPropagation();
-      document.querySelectorAll('#mobileServicesDropdown').forEach(d => d.classList.add('hidden'));
+      closeMobileServices();
       return;
     }
 
@@ -694,10 +744,8 @@ function initMenuDropdowns() {
         d.classList.add('hidden');
       });
     }
-    if (!e.target.closest('#mobileServicesDropdown, #mobileServicesTrigger')) {
-      document.querySelectorAll('#mobileServicesDropdown').forEach(d => {
-        d.classList.add('hidden');
-      });
+    if (!e.target.closest('.services-bottom-sheet, #mobileServicesTrigger')) {
+      closeMobileServices();
     }
   });
 }
