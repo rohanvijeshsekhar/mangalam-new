@@ -308,32 +308,28 @@ function injectMobileNavStyles() {
         height: 20px !important;
         margin-bottom: 4px !important;
       }
-      .mobile-customize-item {
+      .responsive-float-header li.relative {
         position: relative !important;
       }
-      .mobile-customize-button {
-        position: relative !important;
-        top: -6px !important;
-        display: inline-flex !important;
+      #mobileServicesDropdown {
+        bottom: calc(100% + 12px) !important;
+        right: 4px !important;
+      }
+      #mobileServicesDropdown a {
+        display: flex !important;
+        flex-direction: row !important;
         align-items: center !important;
-        justify-content: center !important;
-        text-decoration: none !important;
-        color: #1f2937 !important;
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        font-size: 13px !important;
+        line-height: 1.4 !important;
+        color: #374151 !important;
+        gap: 12px !important;
+        padding: 10px 16px !important;
       }
-      .mobile-customize-button:focus {
-        outline: none !important;
-      }
-      .mobile-customize-icon svg {
-        width: 62px !important;
-        height: 62px !important;
-        display: block !important;
-        filter: drop-shadow(0 4px 10px rgba(26, 172, 222, 0.35)) !important;
-      }
-      .mobile-customize-dropdown {
-        bottom: 70px !important;
+      #mobileServicesDropdown a:hover {
+        background-color: #f9fafb !important;
+        color: #0284c7 !important;
       }
     }
   `;
@@ -611,6 +607,7 @@ function initMenuDropdowns() {
 
   document.addEventListener('click', (e) => {
     const trigger = e.target.closest('#menuDropdownTrigger, #menuDropdownTrigger2, [data-toggle="menuDropdown"], [id^="menuDropdownTrigger"]');
+    // Top-right bento menu trigger
     if (trigger) {
       e.preventDefault();
       e.stopPropagation();
@@ -621,7 +618,7 @@ function initMenuDropdowns() {
 
       if (dropdown) {
         const isHidden = dropdown.classList.contains('hidden');
-        document.querySelectorAll('#menuDropdown, #menuDropdown2').forEach(d => d.classList.add('hidden'));
+        document.querySelectorAll('#menuDropdown, #menuDropdown2, #mobileServicesDropdown').forEach(d => d.classList.add('hidden'));
         if (isHidden) {
           dropdown.classList.remove('hidden');
         }
@@ -629,8 +626,31 @@ function initMenuDropdowns() {
       return;
     }
 
+    // Bottom-nav Mobile Services Trigger
+    const servicesTrigger = e.target.closest('#mobileServicesTrigger, [data-toggle="mobileServices"]');
+    if (servicesTrigger) {
+      e.preventDefault();
+      e.stopPropagation();
+      const servicesDropdown = document.getElementById('mobileServicesDropdown') ||
+                               servicesTrigger.parentElement?.querySelector('#mobileServicesDropdown');
+      if (servicesDropdown) {
+        const isHidden = servicesDropdown.classList.contains('hidden');
+        document.querySelectorAll('#menuDropdown, #menuDropdown2, #mobileServicesDropdown').forEach(d => d.classList.add('hidden'));
+        if (isHidden) {
+          servicesDropdown.classList.remove('hidden');
+        }
+      }
+      return;
+    }
+
+    // Click outside handler
     if (!e.target.closest('#menuDropdown, #menuDropdown2')) {
       document.querySelectorAll('#menuDropdown, #menuDropdown2').forEach(d => {
+        d.classList.add('hidden');
+      });
+    }
+    if (!e.target.closest('#mobileServicesDropdown, #mobileServicesTrigger')) {
+      document.querySelectorAll('#mobileServicesDropdown').forEach(d => {
         d.classList.add('hidden');
       });
     }
