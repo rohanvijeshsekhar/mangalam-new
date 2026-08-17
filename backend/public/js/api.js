@@ -430,6 +430,200 @@ async function loadHomePartners() {
           ${imgUrl 
             ? `<img src="${imgUrl}" alt="${name}" class="max-h-12 max-w-[130px] w-auto object-contain transition-transform duration-300 hover:scale-105" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'font-bold text-slate-800 text-xs md:text-sm text-center font-dm-sans leading-snug\\'>${name}</span>';">`
             : `<span class="font-bold text-slate-800 text-xs md:text-sm text-center font-dm-sans leading-snug">${name}</span>`
+function setMeta(nameOrProp, attr, content) {
+  if (!content) return;
+  let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, nameOrProp);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+}
+
+function setLink(rel, href) {
+  if (!href) return;
+  let el = document.querySelector(`link[rel="${rel}"]`);
+  if (!el) {
+    el = document.createElement('link');
+    el.setAttribute('rel', rel);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('href', href);
+}
+
+// ─── Mobile Bottom Nav Styling Enhancement ──────────────────────────────────
+function injectMobileNavStyles() {
+  if (document.getElementById('mt-mobile-nav-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'mt-mobile-nav-styles';
+  style.textContent = `
+    @media (max-width: 768px) {
+      .responsive-float-header {
+        display: block !important;
+        background: #ffffff !important;
+        box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1) !important;
+        z-index: 1000 !important;
+        height: auto !important;
+        padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+      }
+      .responsive-float-header ul {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-end !important;
+        list-style: none !important;
+        margin: 0 !important;
+        padding: 8px 8px !important;
+        gap: 4px !important;
+      }
+      .responsive-float-header li {
+        flex: 1 !important;
+        text-align: center !important;
+      }
+      .responsive-float-header a {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-decoration: none !important;
+        color: #666666 !important;
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+        text-align: center !important;
+      }
+      .responsive-float-header a.active {
+        color: #1f2937 !important;
+      }
+      .responsive-float-header a > svg,
+      .responsive-float-header i {
+        font-size: 20px !important;
+        width: 20px !important;
+        height: 20px !important;
+        margin-bottom: 4px !important;
+      }
+      .mobile-customize-item {
+        position: relative !important;
+      }
+      .mobile-customize-button {
+        position: relative !important;
+        top: -6px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-decoration: none !important;
+        color: #1f2937 !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+      }
+      .mobile-customize-button:focus {
+        outline: none !important;
+      }
+      .mobile-customize-icon svg {
+        width: 62px !important;
+        height: 62px !important;
+        display: block !important;
+        filter: drop-shadow(0 4px 10px rgba(26, 172, 222, 0.35)) !important;
+      }
+      .mobile-customize-dropdown {
+        bottom: 70px !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// ─── Home Page Testimonials Running Marquee ──────────────────────────────────
+async function loadHomeTestimonials() {
+  const track = document.getElementById('testimonials-marquee-track');
+  if (!track) return;
+
+  try {
+    let list = await apiGet('/api/testimonials');
+    if (!Array.isArray(list) || !list.length) {
+      list = [
+        { name: 'Arun & Sneha Krishnan', location: 'Dubai Luxury Tour (5N/6D)', feedback: 'Mangalam Tours made our honeymoon to Dubai unforgettable! From the private yacht cruise to the desert safari, everything was planned to perfection.', rating: 5 },
+        { name: 'Dr. Ramesh Nair & Family', location: 'Switzerland & Paris Tour', feedback: 'Exceptional service from the Trivandrum team. All alpine excursions, train passes, and hotel bookings were flawless. Highly recommended!', rating: 5 },
+        { name: 'Ananya Menon', location: 'Bali Tropical Paradise', feedback: 'Booking through Mangalam was the best travel decision! The private pool villa in Ubud and sunrise volcano tour were breathtaking. 10/10 hospitality.', rating: 5 },
+        { name: 'Vishnu & Divya Pillai', location: 'Singapore & Malaysia Tour', feedback: 'We were amazed by the attention to detail. Every day itinerary was smoothly coordinated with private chauffeurs and priority entry passes.', rating: 5 },
+        { name: 'Capt. Joseph Thomas', location: 'Vietnam & Cambodia Discovery', feedback: 'Flawless visa assistance, fantastic local guides, and top-tier 5-star accommodations throughout Hanoi and Siem Reap.', rating: 5 },
+        { name: 'Meera Balakrishnan', location: 'Thailand Island Hopping', feedback: 'Super responsive team! They customized our Phuket and Krabi itinerary within hours and gave us the best price guarantee.', rating: 5 }
+      ];
+    }
+
+    const renderCard = (t) => {
+      const rating = Number(t.rating) || 5;
+      const stars = '★'.repeat(rating) + '☆'.repeat(Math.max(0, 5 - rating));
+      const initials = (t.name || 'Traveler').split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'TT';
+      const colors = ['bg-rose-500', 'bg-blue-600', 'bg-emerald-600', 'bg-amber-500', 'bg-purple-600', 'bg-indigo-600'];
+      const bgCol = colors[Math.abs((t.name || '').charCodeAt(0) || 0) % colors.length];
+
+      return `
+        <div class="testimonial-card flex flex-col justify-between flex-shrink-0">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-amber-400 text-sm tracking-widest">${stars}</div>
+              <div class="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-xs shadow-sm">
+                <i class="fas fa-quote-right"></i>
+              </div>
+            </div>
+            <p class="text-gray-700 font-dm-sans text-sm leading-relaxed mb-3 italic testimonial-text">
+              "${t.feedback || 'Outstanding experience with Mangalam Travel & Tours!'}"
+            </p>
+          </div>
+          <div class="flex items-center gap-3 pt-3 border-t border-gray-100">
+            <div class="w-10 h-10 rounded-full ${bgCol} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
+              ${initials}
+            </div>
+            <div class="overflow-hidden">
+              <h4 class="font-bold text-gray-900 font-dm-sans text-sm truncate">${t.name || 'Happy Traveler'}</h4>
+              <p class="text-gray-500 font-dm-sans text-xs truncate flex items-center gap-1">
+                <i class="fas fa-map-marker-alt text-red-500 text-[10px]"></i> ${t.location || 'Verified Traveler'}
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+    };
+
+    // Duplicate list 3 times so the marquee loop is completely seamless and infinite
+    const itemsHTML = list.map(renderCard).join('');
+    track.innerHTML = itemsHTML + itemsHTML + itemsHTML;
+  } catch (err) {
+    console.warn('[Testimonials] Load error:', err);
+  }
+}
+
+// ─── Home Page Partners Carousel (5-6 visible + Left/Right arrows) ────────────
+async function loadHomePartners() {
+  const container = document.getElementById('partners-carousel');
+  if (!container) return;
+
+  try {
+    let list = await apiGet('/api/partners');
+    if (!Array.isArray(list) || !list.length) {
+      list = [
+        { name: 'Emirates Airlines' },
+        { name: 'Singapore Airlines' },
+        { name: 'Qatar Airways' },
+        { name: 'Marriott Bonvoy' },
+        { name: 'Air India' },
+        { name: 'Etihad Airways' },
+        { name: 'Hilton Hotels' },
+        { name: 'Taj Hotels & Resorts' }
+      ];
+    }
+
+    container.innerHTML = list.map(p => {
+      const name = p.name || p.partner_name || 'Partner';
+      const rawImg = (p.image || p.logo || '').trim();
+      const isDummyLogo = !rawImg || rawImg.includes('logo-color.png') || rawImg.includes('partner-placeholder.png');
+      const imgUrl = !isDummyLogo ? resolveImg(rawImg) : null;
+
+      return `
+        <div class="partner-card flex-shrink-0" title="${name}">
+          ${imgUrl 
+            ? `<img src="${imgUrl}" alt="${name}" class="max-h-12 max-w-[130px] w-auto object-contain transition-transform duration-300 hover:scale-105" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'font-bold text-slate-800 text-xs md:text-sm text-center font-dm-sans leading-snug\\'>${name}</span>';">`
+            : `<span class="font-bold text-slate-800 text-xs md:text-sm text-center font-dm-sans leading-snug">${name}</span>`
           }
         </div>
       `;
@@ -522,20 +716,63 @@ async function loadHomePosters() {
 // ─── Init common page elements ────────────────────────────────────────────────
 async function loadHomeGallery() {
   const grid = document.getElementById('home-gallery-grid');
-  if (!grid) return;
+  const splideList = document.getElementById('home-gallery-splide-list');
+  const splideElem = document.getElementById('home-gallery-splide');
+  if (!grid && !splideList) return;
+
   try {
     const photos = await apiGet('/api/gallery');
     if (!Array.isArray(photos) || photos.length === 0) return;
-    const items = photos.slice(0, 8);
-    grid.innerHTML = items.map(p => `
-      <a href="/gallery.html" class="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 block h-48 sm:h-60 border border-slate-100 bg-slate-100">
+
+    const items = photos.slice(0, 12);
+
+    const splideHtml = items.map(p => `
+      <li class="splide__slide">
+        <a href="/gallery.html" class="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 block aspect-[4/5] border border-slate-100 bg-slate-100" style="aspect-ratio: 4 / 5;">
+          <img src="${p.image || './assets/images/destination-placeholder.jpg'}" alt="${p.title || 'Traveler Photo'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null; this.src='./assets/images/destination-placeholder.jpg';">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
+            <span class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center text-xs mb-1.5 self-end">
+              <i class="fas fa-search-plus"></i>
+            </span>
+            <h4 class="text-white font-bold text-sm font-[Quicksand] truncate drop-shadow-sm">${p.title || 'Tour Moment'}</h4>
+            ${p.caption ? `<p class="text-slate-200 text-xs line-clamp-1 mt-0.5 drop-shadow-sm">${p.caption}</p>` : ''}
+          </div>
+        </a>
+      </li>
+    `).join('');
+
+    const gridHtml = items.map(p => `
+      <a href="/gallery.html" class="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 block aspect-[4/5] border border-slate-100 bg-slate-100" style="aspect-ratio: 4 / 5;">
         <img src="${p.image || './assets/images/destination-placeholder.jpg'}" alt="${p.title || 'Traveler Photo'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null; this.src='./assets/images/destination-placeholder.jpg';">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-3.5 flex flex-col justify-end">
-          <h4 class="text-white font-bold text-xs sm:text-sm font-[Quicksand] truncate">${p.title || 'Tour Moment'}</h4>
-          ${p.caption ? `<p class="text-slate-300 text-[11px] line-clamp-1 mt-0.5">${p.caption}</p>` : ''}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
+          <h4 class="text-white font-bold text-sm font-[Quicksand] truncate drop-shadow-sm">${p.title || 'Tour Moment'}</h4>
+          ${p.caption ? `<p class="text-slate-300 text-xs line-clamp-1 mt-0.5 drop-shadow-sm">${p.caption}</p>` : ''}
         </div>
       </a>
     `).join('');
+
+    if (splideList) splideList.innerHTML = splideHtml;
+    if (grid) grid.innerHTML = gridHtml;
+
+    if (window.Splide && splideElem && !splideElem.classList.contains('is-active')) {
+      new Splide('#home-gallery-splide', {
+        type: items.length > 1 ? 'loop' : 'slide',
+        autoplay: true,
+        interval: 2800,
+        speed: 800,
+        arrows: items.length > 1,
+        pagination: false,
+        pauseOnHover: true,
+        pauseOnFocus: true,
+        perPage: 4,
+        gap: '1.25rem',
+        breakpoints: {
+          1024: { perPage: 3 },
+          768: { perPage: 2 },
+          480: { perPage: 1.2, gap: '0.75rem' }
+        }
+      }).mount();
+    }
   } catch (e) {
     console.warn('[Gallery] Failed to load homepage gallery:', e);
   }

@@ -1774,9 +1774,16 @@
                                         </a>
                                     </div>
 
-                                    <!-- Preview Photos Grid -->
-                                    <div id="home-gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-                                        <!-- Dynamically loaded by JS -->
+                                    <!-- Preview Photos Splide Slider (Auto Scroll) -->
+                                    <div id="home-gallery-splide" class="splide relative" aria-label="Traveler Photo Gallery">
+                                        <div class="splide__track py-2">
+                                            <ul id="home-gallery-splide-list" class="splide__list">
+                                                <!-- Dynamically loaded by JS -->
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div id="home-gallery-grid" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+                                        <!-- Fallback grid -->
                                     </div>
                                 </div>
                             </section>
