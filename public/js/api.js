@@ -267,11 +267,16 @@ function injectMobileNavStyles() {
     @media (max-width: 768px) {
       .responsive-float-header {
         display: block !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
         background: #ffffff !important;
-        box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 -3px 16px rgba(0, 0, 0, 0.08) !important;
         z-index: 1000 !important;
         height: auto !important;
-        padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+        padding-top: 14px !important;
+        padding-bottom: max(14px, env(safe-area-inset-bottom, 14px)) !important;
       }
       .responsive-float-header ul {
         display: flex !important;
@@ -279,7 +284,7 @@ function injectMobileNavStyles() {
         align-items: center !important;
         list-style: none !important;
         margin: 0 !important;
-        padding: 10px 4px !important;
+        padding: 0 4px !important;
         gap: 0 !important;
         width: 100% !important;
       }
@@ -293,26 +298,28 @@ function injectMobileNavStyles() {
         flex-direction: column !important;
         align-items: center !important;
         text-decoration: none !important;
-        color: #666666 !important;
-        font-size: 10px !important;
+        color: #64748b !important;
+        font-size: 11px !important;
+        font-weight: 500 !important;
         line-height: 1.2 !important;
         text-align: center !important;
       }
       .responsive-float-header a.active {
-        color: #1f2937 !important;
+        color: #0f172a !important;
+        font-weight: 600 !important;
       }
       .responsive-float-header a > svg,
       .responsive-float-header i {
-        font-size: 20px !important;
-        width: 20px !important;
-        height: 20px !important;
-        margin-bottom: 4px !important;
+        font-size: 22px !important;
+        width: 22px !important;
+        height: 22px !important;
+        margin-bottom: 5px !important;
       }
       .responsive-float-header li.relative {
         position: relative !important;
       }
       #mobileServicesDropdown {
-        bottom: calc(100% + 12px) !important;
+        bottom: calc(100% + 14px) !important;
         right: 4px !important;
       }
       #mobileServicesDropdown a {
