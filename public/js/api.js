@@ -643,6 +643,23 @@ function initMenuDropdowns() {
       return;
     }
 
+    // Inside Hamburger Menu: Services Accordion Toggle
+    const servicesAccordionToggle = e.target.closest('.menu-services-toggle');
+    if (servicesAccordionToggle) {
+      e.preventDefault();
+      e.stopPropagation();
+      const accordion = servicesAccordionToggle.closest('.menu-services-accordion') || servicesAccordionToggle.parentElement;
+      const list = accordion.querySelector('.menu-services-list');
+      const arrow = accordion.querySelector('.menu-services-arrow');
+      if (list) {
+        list.classList.toggle('hidden');
+        if (arrow) {
+          arrow.classList.toggle('rotate-180');
+        }
+      }
+      return;
+    }
+
     // Click outside handler
     if (!e.target.closest('#menuDropdown, #menuDropdown2')) {
       document.querySelectorAll('#menuDropdown, #menuDropdown2').forEach(d => {
