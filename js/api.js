@@ -538,10 +538,9 @@ async function loadHomeGallery() {
     const cardHtml = items.map(p => `
       <a href="/gallery.html"
          class="gallery-scroll-card group relative rounded-2xl overflow-hidden shadow-md block bg-slate-100 flex-shrink-0"
-         style="width:200px; aspect-ratio:4/5;">
+         style="width:170px; height:215px; aspect-ratio:4/5;">
         <img src="${p.image || './assets/images/destination-placeholder.jpg'}"
              alt="${p.title || 'Traveler Photo'}"
-             loading="lazy"
              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
              onerror="this.onerror=null;this.src='./assets/images/destination-placeholder.jpg';">
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 flex flex-col justify-end">
@@ -551,7 +550,7 @@ async function loadHomeGallery() {
       </a>
     `).join('');
 
-    if (container) {
+    if (container && items.length > 0) {
       container.innerHTML = cardHtml;
     }
 

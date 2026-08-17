@@ -1747,15 +1747,14 @@
                                         </div>
                                     </div>
 
-                                    <!-- Partners Carousel Container (5-6 items per view on desktop) -->
-                                    <div id="partners-carousel" class="overflow-x-auto no-scrollbar scroll-smooth flex gap-5 pb-2" style="scrollbar-width: none; -ms-overflow-style: none;">
+                                            <div id="partners-carousel" class="overflow-x-auto no-scrollbar scroll-smooth flex gap-5 pb-2" style="scrollbar-width: none; -ms-overflow-style: none;">
                                         <!-- Populated dynamically by JS -->
                                     </div>
                                 </div>
                             </section>
 
                             <!-- Traveler Photo Gallery Preview Section -->
-                            <section class="py-16 bg-gradient-to-b from-white via-slate-50 to-white relative overflow-hidden" data-aos="fade-up">
+                            <section class="py-16 bg-gradient-to-b from-white via-slate-50 to-white relative overflow-hidden">
                                 <div class="container mx-auto px-4">
                                     <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
                                         <div>
@@ -1779,18 +1778,56 @@
                                         <div class="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white/80 to-transparent z-10 hidden md:block"></div>
                                         <div class="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/80 to-transparent z-10 hidden md:block"></div>
                                         <div id="home-gallery-scroll"
-                                             class="flex gap-4 overflow-x-auto py-3 px-1"
-                                             style="scrollbar-width:none;-ms-overflow-style:none;">
-                                            <!-- cards injected by JS -->
+                                             class="flex gap-4 overflow-x-auto py-3 px-1 no-scrollbar"
+                                             style="scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;">
+                                            <a href="/gallery.html" class="gallery-scroll-card group relative rounded-2xl overflow-hidden shadow-md block bg-slate-100 flex-shrink-0" style="width:170px; height:215px; aspect-ratio:4/5;">
+                                                <img src="./assets/images/banner1.webp" alt="Thailand Tour" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null;this.src='./assets/images/destination-placeholder.jpg';">
+                                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 flex flex-col justify-end">
+                                                    <h4 class="text-white font-bold text-xs font-[Quicksand] truncate drop-shadow-sm">Thailand</h4>
+                                                    <p class="text-slate-200 text-[10px] line-clamp-1 mt-0.5">Phuket & Krabi Tour</p>
+                                                </div>
+                                            </a>
+                                            <a href="/gallery.html" class="gallery-scroll-card group relative rounded-2xl overflow-hidden shadow-md block bg-slate-100 flex-shrink-0" style="width:170px; height:215px; aspect-ratio:4/5;">
+                                                <img src="./assets/images/banner2.webp" alt="Kashmir Tour" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null;this.src='./assets/images/destination-placeholder.jpg';">
+                                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 flex flex-col justify-end">
+                                                    <h4 class="text-white font-bold text-xs font-[Quicksand] truncate drop-shadow-sm">Kashmir</h4>
+                                                    <p class="text-slate-200 text-[10px] line-clamp-1 mt-0.5">Gulmarg & Srinagar</p>
+                                                </div>
+                                            </a>
+                                            <a href="/gallery.html" class="gallery-scroll-card group relative rounded-2xl overflow-hidden shadow-md block bg-slate-100 flex-shrink-0" style="width:170px; height:215px; aspect-ratio:4/5;">
+                                                <img src="./assets/images/res-activity-banner.webp" alt="Dubai Desert Safari" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null;this.src='./assets/images/destination-placeholder.jpg';">
+                                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 flex flex-col justify-end">
+                                                    <h4 class="text-white font-bold text-xs font-[Quicksand] truncate drop-shadow-sm">Dubai</h4>
+                                                    <p class="text-slate-200 text-[10px] line-clamp-1 mt-0.5">Desert Safari</p>
+                                                </div>
+                                            </a>
+                                            <a href="/gallery.html" class="gallery-scroll-card group relative rounded-2xl overflow-hidden shadow-md block bg-slate-100 flex-shrink-0" style="width:170px; height:215px; aspect-ratio:4/5;">
+                                                <img src="./assets/images/banner3.webp" alt="Bali Tour" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null;this.src='./assets/images/destination-placeholder.jpg';">
+                                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 flex flex-col justify-end">
+                                                    <h4 class="text-white font-bold text-xs font-[Quicksand] truncate drop-shadow-sm">Bali</h4>
+                                                    <p class="text-slate-200 text-[10px] line-clamp-1 mt-0.5">Cultural Discovery</p>
+                                                </div>
+                                            </a>
+                                            <a href="/gallery.html" class="gallery-scroll-card group relative rounded-2xl overflow-hidden shadow-md block bg-slate-100 flex-shrink-0" style="width:170px; height:215px; aspect-ratio:4/5;">
+                                                <img src="./assets/images/activity-banner.webp" alt="Singapore Tour" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null;this.src='./assets/images/destination-placeholder.jpg';">
+                                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 flex flex-col justify-end">
+                                                    <h4 class="text-white font-bold text-xs font-[Quicksand] truncate drop-shadow-sm">Singapore</h4>
+                                                    <p class="text-slate-200 text-[10px] line-clamp-1 mt-0.5">City Sightseeing</p>
+                                                </div>
+                                            </a>
+                                            <a href="/gallery.html" class="gallery-scroll-card group relative rounded-2xl overflow-hidden shadow-md block bg-slate-100 flex-shrink-0" style="width:170px; height:215px; aspect-ratio:4/5;">
+                                                <img src="./assets/images/package-1.webp" alt="Kerala Backwaters" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.onerror=null;this.src='./assets/images/destination-placeholder.jpg';">
+                                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 flex flex-col justify-end">
+                                                    <h4 class="text-white font-bold text-xs font-[Quicksand] truncate drop-shadow-sm">Kerala</h4>
+                                                    <p class="text-slate-200 text-[10px] line-clamp-1 mt-0.5">Backwaters Cruise</p>
+                                                </div>
+                                            </a>
                                         </div>
                                     </div>
                                     <style>
                                         #home-gallery-scroll::-webkit-scrollbar { display:none; }
                                         .gallery-scroll-card { transition: transform .3s, box-shadow .3s; }
                                         .gallery-scroll-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.2); }
-                                        @media (max-width: 480px) {
-                                            .gallery-scroll-card { width: 160px !important; }
-                                        }
                                     </style>
                                 </div>
                             </section>
@@ -2685,11 +2722,10 @@
 <script src="./js/enquiryOtp.js"></script>
 <script src="./js/customize.js"></script>
 <!-- Core App Script -->
-<script src="./js/App.js"></script>
-<script src="./js/api.js?v=20260815"></script>
-<script src="./js/render.js"></script>
-
-<script src="./js/index.js?v=1785911578290"></script>
+<script src="./js/App.js?v=20260817_1055"></script>
+<script src="./js/api.js?v=20260817_1055"></script>
+<script src="./js/render.js?v=20260817_1055"></script>
+<script src="./js/index.js?v=20260817_1055"></script>
                             <script>
                                 document.addEventListener('DOMContentLoaded', function () {
                                     if (typeof updateCartCount === 'function') {
