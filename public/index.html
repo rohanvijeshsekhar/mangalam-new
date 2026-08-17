@@ -1207,8 +1207,13 @@
         <main>
             
                     <!-- Hero Section -->
-                    <section class="relative z-20 h-screen overflow-visible bg-cover bg-center bg-no-repeat"
-                        style="background-image: url('./assets/images/banner-img.webp');" data-aos="fade-up">
+                    <section class="relative z-20 h-screen overflow-visible" data-aos="fade-up">
+                        <!-- Responsive Hero Background Picture (Landscape Desktop / Portrait Mobile, 100% Quality) -->
+                        <picture class="absolute inset-0 w-full h-full -z-10 pointer-events-none overflow-hidden">
+                            <source media="(max-width: 767px)" srcset="./assets/images/home-hero-mobile.jpg">
+                            <img src="./assets/images/home-hero-desktop.jpg" alt="Mangalam Travel & Tours" class="w-full h-full object-cover object-center">
+                        </picture>
+                        <div class="absolute inset-0 bg-black/20 -z-10 pointer-events-none"></div>
                         <div
                             class="relative z-10 flex flex-col items-center justify-center h-full overflow-visible text-center px-4 md:px-6">
                             <!-- Trusted Travel Partner Badge -->
