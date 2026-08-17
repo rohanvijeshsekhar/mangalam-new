@@ -584,7 +584,33 @@ async function loadHomeGallery() {
   }
 }
 
+function initMenuDropdowns() {
+  document.querySelectorAll('[id^="menuDropdownTrigger"]').forEach(trigger => {
+    if (trigger._boundMenu) return;
+    trigger._boundMenu = true;
+    const targetId = trigger.id.replace('Trigger', '');
+    const menu = document.getElementById(targetId) || document.getElementById('menuDropdown');
+    if (trigger && menu) {
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.toggle('hidden');
+      });
+      menu.addEventListener('click', (e) => e.stopPropagation());
+    }
+  });
+
+  if (!window._menuClickOutsideBound) {
+    window._menuClickOutsideBound = true;
+    document.addEventListener('click', () => {
+      document.querySelectorAll('[id^="menuDropdown"]').forEach(menu => {
+        menu.classList.add('hidden');
+      });
+    });
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  initMenuDropdowns();
   loadDynamicSeo();
   loadNotice();
   loadFooterLinks();
@@ -598,6 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Also run immediately if DOM is ready
 if (document.readyState !== 'loading') {
   injectMobileNavStyles();
+  initMenuDropdowns();
   loadHomePosters();
   loadHomeTestimonials();
   loadHomePartners();
