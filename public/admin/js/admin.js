@@ -186,8 +186,10 @@ function imgCell(src) {
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
-function openModal(title, bodyHtml) {
+function openModal(title, bodyHtml, headerActionsHtml = '') {
   document.getElementById('modal-title').textContent = title;
+  const headerActions = document.getElementById('modal-header-actions');
+  if (headerActions) headerActions.innerHTML = headerActionsHtml || '';
   document.getElementById('modal-body').innerHTML = bodyHtml;
   document.getElementById('modal-overlay').classList.add('open');
 }
@@ -244,6 +246,7 @@ function openDestinationForm(d = null) {
     initialPlaces = d.places_to_visit.map(p => typeof p === 'string' ? { name: p, image: '' } : p);
   }
   const destId = d ? (d.destination_id || d.id) : null;
+  const headerAction = destId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteDestination(${destId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
 
   const modalHtml = `
     <div class="form-group"><label>Destination / Country Name *</label><input id="d-name" value="${d?.destination_name||''}" placeholder="e.g. Dubai"></div>
@@ -267,7 +270,7 @@ function openDestinationForm(d = null) {
       </div>
     </div>
 
-    <div class="modal-actions" style="margin-top:20px">
+    <div class="modal-actions">
       <div>
         ${destId ? `<button type="button" class="btn-danger" onclick="deleteDestination(${destId})"><i class="fas fa-trash-alt"></i> Delete Destination</button>` : ''}
       </div>
@@ -277,7 +280,7 @@ function openDestinationForm(d = null) {
       </div>
     </div>`;
 
-  openModal(d ? 'Edit Destination' : 'Add Destination', modalHtml);
+  openModal(d ? 'Edit Destination' : 'Add Destination', modalHtml, headerAction);
 
   window._placesData = initialPlaces.length > 0 ? [...initialPlaces] : [{ name: '', image: '' }];
   renderPlacesRows();
@@ -435,6 +438,8 @@ function reindexItineraryDays() {
 }
 
 function openPackageForm(p = null) {
+  const pkgId = p ? (p.package_id || p.id) : null;
+  const headerAction = pkgId ? `<button type="button" class="btn-sm btn-delete" onclick="deletePackage(${pkgId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   const bannerImgs = Array.isArray(p?.banner_images) ? p.banner_images : 
     (typeof p?.banner_images === 'string' ? (JSON.parse(p.banner_images || '[]') || []) : []);
   const b1 = bannerImgs[0] || p?.banner_image || p?.inner_image || p?.card_image || '';
@@ -504,15 +509,15 @@ function openPackageForm(p = null) {
       <div class="form-group"><label>Exclusions (comma or line separated)</label><textarea id="p-exclusions" rows="3" placeholder="Personal expenses, Travel Insurance...">${p?.exclusions||''}</textarea></div>
     </div>
     <div class="form-group"><label>Terms & Conditions (Booking Policy & Rules)</label><textarea id="p-terms" rows="3" placeholder="Enter terms & conditions, cancellation policy, booking rules...">${p?.terms||''}</textarea></div>
-    <div class="modal-actions" style="margin-top:20px">
+    <div class="modal-actions">
       <div>
-        ${(p?.package_id || p?.id) ? `<button type="button" class="btn-danger" onclick="deletePackage(${p.package_id || p.id})"><i class="fas fa-trash-alt"></i> Delete Package</button>` : ''}
+        ${pkgId ? `<button type="button" class="btn-danger" onclick="deletePackage(${pkgId})"><i class="fas fa-trash-alt"></i> Delete Package</button>` : ''}
       </div>
       <div class="modal-actions-right">
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button type="button" class="btn-primary" onclick="savePackage(${p?.package_id || p?.id || 'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
+        <button type="button" class="btn-primary" onclick="savePackage(${pkgId || 'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
       </div>
-    </div>`);
+    </div>`, headerAction);
 
   // Populate existing days or initial day
   const rawItinerary = p?.itinerary;
@@ -747,7 +752,8 @@ async function openCollectionForm(c = null) {
       </div>
     </div>`;
 
-  openModal(c ? 'Edit Collection' : 'Add Collection', modalHtml);
+  const headerAction = colId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteCollection(${colId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
+  openModal(c ? 'Edit Collection' : 'Add Collection', modalHtml, headerAction);
   updateCollectionCounter();
 }
 
@@ -877,6 +883,7 @@ async function loadTickets() {
 
 function openTicketForm(t = null) {
   const ticketId = t ? (t.ticket_id || t.id) : null;
+  const headerAction = ticketId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteTicket(${ticketId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(t ? 'Edit Ticket' : 'Add Ticket', `
     <div class="form-group"><label>Title *</label><input id="t-title" value="${t?.title||''}" placeholder="e.g. Burj Khalifa 124th Floor"></div>
     <div class="form-group"><label>Short Title</label><input id="t-short" value="${t?.short_title||''}" placeholder="Short display name"></div>
@@ -954,6 +961,7 @@ async function loadBlogs() {
 function openBlogForm(b = null) {
   const today = new Date().toISOString().split('T')[0];
   const blogId = b ? (b.blog_id || b.id) : null;
+  const headerAction = blogId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteBlog(${blogId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(b ? 'Edit Blog' : 'Add Blog', `
     <div class="form-group"><label>Title *</label><input id="b-title" value="${b?.title||''}" placeholder="Blog post title"></div>
     <div class="form-row">
@@ -963,7 +971,7 @@ function openBlogForm(b = null) {
     <div class="form-group"><label>Cover / Banner Image</label>${createImageUpload('b-card', b?.card_image||b?.banner_image||'')}</div>
     <div class="form-group"><label>Short Overview / Excerpt (Optional)</label><textarea id="b-desc" rows="2" placeholder="Brief 1-2 sentence excerpt for cards...">${b?.description||''}</textarea></div>
     <div class="form-group"><label>Full Article Content *</label><textarea id="b-content" rows="8" placeholder="Write or paste your article content here...">${b?.content||''}</textarea></div>
-    <div class="modal-actions" style="margin-top:20px">
+    <div class="modal-actions">
       <div>
         ${blogId ? `<button type="button" class="btn-danger" onclick="deleteBlog(${blogId})"><i class="fas fa-trash-alt"></i> Delete Blog</button>` : ''}
       </div>
@@ -971,7 +979,7 @@ function openBlogForm(b = null) {
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn-primary" onclick="saveBlog(${blogId || 'null'})"><i class="fas fa-save"></i> ${b ? 'Update' : 'Save'}</button>
       </div>
-    </div>`);
+    </div>`, headerAction);
 }
 
 window.editBlog = function(id) { const b = blogs.find(x => String(x.blog_id || x.id) === String(id)); if (b) openBlogForm(b); };
@@ -1032,6 +1040,7 @@ async function loadTestimonials() {
 
 function openTestimonialForm(t = null) {
   const testimonialId = t ? (t.testimonial_id || t.id) : null;
+  const headerAction = testimonialId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteTestimonial(${testimonialId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(t ? 'Edit Testimonial' : 'Add Testimonial', `
     <div class="form-row-two">
       <div class="form-group"><label>Name *</label><input id="r-name" value="${t?.name||''}" placeholder="John Doe"></div>
@@ -1039,7 +1048,7 @@ function openTestimonialForm(t = null) {
     </div>
     <div class="form-group"><label>Rating</label>${starRatingHtml('r', t?.rating||5)}</div>
     <div class="form-group"><label>Feedback</label><textarea id="r-feedback" rows="4" placeholder="Customer review...">${t?.feedback||''}</textarea></div>
-    <div class="modal-actions" style="margin-top:20px">
+    <div class="modal-actions">
       <div>
         ${testimonialId ? `<button type="button" class="btn-danger" onclick="deleteTestimonial(${testimonialId})"><i class="fas fa-trash-alt"></i> Delete Testimonial</button>` : ''}
       </div>
@@ -1047,7 +1056,7 @@ function openTestimonialForm(t = null) {
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn-primary" onclick="saveTestimonial(${testimonialId || 'null'})"><i class="fas fa-save"></i> ${t ? 'Update' : 'Save'}</button>
       </div>
-    </div>`);
+    </div>`, headerAction);
 }
 
 window.editTestimonial = function(id) { const t = testimonials.find(x => String(x.testimonial_id || x.id) === String(id)); if (t) openTestimonialForm(t); };
@@ -1102,10 +1111,11 @@ async function loadPartners() {
 
 function openPartnerForm(p = null) {
   const partnerId = p ? (p.partner_id || p.id) : null;
+  const headerAction = partnerId ? `<button type="button" class="btn-sm btn-delete" onclick="deletePartner(${partnerId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(p ? 'Edit Partner' : 'Add Partner', `
     <div class="form-group"><label>Partner Name *</label><input id="pr-name" value="${p?.name||''}" placeholder="e.g. Emirates Airlines"></div>
     <div class="form-group"><label>Logo Image</label>${createImageUpload('pr-img', p?.image||'')}</div>
-    <div class="modal-actions" style="margin-top:20px">
+    <div class="modal-actions">
       <div>
         ${partnerId ? `<button type="button" class="btn-danger" onclick="deletePartner(${partnerId})"><i class="fas fa-trash-alt"></i> Delete Partner</button>` : ''}
       </div>
@@ -1113,7 +1123,7 @@ function openPartnerForm(p = null) {
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn-primary" onclick="savePartner(${partnerId || 'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
       </div>
-    </div>`);
+    </div>`, headerAction);
 }
 
 window.editPartner = function(id) { const p = partners.find(x => String(x.partner_id || x.id) === String(id)); if (p) openPartnerForm(p); };
@@ -1190,6 +1200,7 @@ async function loadAttractions() {
 
 function openAttractionForm(a = null) {
   const attrId = a ? (a.attraction_id || a.id) : null;
+  const headerAction = attrId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteAttraction(${attrId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(a ? 'Edit Attraction' : 'Add Attraction', `
     <div class="form-group"><label>Attraction Name *</label><input id="a-name" value="${a?.name||a?.title||''}" placeholder="e.g. Burj Khalifa Observation Deck & Sky Views"></div>
     <div class="form-row-two">
@@ -1217,7 +1228,7 @@ function openAttractionForm(a = null) {
     <div class="form-group"><label>Card Image (Thumbnail)</label>${createImageUpload('a-card', a?.card_image||'')}</div>
     <div class="form-group"><label>Banner Image (Detail Page Header Cover)</label>${createImageUpload('a-banner', a?.banner_image||a?.card_image||'')}</div>
     <div class="form-group"><label>Description / Overview</label><textarea id="a-desc" rows="4" placeholder="Detailed description of attraction & experiences...">${a?.description||a?.overview||''}</textarea></div>
-    <div class="modal-actions" style="margin-top:20px">
+    <div class="modal-actions">
       <div>
         ${attrId ? `<button type="button" class="btn-danger" onclick="deleteAttraction(${attrId})"><i class="fas fa-trash-alt"></i> Delete Attraction</button>` : ''}
       </div>
@@ -1225,7 +1236,7 @@ function openAttractionForm(a = null) {
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn-primary" onclick="saveAttraction(${attrId || 'null'})"><i class="fas fa-save"></i> ${a ? 'Update' : 'Save'}</button>
       </div>
-    </div>`);
+    </div>`, headerAction);
 }
 
 window.editAttraction = function(id) { const a = attractions.find(x => String(x.attraction_id || x.id) === String(id)); if (a) openAttractionForm(a); };
@@ -1292,11 +1303,12 @@ async function loadPosters() {
 
 function openPosterForm(p = null) {
   const posterId = p ? (p.poster_id || p.id) : null;
+  const headerAction = posterId ? `<button type="button" class="btn-sm btn-delete" onclick="deletePoster(${posterId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(p ? 'Edit Promotional Banner' : 'Add Promotional Banner', `
     <div class="form-group"><label>Banner Title / Name *</label><input id="p-title" value="${p?.title||p?.name||''}" placeholder="e.g. Summer Special Holiday Discount"></div>
     <div class="form-group"><label>Promotional Banner Image (Long Image) *</label>${createImageUpload('p-img', p?.image||'')}</div>
     <div class="form-group"><label>Target Redirect Link (Optional)</label><input id="p-link" value="${p?.link||''}" placeholder="e.g. /holiday-package.html or /attraction.html"></div>
-    <div class="modal-actions" style="margin-top:20px">
+    <div class="modal-actions">
       <div>
         ${posterId ? `<button type="button" class="btn-danger" onclick="deletePoster(${posterId})"><i class="fas fa-trash-alt"></i> Delete Banner</button>` : ''}
       </div>
@@ -1304,7 +1316,7 @@ function openPosterForm(p = null) {
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn-primary" onclick="savePoster(${posterId || 'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
       </div>
-    </div>`);
+    </div>`, headerAction);
 }
 
 window.openPosterForm = openPosterForm;
@@ -1462,6 +1474,7 @@ function openEnquiryForm(e = null) {
   const pkgOptions = packages.map(p => `<option value="${p.package_name||p.title}">${p.package_name||p.title}</option>`).join('');
   const destOptions = destinations.map(d => `<option value="${d.destination_name||d.name}">${d.destination_name||d.name}</option>`).join('');
   const enqId = e ? (e.enquiry_id || e.id) : null;
+  const headerAction = enqId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteEnquiry(${enqId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
 
   openModal(e ? 'Edit Enquiry' : 'Log New Enquiry', `
     <div class="form-group">
@@ -1529,7 +1542,7 @@ function openEnquiryForm(e = null) {
       </select>
     </div>
 
-    <div class="modal-actions" style="margin-top:20px">
+    <div class="modal-actions">
       <div>
         ${enqId ? `<button type="button" class="btn-danger" onclick="deleteEnquiry(${enqId})"><i class="fas fa-trash-alt"></i> Delete Enquiry</button>` : ''}
       </div>
@@ -1538,7 +1551,7 @@ function openEnquiryForm(e = null) {
         <button type="button" class="btn-primary" onclick="saveEnquiry(${enqId || 'null'})"><i class="fas fa-save"></i> ${e ? 'Update Enquiry' : 'Save Enquiry'}</button>
       </div>
     </div>
-  `);
+  `, headerAction);
 }
 
 window.saveEnquiry = async function(id) {
@@ -1579,6 +1592,7 @@ window.viewEnquiryModal = function(id) {
   const e = enquiries.find(x => String(x.enquiry_id || x.id) === String(id));
   if (!e) return;
 
+  const enqId = e.enquiry_id || e.id;
   const placesList = Array.isArray(e.places_to_visit) && e.places_to_visit.length > 0
     ? e.places_to_visit.map(p => `<li style="margin-bottom:4px">📍 ${p}</li>`).join('')
     : '<li style="color:#9ca3af">Flexible / All major attractions</li>';
@@ -1589,6 +1603,8 @@ window.viewEnquiryModal = function(id) {
 
   // Convert any URL or uploaded file in notes into a clickable link
   const formattedNotes = (e.notes || '').replace(/((https?:\/\/|\/uploads\/)[^\s\n\r]+)/g, '<a href="$1" target="_blank" style="color:#2563eb;text-decoration:underline;font-weight:bold"><i class="fas fa-file-download"></i> View / Download Attachment ($1)</a>');
+
+  const headerAction = `<button type="button" class="btn-sm btn-delete" onclick="deleteEnquiry(${enqId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>`;
 
   openModal(`Enquiry Details: ${e.name || 'Lead'}`, `
     <div style="font-size:14px;line-height:1.6">
@@ -1636,9 +1652,9 @@ window.viewEnquiryModal = function(id) {
       </div>` : ''}
     </div>
 
-    <div class="modal-actions" style="margin-top:20px">
+    <div class="modal-actions">
       <div>
-        <button type="button" class="btn-danger" onclick="deleteEnquiry(${e.enquiry_id || e.id})"><i class="fas fa-trash-alt"></i> Delete Enquiry</button>
+        <button type="button" class="btn-danger" onclick="deleteEnquiry(${enqId})"><i class="fas fa-trash-alt"></i> Delete Enquiry</button>
       </div>
       <div class="modal-actions-right">
         <button type="button" class="btn-cancel" onclick="closeModal()">Close</button>
@@ -1646,7 +1662,7 @@ window.viewEnquiryModal = function(id) {
         <a href="tel:${e.phone}" class="btn-primary" style="background:#2563eb;text-decoration:none;display:inline-flex;align-items:center;gap:6px"><i class="fas fa-phone-alt"></i> Call Customer</a>
       </div>
     </div>
-  `);
+  `, headerAction);
 };
 
 window.updateEnquiryStatus = async function(id, status) {
@@ -1764,6 +1780,7 @@ const COMMON_PAGE_ROUTES = [
 
 function openSeoForm(s = null) {
   const seoId = s ? (s.id || s.seo_id) : null;
+  const headerAction = seoId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteSeo(${seoId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   const routesDatalist = COMMON_PAGE_ROUTES.map(r => `<option value="${r.route}">${r.name} (${r.route})</option>`).join('');
 
   openModal(s ? `Edit SEO: ${s.page_name}` : 'Add Page SEO Configuration', `
@@ -1848,7 +1865,7 @@ function openSeoForm(s = null) {
       </select>
     </div>
 
-    <div class="modal-actions" style="margin-top:20px">
+    <div class="modal-actions">
       <div>
         ${seoId ? `<button type="button" class="btn-danger" onclick="deleteSeo(${seoId})"><i class="fas fa-trash-alt"></i> Delete SEO</button>` : ''}
       </div>
@@ -1857,7 +1874,7 @@ function openSeoForm(s = null) {
         <button type="button" class="btn-primary" onclick="saveSeo(${seoId || 'null'})"><i class="fas fa-save"></i> ${s ? 'Update SEO' : 'Save SEO'}</button>
       </div>
     </div>
-  `);
+  `, headerAction);
 }
 
 window.updateSeoPreview = function() {
@@ -1989,6 +2006,7 @@ window.editGallery = function(id) {
 
 function openGalleryForm(g = null) {
   const id = g ? (g.id || g.gallery_id) : null;
+  const headerAction = id ? `<button type="button" class="btn-sm btn-delete" onclick="deleteGallery(${id})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(g ? 'Edit Tour Photo' : 'Upload New Tour Photo', `
     <form id="form-gallery" onsubmit="saveGallery(event, ${id})">
       <div class="form-group">
@@ -2003,7 +2021,7 @@ function openGalleryForm(g = null) {
         <label>Caption / Short Description</label>
         <textarea id="g-caption" rows="2" placeholder="Brief memory notes about this tour moment...">${escapeHtml(g?.caption || '')}</textarea>
       </div>
-      <div class="modal-actions" style="margin-top:20px">
+      <div class="modal-actions">
         <div>
           ${id ? `<button type="button" class="btn-danger" onclick="deleteGallery(${id})"><i class="fas fa-trash-alt"></i> Delete Photo</button>` : ''}
         </div>
@@ -2013,7 +2031,7 @@ function openGalleryForm(g = null) {
         </div>
       </div>
     </form>
-  `);
+  `, headerAction);
 }
 
 window.openGalleryForm = openGalleryForm;

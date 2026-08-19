@@ -6,7 +6,7 @@
   <title>Dashboard — Mangalam Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="css/admin.css?v=1.0.7">
+  <link rel="stylesheet" href="css/admin.css?v=1.0.8">
 </head>
 <body>
 
@@ -398,7 +398,10 @@
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal-box" id="modal-box">
     <div class="modal-header">
-      <h3 class="modal-title" id="modal-title">Add Item</h3>
+      <div style="display:flex;align-items:center;gap:12px">
+        <h3 class="modal-title" id="modal-title">Add Item</h3>
+        <div id="modal-header-actions"></div>
+      </div>
       <button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body" id="modal-body"></div>
@@ -408,6 +411,6 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script src="js/admin.js?v=1.0.7"></script>
+<script src="js/admin.js?v=1.0.8"></script>
 </body>
 </html>
