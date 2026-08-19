@@ -55,30 +55,28 @@ router.post('/send', async (req, res) => {
   if (apiKey && gatewayUrl) {
     // Send SMS via FastSMS Sangamam Online API (POST JSON)
     try {
-      const expire = Math.floor(Date.now() / 1000) + 600; // 10 minutes expiration window
+      const requestFor = 'send-sms';
+      const expire = Math.floor(Date.now() / 1000) + 180; // 3 minutes validity for API signature
       const secretKey = process.env.SANGAMAM_SECRET_KEY || '';
 
-      // Compute authSignature using Secret Key (HMAC-SHA256 or MD5)
-      let authSignature = '';
-      if (secretKey) {
-        authSignature = crypto.createHmac('sha256', secretKey).update(apiKey + expire).digest('hex');
-      } else {
-        authSignature = crypto.createHash('md5').update(apiKey + expire).digest('hex');
-      }
+      const md5 = str => crypto.createHash('md5').update(str).digest('hex');
+
+      // Official Sangamam FastSMS MD5 3-step signature algorithm
+      const timeKey = md5(requestFor + 'sms@rits-v1.0' + expire);
+      const timeAccessTokenKey = md5(apiKey + timeKey);
+      const authSignature = md5(timeAccessTokenKey + secretKey);
 
       const payload = JSON.stringify({
         accessToken: apiKey,
         authSignature: authSignature,
         expire: expire,
-        mobile: smsRecipient,      // e.g. 919876543210
-        mobiles: smsRecipient,     // e.g. 919876543210
-        sender: senderId,
-        senderid: senderId,
+        route: 'transactional',
+        smsHeader: senderId,
         entity_id: entityId,
-        pe_id: entityId,
         template_id: templateId,
         DLT_TE_ID: templateId,
-        message: msgText
+        messageContent: msgText,
+        recipients: [smsRecipient] // e.g. ["919876543210"]
       });
 
       const urlObj = new URL(gatewayUrl);
