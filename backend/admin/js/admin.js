@@ -145,21 +145,59 @@ function createImageUpload(id, currentUrl = '') {
       <p>Click or drag image here</p>
       <p style="font-size:11px;margin-top:4px;color:#9ca3af">JPG, PNG, WEBP — Max 10MB</p>
     </div>
-    ${currentUrl ? `<div class="img-preview" id="preview-${id}"><img src="${currentUrl}" alt="Preview"></div>` : `<div class="img-preview" id="preview-${id}"></div>`}
+    ${currentUrl ? `
+      <div class="img-preview" id="preview-${id}">
+        <img src="${currentUrl}" alt="Preview">
+        <button type="button" class="btn-remove-img" onclick="removeImageUpload('${id}')" title="Delete this image">
+          <i class="fas fa-trash-alt"></i> Delete Image
+        </button>
+      </div>` : `
+      <div class="img-preview" id="preview-${id}" style="display:none"></div>
+    `}
     <input type="hidden" id="img-url-${id}" value="${currentUrl}">
   `;
 }
 
+window.removeImageUpload = function(id) {
+  const hiddenInput = document.getElementById(`img-url-${id}`);
+  if (hiddenInput) hiddenInput.value = '';
+  const preview = document.getElementById(`preview-${id}`);
+  if (preview) {
+    preview.innerHTML = '';
+    preview.style.display = 'none';
+  }
+  const area = document.getElementById(`upload-area-${id}`);
+  if (area) {
+    area.innerHTML = `
+      <input type="file" accept="image/*" id="file-${id}" onchange="handleFileSelect('${id}')">
+      <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+      <p>Click or drag image here</p>
+      <p style="font-size:11px;margin-top:4px;color:#9ca3af">JPG, PNG, WEBP — Max 10MB</p>
+    `;
+  }
+  showToast('Image deleted. Click Update / Save to persist.', 'info');
+};
+
 window.handleFileSelect = async function(id) {
-  const file = document.getElementById(`file-${id}`).files[0];
+  const fileInput = document.getElementById(`file-${id}`);
+  const file = fileInput?.files?.[0];
   if (!file) return;
   const area = document.getElementById(`upload-area-${id}`);
   area.innerHTML = `<div style="padding:12px;color:#6b7280;font-size:13px"><i class="fas fa-spinner fa-spin"></i> Uploading...</div>`;
   try {
     const url = await uploadImage(file);
     document.getElementById(`img-url-${id}`).value = url;
-    document.getElementById(`preview-${id}`).innerHTML = `<img src="${url}" alt="Preview">`;
-    area.innerHTML = `<input type="file" accept="image/*" id="file-${id}" onchange="handleFileSelect('${id}')"><div class="upload-icon" style="color:#10b981"><i class="fas fa-check-circle"></i></div><p style="color:#10b981;font-size:13px">Uploaded!</p>`;
+    const preview = document.getElementById(`preview-${id}`);
+    if (preview) {
+      preview.style.display = 'inline-block';
+      preview.innerHTML = `
+        <img src="${url}" alt="Preview">
+        <button type="button" class="btn-remove-img" onclick="removeImageUpload('${id}')" title="Delete this image">
+          <i class="fas fa-trash-alt"></i> Delete Image
+        </button>
+      `;
+    }
+    area.innerHTML = `<input type="file" accept="image/*" id="file-${id}" onchange="handleFileSelect('${id}')"><div class="upload-icon" style="color:#10b981"><i class="fas fa-check-circle"></i></div><p style="color:#10b981;font-size:13px">Uploaded! (Click to replace)</p>`;
     showToast('Image uploaded', 'success');
   } catch (e) {
     area.innerHTML = `<input type="file" accept="image/*" id="file-${id}" onchange="handleFileSelect('${id}')"><div class="upload-icon" style="color:#dc2626"><i class="fas fa-exclamation-circle"></i></div><p style="color:#dc2626;font-size:13px">${e.message}</p>`;
@@ -186,10 +224,8 @@ function imgCell(src) {
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
-function openModal(title, bodyHtml, headerActionsHtml = '') {
+function openModal(title, bodyHtml) {
   document.getElementById('modal-title').textContent = title;
-  const headerActions = document.getElementById('modal-header-actions');
-  if (headerActions) headerActions.innerHTML = headerActionsHtml || '';
   document.getElementById('modal-body').innerHTML = bodyHtml;
   document.getElementById('modal-overlay').classList.add('open');
 }
@@ -246,7 +282,6 @@ function openDestinationForm(d = null) {
     initialPlaces = d.places_to_visit.map(p => typeof p === 'string' ? { name: p, image: '' } : p);
   }
   const destId = d ? (d.destination_id || d.id) : null;
-  const headerAction = destId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteDestination(${destId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
 
   const modalHtml = `
     <div class="form-group"><label>Destination / Country Name *</label><input id="d-name" value="${d?.destination_name||''}" placeholder="e.g. Dubai"></div>
@@ -280,7 +315,7 @@ function openDestinationForm(d = null) {
       </div>
     </div>`;
 
-  openModal(d ? 'Edit Destination' : 'Add Destination', modalHtml, headerAction);
+  openModal(d ? 'Edit Destination' : 'Add Destination', modalHtml);
 
   window._placesData = initialPlaces.length > 0 ? [...initialPlaces] : [{ name: '', image: '' }];
   renderPlacesRows();
@@ -439,7 +474,6 @@ function reindexItineraryDays() {
 
 function openPackageForm(p = null) {
   const pkgId = p ? (p.package_id || p.id) : null;
-  const headerAction = pkgId ? `<button type="button" class="btn-sm btn-delete" onclick="deletePackage(${pkgId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   const bannerImgs = Array.isArray(p?.banner_images) ? p.banner_images : 
     (typeof p?.banner_images === 'string' ? (JSON.parse(p.banner_images || '[]') || []) : []);
   const b1 = bannerImgs[0] || p?.banner_image || p?.inner_image || p?.card_image || '';
@@ -517,7 +551,7 @@ function openPackageForm(p = null) {
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn-primary" onclick="savePackage(${pkgId || 'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
       </div>
-    </div>`, headerAction);
+    </div>`);
 
   // Populate existing days or initial day
   const rawItinerary = p?.itinerary;
@@ -742,7 +776,7 @@ async function openCollectionForm(c = null) {
       </div>
     </div>
 
-    <div class="modal-actions" style="margin-top:20px">
+    <div class="modal-actions">
       <div>
         ${colId ? `<button type="button" class="btn-danger" onclick="deleteCollection(${colId})"><i class="fas fa-trash-alt"></i> Delete Collection</button>` : ''}
       </div>
@@ -752,8 +786,7 @@ async function openCollectionForm(c = null) {
       </div>
     </div>`;
 
-  const headerAction = colId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteCollection(${colId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
-  openModal(c ? 'Edit Collection' : 'Add Collection', modalHtml, headerAction);
+  openModal(c ? 'Edit Collection' : 'Add Collection', modalHtml);
   updateCollectionCounter();
 }
 
@@ -883,7 +916,6 @@ async function loadTickets() {
 
 function openTicketForm(t = null) {
   const ticketId = t ? (t.ticket_id || t.id) : null;
-  const headerAction = ticketId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteTicket(${ticketId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(t ? 'Edit Ticket' : 'Add Ticket', `
     <div class="form-group"><label>Title *</label><input id="t-title" value="${t?.title||''}" placeholder="e.g. Burj Khalifa 124th Floor"></div>
     <div class="form-group"><label>Short Title</label><input id="t-short" value="${t?.short_title||''}" placeholder="Short display name"></div>
@@ -893,7 +925,7 @@ function openTicketForm(t = null) {
     </div>
     <div class="form-group"><label>Card Image</label>${createImageUpload('t-card', t?.card_image||'')}</div>
     <div class="form-group"><label>Description</label><textarea id="t-desc" placeholder="Ticket description...">${t?.description||''}</textarea></div>
-    <div class="modal-actions" style="margin-top:20px">
+    <div class="modal-actions">
       <div>
         ${ticketId ? `<button type="button" class="btn-danger" onclick="deleteTicket(${ticketId})"><i class="fas fa-trash-alt"></i> Delete Ticket</button>` : ''}
       </div>
@@ -961,7 +993,6 @@ async function loadBlogs() {
 function openBlogForm(b = null) {
   const today = new Date().toISOString().split('T')[0];
   const blogId = b ? (b.blog_id || b.id) : null;
-  const headerAction = blogId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteBlog(${blogId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(b ? 'Edit Blog' : 'Add Blog', `
     <div class="form-group"><label>Title *</label><input id="b-title" value="${b?.title||''}" placeholder="Blog post title"></div>
     <div class="form-row">
@@ -979,7 +1010,7 @@ function openBlogForm(b = null) {
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn-primary" onclick="saveBlog(${blogId || 'null'})"><i class="fas fa-save"></i> ${b ? 'Update' : 'Save'}</button>
       </div>
-    </div>`, headerAction);
+    </div>`);
 }
 
 window.editBlog = function(id) { const b = blogs.find(x => String(x.blog_id || x.id) === String(id)); if (b) openBlogForm(b); };
@@ -1040,7 +1071,6 @@ async function loadTestimonials() {
 
 function openTestimonialForm(t = null) {
   const testimonialId = t ? (t.testimonial_id || t.id) : null;
-  const headerAction = testimonialId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteTestimonial(${testimonialId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(t ? 'Edit Testimonial' : 'Add Testimonial', `
     <div class="form-row-two">
       <div class="form-group"><label>Name *</label><input id="r-name" value="${t?.name||''}" placeholder="John Doe"></div>
@@ -1056,7 +1086,7 @@ function openTestimonialForm(t = null) {
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn-primary" onclick="saveTestimonial(${testimonialId || 'null'})"><i class="fas fa-save"></i> ${t ? 'Update' : 'Save'}</button>
       </div>
-    </div>`, headerAction);
+    </div>`);
 }
 
 window.editTestimonial = function(id) { const t = testimonials.find(x => String(x.testimonial_id || x.id) === String(id)); if (t) openTestimonialForm(t); };
@@ -1111,7 +1141,6 @@ async function loadPartners() {
 
 function openPartnerForm(p = null) {
   const partnerId = p ? (p.partner_id || p.id) : null;
-  const headerAction = partnerId ? `<button type="button" class="btn-sm btn-delete" onclick="deletePartner(${partnerId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(p ? 'Edit Partner' : 'Add Partner', `
     <div class="form-group"><label>Partner Name *</label><input id="pr-name" value="${p?.name||''}" placeholder="e.g. Emirates Airlines"></div>
     <div class="form-group"><label>Logo Image</label>${createImageUpload('pr-img', p?.image||'')}</div>
@@ -1123,7 +1152,7 @@ function openPartnerForm(p = null) {
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn-primary" onclick="savePartner(${partnerId || 'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
       </div>
-    </div>`, headerAction);
+    </div>`);
 }
 
 window.editPartner = function(id) { const p = partners.find(x => String(x.partner_id || x.id) === String(id)); if (p) openPartnerForm(p); };
@@ -1200,7 +1229,6 @@ async function loadAttractions() {
 
 function openAttractionForm(a = null) {
   const attrId = a ? (a.attraction_id || a.id) : null;
-  const headerAction = attrId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteAttraction(${attrId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(a ? 'Edit Attraction' : 'Add Attraction', `
     <div class="form-group"><label>Attraction Name *</label><input id="a-name" value="${a?.name||a?.title||''}" placeholder="e.g. Burj Khalifa Observation Deck & Sky Views"></div>
     <div class="form-row-two">
@@ -1236,7 +1264,7 @@ function openAttractionForm(a = null) {
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn-primary" onclick="saveAttraction(${attrId || 'null'})"><i class="fas fa-save"></i> ${a ? 'Update' : 'Save'}</button>
       </div>
-    </div>`, headerAction);
+    </div>`);
 }
 
 window.editAttraction = function(id) { const a = attractions.find(x => String(x.attraction_id || x.id) === String(id)); if (a) openAttractionForm(a); };
@@ -1303,7 +1331,6 @@ async function loadPosters() {
 
 function openPosterForm(p = null) {
   const posterId = p ? (p.poster_id || p.id) : null;
-  const headerAction = posterId ? `<button type="button" class="btn-sm btn-delete" onclick="deletePoster(${posterId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(p ? 'Edit Promotional Banner' : 'Add Promotional Banner', `
     <div class="form-group"><label>Banner Title / Name *</label><input id="p-title" value="${p?.title||p?.name||''}" placeholder="e.g. Summer Special Holiday Discount"></div>
     <div class="form-group"><label>Promotional Banner Image (Long Image) *</label>${createImageUpload('p-img', p?.image||'')}</div>
@@ -1474,7 +1501,6 @@ function openEnquiryForm(e = null) {
   const pkgOptions = packages.map(p => `<option value="${p.package_name||p.title}">${p.package_name||p.title}</option>`).join('');
   const destOptions = destinations.map(d => `<option value="${d.destination_name||d.name}">${d.destination_name||d.name}</option>`).join('');
   const enqId = e ? (e.enquiry_id || e.id) : null;
-  const headerAction = enqId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteEnquiry(${enqId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
 
   openModal(e ? 'Edit Enquiry' : 'Log New Enquiry', `
     <div class="form-group">
@@ -1551,7 +1577,7 @@ function openEnquiryForm(e = null) {
         <button type="button" class="btn-primary" onclick="saveEnquiry(${enqId || 'null'})"><i class="fas fa-save"></i> ${e ? 'Update Enquiry' : 'Save Enquiry'}</button>
       </div>
     </div>
-  `, headerAction);
+  `);
 }
 
 window.saveEnquiry = async function(id) {
@@ -1603,8 +1629,6 @@ window.viewEnquiryModal = function(id) {
 
   // Convert any URL or uploaded file in notes into a clickable link
   const formattedNotes = (e.notes || '').replace(/((https?:\/\/|\/uploads\/)[^\s\n\r]+)/g, '<a href="$1" target="_blank" style="color:#2563eb;text-decoration:underline;font-weight:bold"><i class="fas fa-file-download"></i> View / Download Attachment ($1)</a>');
-
-  const headerAction = `<button type="button" class="btn-sm btn-delete" onclick="deleteEnquiry(${enqId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>`;
 
   openModal(`Enquiry Details: ${e.name || 'Lead'}`, `
     <div style="font-size:14px;line-height:1.6">
@@ -1662,7 +1686,7 @@ window.viewEnquiryModal = function(id) {
         <a href="tel:${e.phone}" class="btn-primary" style="background:#2563eb;text-decoration:none;display:inline-flex;align-items:center;gap:6px"><i class="fas fa-phone-alt"></i> Call Customer</a>
       </div>
     </div>
-  `, headerAction);
+  `);
 };
 
 window.updateEnquiryStatus = async function(id, status) {
@@ -1780,7 +1804,6 @@ const COMMON_PAGE_ROUTES = [
 
 function openSeoForm(s = null) {
   const seoId = s ? (s.id || s.seo_id) : null;
-  const headerAction = seoId ? `<button type="button" class="btn-sm btn-delete" onclick="deleteSeo(${seoId})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   const routesDatalist = COMMON_PAGE_ROUTES.map(r => `<option value="${r.route}">${r.name} (${r.route})</option>`).join('');
 
   openModal(s ? `Edit SEO: ${s.page_name}` : 'Add Page SEO Configuration', `
@@ -1874,7 +1897,7 @@ function openSeoForm(s = null) {
         <button type="button" class="btn-primary" onclick="saveSeo(${seoId || 'null'})"><i class="fas fa-save"></i> ${s ? 'Update SEO' : 'Save SEO'}</button>
       </div>
     </div>
-  `, headerAction);
+  `);
 }
 
 window.updateSeoPreview = function() {
@@ -2006,7 +2029,6 @@ window.editGallery = function(id) {
 
 function openGalleryForm(g = null) {
   const id = g ? (g.id || g.gallery_id) : null;
-  const headerAction = id ? `<button type="button" class="btn-sm btn-delete" onclick="deleteGallery(${id})" style="padding:4px 10px;font-size:12px;font-weight:600"><i class="fas fa-trash-alt"></i> Delete</button>` : '';
   openModal(g ? 'Edit Tour Photo' : 'Upload New Tour Photo', `
     <form id="form-gallery" onsubmit="saveGallery(event, ${id})">
       <div class="form-group">
@@ -2031,7 +2053,7 @@ function openGalleryForm(g = null) {
         </div>
       </div>
     </form>
-  `, headerAction);
+  `);
 }
 
 window.openGalleryForm = openGalleryForm;
