@@ -373,7 +373,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       const notes = document.getElementById('contact-notes').value.trim();
 
       if (!name) { alert('Please enter your full name.'); return; }
+      if (!email) { alert('Please enter your email address.'); return; }
       if (!phone) { alert('Please enter your phone number.'); return; }
+
+      const otpInstance = window.EnquiryOtp ? (EnquiryOtp.getInstance('contact') || EnquiryOtp.getInstance('customizetrip')) : null;
+      if (otpInstance && !otpInstance.requireVerified()) {
+        return;
+      }
 
       const sDate = startDateInput.value;
       const eDate = endDateInput.value;

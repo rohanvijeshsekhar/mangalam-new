@@ -10,10 +10,31 @@
         return normalizePhone(phone).length >= 10;
     }
 
+    async function postData(path, body) {
+        if (global.MT && typeof global.MT.apiPost === 'function') {
+            return await global.MT.apiPost(path, body);
+        }
+        try {
+            const res = await fetch(path, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const text = await res.text();
+            try { return JSON.parse(text); } catch { return text; }
+        } catch (err) {
+            console.error('[EnquiryOtp] Fetch error:', err);
+            return null;
+        }
+    }
+
     function createEnquiryOtp(options) {
         const { phoneInput, sendBtn, verifyBtn, otpInput, otpContainer, statusMsg } = options;
         let verified = false;
         let timerInterval = null;
+        let verifying = false;
+        let sending = false;
+        let sendRequestId = 0;
 
         function getPhone() {
             return phoneInput ? phoneInput.value.trim() : '';
@@ -24,6 +45,7 @@
             statusMsg.textContent = text;
             statusMsg.classList.remove('hidden', 'text-green-600', 'text-red-600', 'text-gray-600');
             statusMsg.classList.add(type === 'success' ? 'text-green-600' : type === 'error' ? 'text-red-600' : 'text-gray-600');
+            statusMsg.style.display = 'block';
         }
 
         function startCooldown(seconds) {
@@ -46,7 +68,11 @@
 
         function getFormEmail() {
             const form = phoneInput ? phoneInput.closest('form') : null;
-            const emailEl = form ? form.querySelector('input[type="email"]') : null;
+            const emailEl = (form ? form.querySelector('input[type="email"]') : null) ||
+                            document.getElementById('other-email') ||
+                            document.getElementById('contact-email') ||
+                            document.getElementById('email') ||
+                            document.querySelector('input[type="email"]');
             return emailEl && emailEl.value.trim() ? emailEl.value.trim() : '';
         }
 
@@ -59,7 +85,7 @@
             if (otpInput) otpInput.disabled = true;
             if (sendBtn) sendBtn.classList.add('hidden');
             if (verifyBtn) verifyBtn.classList.add('hidden');
-            setStatus('Mobile number verified.', 'success');
+            setStatus('Mobile number verified successfully.', 'success');
         }
 
         function reset() {
@@ -81,33 +107,37 @@
                 sendBtn.classList.remove('hidden');
             }
             if (verifyBtn) verifyBtn.classList.remove('hidden');
-            if (otpContainer) otpContainer.classList.add('hidden');
+            if (otpContainer) {
+                otpContainer.classList.add('hidden');
+                otpContainer.style.display = 'none';
+            }
             if (statusMsg) {
                 statusMsg.textContent = '';
                 statusMsg.classList.add('hidden');
+                statusMsg.style.display = 'none';
             }
         }
-
-        let verifying = false;
-        let sending = false;
-        let sendRequestId = 0;
 
         async function sendOtp() {
             if (sending) return;
 
-            if (!isValidPhone(getPhone())) {
+            const phone = getPhone();
+            if (!isValidPhone(phone)) {
                 alert('Please enter a valid 10-digit mobile number.');
+                if (phoneInput) phoneInput.focus();
                 return;
             }
 
             const email = getFormEmail();
-            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                alert('Please enter your email address first.');
-                const emailEl = phoneInput && phoneInput.closest('form')
-                    ? phoneInput.closest('form').querySelector('input[type="email"]')
-                    : null;
-                if (emailEl) emailEl.focus();
-                return;
+            if (global.SMS_OTP_EMAIL_REQUIRED) {
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    alert('Please enter your email address first.');
+                    const emailEl = (phoneInput && phoneInput.closest('form')
+                        ? phoneInput.closest('form').querySelector('input[type="email"]')
+                        : null) || document.getElementById('other-email') || document.getElementById('contact-email');
+                    if (emailEl) emailEl.focus();
+                    return;
+                }
             }
 
             sending = true;
@@ -119,7 +149,7 @@
             }
 
             try {
-                const data = await MT.apiPost('/api/otp/send', { phone: normalizePhone(getPhone()), email });
+                const data = await postData('/api/otp/send', { phone: normalizePhone(phone), email });
                 if (requestId !== sendRequestId) return;
 
                 if (data && (data.status === 1 || data.success)) {
@@ -128,12 +158,15 @@
                         otpContainer.classList.remove('hidden');
                         otpContainer.style.display = 'block';
                     }
-                    if (otpInput) otpInput.value = ''; // Always empty for user to type code from SMS
+                    if (otpInput) {
+                        otpInput.value = '';
+                        otpInput.focus();
+                    }
                     const successMsg = data.message || 'OTP sent to your mobile number. Please check your SMS.';
                     setStatus(successMsg, 'success');
                     startCooldown(30);
                 } else {
-                    const errMsg = (data && data.message) || 'Failed to send OTP.';
+                    const errMsg = (data && data.message) || 'Failed to send OTP. Please check your number.';
                     setStatus(errMsg, 'error');
                     alert(errMsg);
                     if (sendBtn) {
@@ -162,7 +195,8 @@
 
             const otp = otpInput ? otpInput.value.replace(/\D/g, '') : '';
             if (!isValidPhone(getPhone()) || otp.length < 4) {
-                alert('Please enter your mobile number and OTP.');
+                alert('Please enter your 6-digit OTP received via SMS.');
+                if (otpInput) otpInput.focus();
                 return;
             }
 
@@ -173,12 +207,12 @@
             }
 
             try {
-                const data = await MT.apiPost('/api/otp/verify', { phone: normalizePhone(getPhone()), otp });
+                const data = await postData('/api/otp/verify', { phone: normalizePhone(getPhone()), otp });
 
                 if (data && (data.status === 1 || data.success)) {
                     markVerified();
                 } else {
-                    const errMsg = (data && data.message) || 'Invalid OTP.';
+                    const errMsg = (data && data.message) || 'Invalid OTP. Please check and try again.';
                     setStatus(errMsg, 'error');
                     alert(errMsg);
                 }
@@ -197,32 +231,45 @@
 
         function requireVerified() {
             if (!isValidPhone(getPhone())) {
-                alert('Please enter a valid mobile number.');
+                alert('Please enter a valid 10-digit mobile number.');
+                if (phoneInput) phoneInput.focus();
                 return false;
             }
             if (!verified) {
                 alert('Please verify your mobile number with OTP before submitting.');
+                if (otpContainer && !otpContainer.classList.contains('hidden') && otpInput) {
+                    otpInput.focus();
+                } else if (sendBtn) {
+                    sendBtn.focus();
+                }
                 return false;
             }
             return true;
         }
 
-        if (sendBtn) sendBtn.addEventListener('click', sendOtp);
-        if (verifyBtn) verifyBtn.addEventListener('click', verifyOtp);
+        if (sendBtn) {
+            sendBtn.removeEventListener('click', sendOtp);
+            sendBtn.addEventListener('click', sendOtp);
+        }
+        if (verifyBtn) {
+            verifyBtn.removeEventListener('click', verifyOtp);
+            verifyBtn.addEventListener('click', verifyOtp);
+        }
         if (phoneInput) {
             phoneInput.addEventListener('input', () => { if (verified) reset(); });
         }
 
-        return { requireVerified, reset, isVerified: () => verified, getPhone, sendOtp };
+        return { requireVerified, reset, isVerified: () => verified, getPhone, sendOtp, markVerified };
     }
 
     const PREFIX_CONFIG = {
-        contact:   { phone: 'contact-phone',   send: 'contact-sendOtpBtn',   verify: 'contact-verifyOtpBtn',   otp: 'contact-otp',   container: 'contact-otpFieldContainer',   status: 'contact-otpStatusMsg' },
-        career:    { phone: 'career-phone',    send: 'career-sendOtpBtn',    verify: 'career-verifyOtpBtn',    otp: 'career-otp',    container: 'career-otpFieldContainer',    status: 'career-otpStatusMsg' },
-        cart:      { phone: 'enq-phone',       send: 'cart-sendOtpBtn',      verify: 'cart-verifyOtpBtn',      otp: 'cart-otp',      container: 'cart-otpFieldContainer',      status: 'cart-otpStatusMsg' },
-        other:     { phone: 'other-phone',     send: 'other-sendOtpBtn',     verify: 'other-verifyOtpBtn',     otp: 'other-otp',     container: 'other-otpFieldContainer',     status: 'other-otpStatusMsg' },
-        package:   { phone: 'package-phone',   send: 'package-sendOtpBtn',   verify: 'package-verifyOtpBtn',   otp: 'package-otp',   container: 'package-otpFieldContainer',   status: 'package-otpStatusMsg' },
-        customize: { phone: 'customizePhone',  send: 'sendOtpBtn',           verify: 'verifyOtpBtn',           otp: 'customizeOtp',  container: 'otpFieldContainer',           status: 'otpStatusMsg' },
+        contact:       { phone: 'contact-phone',   send: 'contact-sendOtpBtn',   verify: 'contact-verifyOtpBtn',   otp: 'contact-otp',   container: 'contact-otpFieldContainer',   status: 'contact-otpStatusMsg' },
+        customizetrip: { phone: 'contact-phone',   send: 'contact-sendOtpBtn',   verify: 'contact-verifyOtpBtn',   otp: 'contact-otp',   container: 'contact-otpFieldContainer',   status: 'contact-otpStatusMsg' },
+        career:        { phone: 'career-phone',    send: 'career-sendOtpBtn',    verify: 'career-verifyOtpBtn',    otp: 'career-otp',    container: 'career-otpFieldContainer',    status: 'career-otpStatusMsg' },
+        cart:          { phone: 'enq-phone',       send: 'cart-sendOtpBtn',      verify: 'cart-verifyOtpBtn',      otp: 'cart-otp',      container: 'cart-otpFieldContainer',      status: 'cart-otpStatusMsg' },
+        other:         { phone: 'other-phone',     send: 'other-sendOtpBtn',     verify: 'other-verifyOtpBtn',     otp: 'other-otp',     container: 'other-otpFieldContainer',     status: 'other-otpStatusMsg' },
+        package:       { phone: 'package-phone',   send: 'package-sendOtpBtn',   verify: 'package-verifyOtpBtn',   otp: 'package-otp',   container: 'package-otpFieldContainer',   status: 'package-otpStatusMsg' },
+        customize:     { phone: 'customizePhone',  send: 'sendOtpBtn',           verify: 'verifyOtpBtn',           otp: 'customizeOtp',  container: 'otpFieldContainer',           status: 'otpStatusMsg' },
     };
 
     const boundInstances = {};
