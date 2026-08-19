@@ -264,8 +264,13 @@ function openDestinationForm(d = null) {
     </div>
 
     <div class="modal-actions" style="margin-top:20px">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveDestination(${d?.destination_id||'null'})"><i class="fas fa-save"></i> ${d ? 'Update' : 'Save'}</button>
+      <div>
+        ${d?.destination_id ? `<button type="button" class="btn-danger" onclick="deleteDestination(${d.destination_id})"><i class="fas fa-trash-alt"></i> Delete Destination</button>` : ''}
+      </div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="saveDestination(${d?.destination_id||'null'})"><i class="fas fa-save"></i> ${d ? 'Update' : 'Save'}</button>
+      </div>
     </div>`;
 
   openModal(d ? 'Edit Destination' : 'Add Destination', modalHtml);
@@ -338,9 +343,11 @@ window.saveDestination = async function(id) {
 };
 
 window.deleteDestination = async function(id) {
-  if (!confirm('Delete this destination?')) return;
-  await api('DELETE', `/destinations/${id}`);
-  showToast('Deleted', 'success'); loadDestinations(); loadDashboard();
+  if (!confirm('Are you sure you want to delete this destination?')) return;
+  const res = await api('DELETE', `/destinations/${id}`);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast('Destination deleted', 'success');
+  closeModal(); loadDestinations(); loadDashboard();
 };
 
 document.getElementById('btn-add-destination')?.addEventListener('click', () => openDestinationForm());
@@ -490,9 +497,14 @@ function openPackageForm(p = null) {
       <div class="form-group"><label>Exclusions (comma or line separated)</label><textarea id="p-exclusions" rows="3" placeholder="Personal expenses, Travel Insurance...">${p?.exclusions||''}</textarea></div>
     </div>
     <div class="form-group"><label>Terms & Conditions (Booking Policy & Rules)</label><textarea id="p-terms" rows="3" placeholder="Enter terms & conditions, cancellation policy, booking rules...">${p?.terms||''}</textarea></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="savePackage(${p?.package_id||'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
+    <div class="modal-actions" style="margin-top:20px">
+      <div>
+        ${p?.package_id ? `<button type="button" class="btn-danger" onclick="deletePackage(${p.package_id})"><i class="fas fa-trash-alt"></i> Delete Package</button>` : ''}
+      </div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="savePackage(${p?.package_id||'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
+      </div>
     </div>`);
 
   // Populate existing days or initial day
@@ -564,9 +576,11 @@ window.savePackage = async function(id) {
 };
 
 window.deletePackage = async function(id) {
-  if (!confirm('Delete this package?')) return;
-  await api('DELETE', `/packages/${id}`);
-  showToast('Deleted', 'success'); loadPackages(); loadDashboard();
+  if (!confirm('Are you sure you want to delete this package?')) return;
+  const res = await api('DELETE', `/packages/${id}`);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast('Package deleted', 'success');
+  closeModal(); loadPackages(); loadDashboard();
 };
 
 document.getElementById('btn-add-package')?.addEventListener('click', () => { if (!destinations.length) loadDestinations().then(() => openPackageForm()); else openPackageForm(); });
@@ -701,8 +715,13 @@ async function openCollectionForm(c = null) {
     </div>
 
     <div class="modal-actions" style="margin-top:20px">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveCollection(${c?.id || 'null'})"><i class="fas fa-save"></i> ${c ? 'Update Collection' : 'Save Collection'}</button>
+      <div>
+        ${c?.id ? `<button type="button" class="btn-danger" onclick="deleteCollection(${c.id})"><i class="fas fa-trash-alt"></i> Delete Collection</button>` : ''}
+      </div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="saveCollection(${c?.id || 'null'})"><i class="fas fa-save"></i> ${c ? 'Update Collection' : 'Save Collection'}</button>
+      </div>
     </div>`;
 
   openModal(c ? 'Edit Collection' : 'Add Collection', modalHtml);
@@ -797,8 +816,10 @@ window.saveCollection = async function(id) {
 
 window.deleteCollection = async function(id) {
   if (!confirm('Are you sure you want to delete this collection?')) return;
-  await api('DELETE', `/collections/${id}`);
+  const res = await api('DELETE', `/collections/${id}`);
+  if (res?.error) { showToast(res.error, 'error'); return; }
   showToast('Collection deleted', 'success');
+  closeModal();
   loadCollections();
   loadDashboard();
 };
@@ -838,9 +859,14 @@ function openTicketForm(t = null) {
     </div>
     <div class="form-group"><label>Card Image</label>${createImageUpload('t-card', t?.card_image||'')}</div>
     <div class="form-group"><label>Description</label><textarea id="t-desc" placeholder="Ticket description...">${t?.description||''}</textarea></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveTicket(${t?.ticket_id||'null'})"><i class="fas fa-save"></i> ${t ? 'Update' : 'Save'}</button>
+    <div class="modal-actions" style="margin-top:20px">
+      <div>
+        ${t?.ticket_id ? `<button type="button" class="btn-danger" onclick="deleteTicket(${t.ticket_id})"><i class="fas fa-trash-alt"></i> Delete Ticket</button>` : ''}
+      </div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="saveTicket(${t?.ticket_id||'null'})"><i class="fas fa-save"></i> ${t ? 'Update' : 'Save'}</button>
+      </div>
     </div>`);
 }
 
@@ -863,9 +889,11 @@ window.saveTicket = async function(id) {
 };
 
 window.deleteTicket = async function(id) {
-  if (!confirm('Delete this ticket?')) return;
-  await api('DELETE', `/tickets/${id}`);
-  showToast('Deleted', 'success'); loadTickets(); loadDashboard();
+  if (!confirm('Are you sure you want to delete this ticket?')) return;
+  const res = await api('DELETE', `/tickets/${id}`);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast('Ticket deleted', 'success');
+  closeModal(); loadTickets(); loadDashboard();
 };
 
 document.getElementById('btn-add-ticket')?.addEventListener('click', () => openTicketForm());
@@ -895,6 +923,7 @@ async function loadBlogs() {
 
 function openBlogForm(b = null) {
   const today = new Date().toISOString().split('T')[0];
+  const blogId = b?.blog_id || b?.id;
   openModal(b ? 'Edit Blog' : 'Add Blog', `
     <div class="form-group"><label>Title *</label><input id="b-title" value="${b?.title||''}" placeholder="Blog post title"></div>
     <div class="form-row">
@@ -904,9 +933,14 @@ function openBlogForm(b = null) {
     <div class="form-group"><label>Cover / Banner Image</label>${createImageUpload('b-card', b?.card_image||b?.banner_image||'')}</div>
     <div class="form-group"><label>Short Overview / Excerpt (Optional)</label><textarea id="b-desc" rows="2" placeholder="Brief 1-2 sentence excerpt for cards...">${b?.description||''}</textarea></div>
     <div class="form-group"><label>Full Article Content *</label><textarea id="b-content" rows="8" placeholder="Write or paste your article content here...">${b?.content||''}</textarea></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveBlog(${b?.blog_id||'null'})"><i class="fas fa-save"></i> ${b ? 'Update' : 'Save'}</button>
+    <div class="modal-actions" style="margin-top:20px">
+      <div>
+        ${blogId ? `<button type="button" class="btn-danger" onclick="deleteBlog(${blogId})"><i class="fas fa-trash-alt"></i> Delete Blog</button>` : ''}
+      </div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="saveBlog(${blogId || 'null'})"><i class="fas fa-save"></i> ${b ? 'Update' : 'Save'}</button>
+      </div>
     </div>`);
 }
 
@@ -931,9 +965,11 @@ window.saveBlog = async function(id) {
 };
 
 window.deleteBlog = async function(id) {
-  if (!confirm('Delete this blog?')) return;
-  await api('DELETE', `/blogs/${id}`);
-  showToast('Deleted', 'success'); loadBlogs(); loadDashboard();
+  if (!confirm('Are you sure you want to delete this blog?')) return;
+  const res = await api('DELETE', `/blogs/${id}`);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast('Blog deleted', 'success');
+  closeModal(); loadBlogs(); loadDashboard();
 };
 
 document.getElementById('btn-add-blog')?.addEventListener('click', () => openBlogForm());
@@ -962,6 +998,7 @@ async function loadTestimonials() {
 }
 
 function openTestimonialForm(t = null) {
+  const testimonialId = t?.testimonial_id || t?.id;
   openModal(t ? 'Edit Testimonial' : 'Add Testimonial', `
     <div class="form-row-two">
       <div class="form-group"><label>Name *</label><input id="r-name" value="${t?.name||''}" placeholder="John Doe"></div>
@@ -969,9 +1006,14 @@ function openTestimonialForm(t = null) {
     </div>
     <div class="form-group"><label>Rating</label>${starRatingHtml('r', t?.rating||5)}</div>
     <div class="form-group"><label>Feedback</label><textarea id="r-feedback" rows="4" placeholder="Customer review...">${t?.feedback||''}</textarea></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveTestimonial(${t?.testimonial_id||'null'})"><i class="fas fa-save"></i> ${t ? 'Update' : 'Save'}</button>
+    <div class="modal-actions" style="margin-top:20px">
+      <div>
+        ${testimonialId ? `<button type="button" class="btn-danger" onclick="deleteTestimonial(${testimonialId})"><i class="fas fa-trash-alt"></i> Delete Testimonial</button>` : ''}
+      </div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="saveTestimonial(${testimonialId || 'null'})"><i class="fas fa-save"></i> ${t ? 'Update' : 'Save'}</button>
+      </div>
     </div>`);
 }
 
@@ -992,9 +1034,11 @@ window.saveTestimonial = async function(id) {
 };
 
 window.deleteTestimonial = async function(id) {
-  if (!confirm('Delete this testimonial?')) return;
-  await api('DELETE', `/testimonials/${id}`);
-  showToast('Deleted', 'success'); loadTestimonials(); loadDashboard();
+  if (!confirm('Are you sure you want to delete this testimonial?')) return;
+  const res = await api('DELETE', `/testimonials/${id}`);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast('Testimonial deleted', 'success');
+  closeModal(); loadTestimonials(); loadDashboard();
 };
 
 document.getElementById('btn-add-testimonial')?.addEventListener('click', () => openTestimonialForm());
@@ -1021,12 +1065,18 @@ async function loadPartners() {
 }
 
 function openPartnerForm(p = null) {
+  const partnerId = p?.partner_id || p?.id;
   openModal(p ? 'Edit Partner' : 'Add Partner', `
     <div class="form-group"><label>Partner Name *</label><input id="pr-name" value="${p?.name||''}" placeholder="e.g. Emirates Airlines"></div>
     <div class="form-group"><label>Logo Image</label>${createImageUpload('pr-img', p?.image||'')}</div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="savePartner(${p?.partner_id||'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
+    <div class="modal-actions" style="margin-top:20px">
+      <div>
+        ${partnerId ? `<button type="button" class="btn-danger" onclick="deletePartner(${partnerId})"><i class="fas fa-trash-alt"></i> Delete Partner</button>` : ''}
+      </div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="savePartner(${partnerId || 'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
+      </div>
     </div>`);
 }
 
@@ -1045,9 +1095,11 @@ window.savePartner = async function(id) {
 };
 
 window.deletePartner = async function(id) {
-  if (!confirm('Delete this partner?')) return;
-  await api('DELETE', `/partners/${id}`);
-  showToast('Deleted', 'success'); loadPartners(); loadDashboard();
+  if (!confirm('Are you sure you want to delete this partner?')) return;
+  const res = await api('DELETE', `/partners/${id}`);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast('Partner deleted', 'success');
+  closeModal(); loadPartners(); loadDashboard();
 };
 
 document.getElementById('btn-add-partner')?.addEventListener('click', () => openPartnerForm());
@@ -1125,9 +1177,14 @@ function openAttractionForm(a = null) {
     <div class="form-group"><label>Card Image (Thumbnail)</label>${createImageUpload('a-card', a?.card_image||'')}</div>
     <div class="form-group"><label>Banner Image (Detail Page Header Cover)</label>${createImageUpload('a-banner', a?.banner_image||a?.card_image||'')}</div>
     <div class="form-group"><label>Description / Overview</label><textarea id="a-desc" rows="4" placeholder="Detailed description of attraction & experiences...">${a?.description||a?.overview||''}</textarea></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveAttraction(${a?.attraction_id||'null'})"><i class="fas fa-save"></i> ${a ? 'Update' : 'Save'}</button>
+    <div class="modal-actions" style="margin-top:20px">
+      <div>
+        ${a?.attraction_id ? `<button type="button" class="btn-danger" onclick="deleteAttraction(${a.attraction_id})"><i class="fas fa-trash-alt"></i> Delete Attraction</button>` : ''}
+      </div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="saveAttraction(${a?.attraction_id||'null'})"><i class="fas fa-save"></i> ${a ? 'Update' : 'Save'}</button>
+      </div>
     </div>`);
 }
 
@@ -1158,9 +1215,11 @@ window.saveAttraction = async function(id) {
 };
 
 window.deleteAttraction = async function(id) {
-  if (!confirm('Delete this attraction?')) return;
-  await api('DELETE', `/attractions/${id}`);
-  showToast('Deleted', 'success'); loadAttractions(); loadDashboard();
+  if (!confirm('Are you sure you want to delete this attraction?')) return;
+  const res = await api('DELETE', `/attractions/${id}`);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast('Attraction deleted', 'success');
+  closeModal(); loadAttractions(); loadDashboard();
 };
 
 document.getElementById('btn-add-attraction')?.addEventListener('click', () => openAttractionForm());
@@ -1189,13 +1248,19 @@ async function loadPosters() {
 }
 
 function openPosterForm(p = null) {
+  const posterId = p?.poster_id || p?.id;
   openModal(p ? 'Edit Promotional Banner' : 'Add Promotional Banner', `
     <div class="form-group"><label>Banner Title / Name *</label><input id="p-title" value="${p?.title||p?.name||''}" placeholder="e.g. Summer Special Holiday Discount"></div>
     <div class="form-group"><label>Promotional Banner Image (Long Image) *</label>${createImageUpload('p-img', p?.image||'')}</div>
     <div class="form-group"><label>Target Redirect Link (Optional)</label><input id="p-link" value="${p?.link||''}" placeholder="e.g. /holiday-package.html or /attraction.html"></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="savePoster(${p?.poster_id||'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
+    <div class="modal-actions" style="margin-top:20px">
+      <div>
+        ${posterId ? `<button type="button" class="btn-danger" onclick="deletePoster(${posterId})"><i class="fas fa-trash-alt"></i> Delete Banner</button>` : ''}
+      </div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="savePoster(${posterId || 'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
+      </div>
     </div>`);
 }
 
@@ -1218,8 +1283,10 @@ window.savePoster = async function(id) {
 
 window.deletePoster = async function(id) {
   if (!confirm('Delete this promotional banner?')) return;
-  await api('DELETE', `/posters/${id}`);
-  showToast('Deleted', 'success'); loadPosters(); loadDashboard();
+  const res = await api('DELETE', `/posters/${id}`);
+  if (res?.error) { showToast(res.error, 'error'); return; }
+  showToast('Deleted', 'success');
+  closeModal(); loadPosters(); loadDashboard();
 };
 
 document.getElementById('btn-add-poster')?.addEventListener('click', () => openPosterForm());
@@ -1350,6 +1417,7 @@ window.searchEnquiries = function(val) {
 function openEnquiryForm(e = null) {
   const pkgOptions = packages.map(p => `<option value="${p.package_name||p.title}">${p.package_name||p.title}</option>`).join('');
   const destOptions = destinations.map(d => `<option value="${d.destination_name||d.name}">${d.destination_name||d.name}</option>`).join('');
+  const enqId = e?.enquiry_id || e?.id;
 
   openModal(e ? 'Edit Enquiry' : 'Log New Enquiry', `
     <div class="form-group">
@@ -1417,9 +1485,14 @@ function openEnquiryForm(e = null) {
       </select>
     </div>
 
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveEnquiry(${e?.enquiry_id||'null'})"><i class="fas fa-save"></i> ${e ? 'Update Enquiry' : 'Save Enquiry'}</button>
+    <div class="modal-actions" style="margin-top:20px">
+      <div>
+        ${enqId ? `<button type="button" class="btn-danger" onclick="deleteEnquiry(${enqId})"><i class="fas fa-trash-alt"></i> Delete Enquiry</button>` : ''}
+      </div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="saveEnquiry(${enqId || 'null'})"><i class="fas fa-save"></i> ${e ? 'Update Enquiry' : 'Save Enquiry'}</button>
+      </div>
     </div>
   `);
 }
@@ -1519,10 +1592,15 @@ window.viewEnquiryModal = function(id) {
       </div>` : ''}
     </div>
 
-    <div class="modal-actions" style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
-      <button class="btn-cancel" onclick="closeModal()">Close</button>
-      ${cleanPhone ? `<a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent('Hello ' + (e.name||'') + ', regarding your enquiry for ' + destOrPkg + ' on Mangalam Travel & Tours...')}" target="_blank" class="btn-primary" style="background:#25D366;text-decoration:none;display:inline-flex;align-items:center;gap:6px"><i class="fab fa-whatsapp"></i> Chat on WhatsApp</a>` : ''}
-      <a href="tel:${e.phone}" class="btn-primary" style="background:#2563eb;text-decoration:none;display:inline-flex;align-items:center;gap:6px"><i class="fas fa-phone-alt"></i> Call Customer</a>
+    <div class="modal-actions" style="margin-top:20px">
+      <div>
+        <button type="button" class="btn-danger" onclick="deleteEnquiry(${e.enquiry_id || e.id})"><i class="fas fa-trash-alt"></i> Delete</button>
+      </div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Close</button>
+        ${cleanPhone ? `<a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent('Hello ' + (e.name||'') + ', regarding your enquiry for ' + destOrPkg + ' on Mangalam Travel & Tours...')}" target="_blank" class="btn-primary" style="background:#25D366;text-decoration:none;display:inline-flex;align-items:center;gap:6px"><i class="fab fa-whatsapp"></i> Chat on WhatsApp</a>` : ''}
+        <a href="tel:${e.phone}" class="btn-primary" style="background:#2563eb;text-decoration:none;display:inline-flex;align-items:center;gap:6px"><i class="fas fa-phone-alt"></i> Call Customer</a>
+      </div>
     </div>
   `);
 };
@@ -1535,9 +1613,11 @@ window.updateEnquiryStatus = async function(id, status) {
 };
 
 window.deleteEnquiry = async function(id) {
-  if (!confirm('Delete this trip enquiry?')) return;
-  await api('DELETE', `/enquiries/${id}`);
+  if (!confirm('Are you sure you want to delete this trip enquiry?')) return;
+  const res = await api('DELETE', `/enquiries/${id}`);
+  if (res?.error) { showToast(res.error, 'error'); return; }
   showToast('Enquiry deleted', 'success');
+  closeModal();
   loadEnquiries(); loadDashboard();
 };
 
@@ -1722,9 +1802,14 @@ function openSeoForm(s = null) {
       </select>
     </div>
 
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveSeo(${s?.id || 'null'})"><i class="fas fa-save"></i> ${s ? 'Update SEO' : 'Save SEO'}</button>
+    <div class="modal-actions" style="margin-top:20px">
+      <div>
+        ${s?.id ? `<button type="button" class="btn-danger" onclick="deleteSeo(${s.id})"><i class="fas fa-trash-alt"></i> Delete SEO</button>` : ''}
+      </div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="saveSeo(${s?.id || 'null'})"><i class="fas fa-save"></i> ${s ? 'Update SEO' : 'Save SEO'}</button>
+      </div>
     </div>
   `);
 }
@@ -1794,9 +1879,11 @@ window.saveSeo = async function(id) {
 };
 
 window.deleteSeo = async function(id) {
-  if (!confirm('Delete this SEO configuration?')) return;
-  await api('DELETE', `/seo/${id}`);
+  if (!confirm('Are you sure you want to delete this SEO configuration?')) return;
+  const res = await api('DELETE', `/seo/${id}`);
+  if (res?.error) { showToast(res.error, 'error'); return; }
   showToast('SEO configuration deleted', 'success');
+  closeModal();
   loadSeo(); loadDashboard();
 };
 
@@ -1870,9 +1957,14 @@ function openGalleryForm(g = null) {
         <label>Caption / Short Description</label>
         <textarea id="g-caption" rows="2" placeholder="Brief memory notes about this tour moment...">${escapeHtml(g?.caption || '')}</textarea>
       </div>
-      <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px">
-        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
-        <button type="submit" class="btn-primary">${g ? 'Update Photo' : 'Save Photo'}</button>
+      <div class="modal-actions" style="margin-top:20px">
+        <div>
+          ${id ? `<button type="button" class="btn-danger" onclick="deleteGallery(${id})"><i class="fas fa-trash-alt"></i> Delete Photo</button>` : ''}
+        </div>
+        <div class="modal-actions-right">
+          <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn-primary">${g ? 'Update Photo' : 'Save Photo'}</button>
+        </div>
       </div>
     </form>
   `);
@@ -1909,10 +2001,11 @@ window.saveGallery = async function(e, id = null) {
 };
 
 window.deleteGallery = async function(id) {
-  if (!confirm('Delete this photo from Gallery?')) return;
+  if (!confirm('Are you sure you want to delete this photo from Gallery?')) return;
   const res = await api('DELETE', `/gallery/${id}`);
   if (res?.error) { showToast(res.error, 'error'); return; }
   showToast('Photo deleted from Gallery', 'success');
+  closeModal();
   await loadGallery();
   loadDashboard();
 };

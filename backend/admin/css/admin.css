@@ -279,6 +279,29 @@ body {
 .btn-edit:hover { background: #0369a1; color: #fff; }
 .btn-delete { background: #fff1f2; color: #be123c; }
 .btn-delete:hover { background: #be123c; color: #fff; }
+.btn-danger {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1.5px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: all var(--transition);
+}
+.btn-danger:hover {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+  box-shadow: 0 4px 12px rgba(220,38,38,0.25);
+  transform: translateY(-1px);
+}
+.btn-danger i { font-size: 13px; }
 
 /* ── TABLE ─────────────────────────────────────────────────── */
 .table-wrap {
@@ -457,11 +480,18 @@ body {
 .form-row-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .modal-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
+}
+.modal-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
 }
 .btn-cancel {
   background: #f3f4f6;
