@@ -448,7 +448,6 @@ body {
 .modal-close:hover { background: #fee2e2; color: var(--accent); }
 .modal-body {
   padding: 24px;
-  padding-bottom: 90px;
   overflow-y: auto;
   flex: 1;
 }
@@ -484,20 +483,13 @@ body {
 .form-group textarea { resize: vertical; min-height: 90px; }
 .form-row-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .modal-actions {
-  position: sticky;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #ffffff;
-  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 24px -24px -90px -24px;
-  padding: 16px 24px;
-  border-top: 1.5px solid #e5e7eb;
-  box-shadow: 0 -6px 24px rgba(0,0,0,0.08);
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
 }
 .modal-actions-right {
   display: flex;
