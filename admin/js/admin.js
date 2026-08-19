@@ -1630,6 +1630,24 @@ window.viewEnquiryModal = function(id) {
   // Convert any URL or uploaded file in notes into a clickable link
   const formattedNotes = (e.notes || '').replace(/((https?:\/\/|\/uploads\/)[^\s\n\r]+)/g, '<a href="$1" target="_blank" style="color:#2563eb;text-decoration:underline;font-weight:bold"><i class="fas fa-file-download"></i> View / Download Attachment ($1)</a>');
 
+  // Build only the details provided by the customer
+  const tripDetails = [];
+  tripDetails.push(`<div><span style="color:#64748b">Enquiry Type:</span> <strong>${typeText}</strong></div>`);
+  tripDetails.push(`<div><span style="color:#64748b">Destination / Package:</span> <strong style="color:#dc2626">${destOrPkg}</strong></div>`);
+  
+  if (e.start_date || e.end_date) {
+    tripDetails.push(`<div><span style="color:#64748b">Travel Dates:</span> <strong>${e.start_date || 'Flexible'} ${e.end_date ? 'to ' + e.end_date : ''}</strong></div>`);
+  }
+  if (e.duration_days) {
+    tripDetails.push(`<div><span style="color:#64748b">Duration:</span> <strong>${e.duration_days} Days</strong></div>`);
+  }
+  if (e.adults !== null && e.adults !== undefined && e.adults !== '') {
+    tripDetails.push(`<div><span style="color:#64748b">Travelers:</span> <strong>${e.adults} Adults${e.children ? `, ${e.children} Children` : ''}</strong></div>`);
+  }
+  if (e.hotel_rating) {
+    tripDetails.push(`<div><span style="color:#64748b">Hotel Preference:</span> <strong>${e.hotel_rating}</strong></div>`);
+  }
+
   openModal(`Enquiry Details: ${e.name || 'Lead'}`, `
     <div style="font-size:14px;line-height:1.6">
       <!-- Customer Information Card -->
@@ -1651,12 +1669,7 @@ window.viewEnquiryModal = function(id) {
       <div style="margin-bottom:16px;background:#fff;border:1px solid #f1f5f9;padding:14px;border-radius:10px">
         <h4 style="font-weight:700;margin-bottom:10px;color:#1e293b;border-bottom:1px solid #f1f5f9;padding-bottom:6px">Trip Information</h4>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
-          <div><span style="color:#64748b">Enquiry Type:</span> <strong>${typeText}</strong></div>
-          <div><span style="color:#64748b">Destination / Package:</span> <strong style="color:#dc2626">${destOrPkg}</strong></div>
-          <div><span style="color:#64748b">Travel Dates:</span> <strong>${e.start_date || 'Flexible'} to ${e.end_date || 'Flexible'}</strong></div>
-          <div><span style="color:#64748b">Duration:</span> <strong>${e.duration_days ? e.duration_days + ' Days' : 'Custom'}</strong></div>
-          <div><span style="color:#64748b">Travelers:</span> <strong>${e.adults||1} Adults, ${e.children||0} Children</strong></div>
-          <div><span style="color:#64748b">Hotel Preference:</span> <strong>${e.hotel_rating || '3-Star'}</strong></div>
+          ${tripDetails.join('')}
         </div>
       </div>
 
