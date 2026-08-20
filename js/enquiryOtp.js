@@ -248,6 +248,9 @@
         }
 
         if (sendBtn) {
+            if (sendBtn.__enquiryOtpInstance) {
+                return sendBtn.__enquiryOtpInstance;
+            }
             sendBtn.removeEventListener('click', sendOtp);
             sendBtn.addEventListener('click', sendOtp);
         }
@@ -259,12 +262,15 @@
             phoneInput.addEventListener('input', () => { if (verified) reset(); });
         }
 
-        return { requireVerified, reset, isVerified: () => verified, getPhone, sendOtp, markVerified };
+        const instance = { requireVerified, reset, isVerified: () => verified, getPhone, sendOtp, markVerified };
+        if (sendBtn) {
+            sendBtn.__enquiryOtpInstance = instance;
+        }
+        return instance;
     }
 
     const PREFIX_CONFIG = {
         contact:       { phone: 'contact-phone',   send: 'contact-sendOtpBtn',   verify: 'contact-verifyOtpBtn',   otp: 'contact-otp',   container: 'contact-otpFieldContainer',   status: 'contact-otpStatusMsg' },
-        customizetrip: { phone: 'contact-phone',   send: 'contact-sendOtpBtn',   verify: 'contact-verifyOtpBtn',   otp: 'contact-otp',   container: 'contact-otpFieldContainer',   status: 'contact-otpStatusMsg' },
         career:        { phone: 'career-phone',    send: 'career-sendOtpBtn',    verify: 'career-verifyOtpBtn',    otp: 'career-otp',    container: 'career-otpFieldContainer',    status: 'career-otpStatusMsg' },
         cart:          { phone: 'enq-phone',       send: 'cart-sendOtpBtn',      verify: 'cart-verifyOtpBtn',      otp: 'cart-otp',      container: 'cart-otpFieldContainer',      status: 'cart-otpStatusMsg' },
         other:         { phone: 'other-phone',     send: 'other-sendOtpBtn',     verify: 'other-verifyOtpBtn',     otp: 'other-otp',     container: 'other-otpFieldContainer',     status: 'other-otpStatusMsg' },
@@ -275,6 +281,7 @@
     const boundInstances = {};
 
     function bindByPrefix(prefix) {
+        if (prefix === 'customizetrip') prefix = 'contact';
         if (boundInstances[prefix]) {
             return boundInstances[prefix];
         }
@@ -311,6 +318,7 @@
         bindByPrefix,
         init: initEnquiryOtps,
         getInstance(prefix) {
+            if (prefix === 'customizetrip') prefix = 'contact';
             if (!boundInstances[prefix]) boundInstances[prefix] = bindByPrefix(prefix);
             return boundInstances[prefix];
         },

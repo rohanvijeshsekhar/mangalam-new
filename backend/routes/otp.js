@@ -114,11 +114,21 @@ router.post('/send', async (req, res) => {
     return res.status(400).json({ status: 0, message: 'Invalid phone number.' });
   }
 
+  // Rate-limit / Debounce: If an OTP was sent in the last 15 seconds, avoid double-dispatch
+  const existing = otpStore.get(localPhone);
+  if (existing && existing.lastSent && (Date.now() - existing.lastSent < 15000)) {
+    return res.json({
+      status: 1,
+      message: `OTP sent successfully to your mobile number. Please check your SMS.`
+    });
+  }
+
   // Generate cryptographically random 6-digit OTP
   const otp = (Math.floor(Math.random() * 900000) + 100000).toString();
   const expiresAt = Date.now() + 10 * 60 * 1000; // Expires in 10 minutes (per DLT template)
+  const lastSent = Date.now();
 
-  otpStore.set(localPhone, { otp, expiresAt });
+  otpStore.set(localPhone, { otp, expiresAt, lastSent });
 
   // Exact DLT-registered message wording — do NOT alter this template.
   const msgText = `Mangalam Travel & Tours Your OTP is ${otp} for enquiry form verification. Valid for 10 minutes. Do not share this OTP with anyone.\nwww.mangalamtravel.com`;
