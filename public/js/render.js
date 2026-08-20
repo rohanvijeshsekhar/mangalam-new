@@ -5,30 +5,112 @@
 (function (window) {
     function getCountryFlagImg(destName) {
       const name = (destName || '').toLowerCase().trim();
-      let code = 'in'; // default fallback
-      if (name.includes('india') || name.includes('kerala') || name.includes('goa') || name.includes('delhi') || name.includes('kashmir') || name.includes('manali') || name.includes('rajasthan')) code = 'in';
-      else if (name.includes('dubai') || name.includes('uae') || name.includes('abu dhabi') || name.includes('sharjah')) code = 'ae';
-      else if (name.includes('singapore')) code = 'sg';
-      else if (name.includes('thailand') || name.includes('phuket') || name.includes('bangkok') || name.includes('pattaya') || name.includes('krabi')) code = 'th';
-      else if (name.includes('bali') || name.includes('indonesia') || name.includes('jakarta')) code = 'id';
-      else if (name.includes('malaysia') || name.includes('kuala lumpur') || name.includes('langkawi') || name.includes('genting')) code = 'my';
-      else if (name.includes('switzerland') || name.includes('swiss') || name.includes('zurich')) code = 'ch';
-      else if (name.includes('paris') || name.includes('france')) code = 'fr';
-      else if (name.includes('vietnam') || name.includes('hanoi') || name.includes('da nang')) code = 'vn';
-      else if (name.includes('maldives')) code = 'mv';
-      else if (name.includes('sri lanka') || name.includes('colombo')) code = 'lk';
-      else if (name.includes('japan') || name.includes('tokyo')) code = 'jp';
-      else if (name.includes('turkey') || name.includes('istanbul')) code = 'tr';
-      else if (name.includes('nepal') || name.includes('kathmandu')) code = 'np';
-      else if (name.includes('egypt') || name.includes('cairo')) code = 'eg';
-      else if (name.includes('london') || name.includes('uk') || name.includes('britain') || name.includes('england')) code = 'gb';
-      else if (name.includes('usa') || name.includes('america') || name.includes('new york')) code = 'us';
-      else if (name.includes('australia') || name.includes('sydney')) code = 'au';
-      else if (name.includes('greece') || name.includes('athens') || name.includes('santorini')) code = 'gr';
-      else if (name.includes('italy') || name.includes('rome') || name.includes('venice')) code = 'it';
-      else if (name.includes('spain') || name.includes('barcelona') || name.includes('madrid')) code = 'es';
+      if (!name) return 'https://flagcdn.com/w40/in.png';
 
-      return `https://flagcdn.com/w40/${code}.png`;
+      // Comprehensive Mapping for All Major International & Domestic Travel Destinations
+      const COUNTRY_MAP = [
+        // Central Asia & Caucasus
+        { code: 'kz', keys: ['kazakhstan', 'kazhakistan', 'kazakstan', 'almaty', 'astana', 'nur-sultan', 'shymkent'] },
+        { code: 'az', keys: ['azerbaijan', 'baku', 'gabala', 'sheki'] },
+        { code: 'ge', keys: ['georgia', 'tbilisi', 'batumi', 'kazbegi', 'kutaisi'] },
+        { code: 'am', keys: ['armenia', 'yerevan', 'gyumri'] },
+        { code: 'uz', keys: ['uzbekistan', 'tashkent', 'samarkand', 'bukhara', 'khiva'] },
+        { code: 'kg', keys: ['kyrgyzstan', 'bishkek', 'issyk-kul'] },
+        { code: 'tj', keys: ['tajikistan', 'dushanbe'] },
+        { code: 'tm', keys: ['turkmenistan', 'ashgabat'] },
+
+        // Middle East
+        { code: 'ae', keys: ['dubai', 'uae', 'united arab emirates', 'abu dhabi', 'sharjah', 'ras al khaimah', 'fujairah', 'ajman'] },
+        { code: 'sa', keys: ['saudi', 'saudi arabia', 'riyadh', 'jeddah', 'mecca', 'medina', 'alula', 'dammam'] },
+        { code: 'qa', keys: ['qatar', 'doha'] },
+        { code: 'om', keys: ['oman', 'muscat', 'salalah'] },
+        { code: 'bh', keys: ['bahrain', 'manama'] },
+        { code: 'kw', keys: ['kuwait'] },
+        { code: 'jo', keys: ['jordan', 'amman', 'petra', 'dead sea', 'wadi rum'] },
+        { code: 'lb', keys: ['lebanon', 'beirut'] },
+        { code: 'tr', keys: ['turkey', 'türkiye', 'istanbul', 'antalya', 'cappadocia', 'bodrum', 'ankara', 'izmir', 'pamukkale'] },
+        { code: 'eg', keys: ['egypt', 'cairo', 'alexandria', 'sharm', 'sharm el sheikh', 'hurghada', 'luxor', 'giza', 'aswan'] },
+        { code: 'il', keys: ['israel', 'jerusalem', 'tel aviv'] },
+
+        // Southeast Asia
+        { code: 'th', keys: ['thailand', 'phuket', 'bangkok', 'pattaya', 'krabi', 'chiang mai', 'koh samui', 'hua hin'] },
+        { code: 'sg', keys: ['singapore', 'sentosa'] },
+        { code: 'my', keys: ['malaysia', 'kuala lumpur', 'langkawi', 'genting', 'penang', 'borneo', 'sabah', 'kota kinabalu'] },
+        { code: 'id', keys: ['bali', 'indonesia', 'jakarta', 'lombok', 'ubud', 'seminyak', 'komodo', 'gili'] },
+        { code: 'vn', keys: ['vietnam', 'hanoi', 'da nang', 'ho chi minh', 'saigon', 'phu quoc', 'halong', 'ha long', 'nha trang', 'hoi an'] },
+        { code: 'ph', keys: ['philippines', 'manila', 'boracay', 'cebu', 'palawan', 'el nido'] },
+        { code: 'kh', keys: ['cambodia', 'siem reap', 'phnom penh', 'angkor'] },
+        { code: 'la', keys: ['laos', 'vientiane', 'luang prabang'] },
+        { code: 'mm', keys: ['myanmar', 'burma', 'yangon', 'mandalay', 'bagan'] },
+
+        // South Asia & Indian Ocean
+        { code: 'mv', keys: ['maldives', 'male', 'maafushi'] },
+        { code: 'lk', keys: ['sri lanka', 'colombo', 'kandy', 'bentota', 'galle', 'nuwara eliya', 'sigiriya'] },
+        { code: 'mu', keys: ['mauritius', 'port louis'] },
+        { code: 'sc', keys: ['seychelles', 'mahe', 'praslin'] },
+        { code: 'np', keys: ['nepal', 'kathmandu', 'pokhara', 'everest'] },
+        { code: 'bt', keys: ['bhutan', 'thimphu', 'paro', 'punakha'] },
+
+        // East Asia
+        { code: 'jp', keys: ['japan', 'tokyo', 'kyoto', 'osaka', 'hokkaido', 'mount fuji', 'fuji', 'hiroshima'] },
+        { code: 'kr', keys: ['korea', 'south korea', 'seoul', 'busan', 'jeju'] },
+        { code: 'cn', keys: ['china', 'beijing', 'shanghai', 'guangzhou', 'shenzhen'] },
+        { code: 'hk', keys: ['hong kong', 'hongkong'] },
+        { code: 'mo', keys: ['macau', 'macao'] },
+        { code: 'tw', keys: ['taiwan', 'taipei'] },
+
+        // Europe
+        { code: 'ch', keys: ['switzerland', 'swiss', 'zurich', 'geneva', 'lucerne', 'interlaken', 'alps', 'zermatt', 'grindelwald'] },
+        { code: 'fr', keys: ['france', 'paris', 'nice', 'lyon', 'cannes', 'monaco', 'marseille', 'bordeaux'] },
+        { code: 'gb', keys: ['uk', 'united kingdom', 'britain', 'england', 'london', 'scotland', 'edinburgh', 'manchester'] },
+        { code: 'it', keys: ['italy', 'rome', 'venice', 'milan', 'florence', 'amalfi', 'naples', 'sicily', 'pisa', 'lake como'] },
+        { code: 'es', keys: ['spain', 'barcelona', 'madrid', 'seville', 'ibiza', 'mallorca', 'valencia', 'granada', 'malaga', 'tenerife'] },
+        { code: 'de', keys: ['germany', 'berlin', 'munich', 'frankfurt', 'bavaria', 'hamburg', 'cologne'] },
+        { code: 'nl', keys: ['netherlands', 'holland', 'amsterdam', 'rotterdam'] },
+        { code: 'be', keys: ['belgium', 'brussels', 'bruges', 'ghent', 'antwerp'] },
+        { code: 'at', keys: ['austria', 'vienna', 'salzburg', 'innsbruck', 'hallstatt'] },
+        { code: 'gr', keys: ['greece', 'athens', 'santorini', 'mykonos', 'crete', 'rhodes', 'corfu'] },
+        { code: 'cz', keys: ['czech', 'czech republic', 'czechia', 'prague'] },
+        { code: 'hu', keys: ['hungary', 'budapest'] },
+        { code: 'pt', keys: ['portugal', 'lisbon', 'porto', 'algarve', 'madeira'] },
+        { code: 'ie', keys: ['ireland', 'dublin', 'galway'] },
+        { code: 'hr', keys: ['croatia', 'dubrovnik', 'split', 'zagreb', 'hvar'] },
+        { code: 'no', keys: ['norway', 'oslo', 'bergen', 'tromso', 'fjords'] },
+        { code: 'se', keys: ['sweden', 'stockholm', 'gothenburg'] },
+        { code: 'fi', keys: ['finland', 'helsinki', 'lapland', 'rovaniemi'] },
+        { code: 'dk', keys: ['denmark', 'copenhagen'] },
+        { code: 'is', keys: ['iceland', 'reykjavik'] },
+        { code: 'ru', keys: ['russia', 'moscow', 'st petersburg', 'saint petersburg'] },
+        { code: 'pl', keys: ['poland', 'warsaw', 'krakow'] },
+        { code: 'va', keys: ['vatican', 'vatican city'] },
+
+        // Africa
+        { code: 'ke', keys: ['kenya', 'nairobi', 'masai mara'] },
+        { code: 'tz', keys: ['tanzania', 'zanzibar', 'serengeti', 'kilimanjaro'] },
+        { code: 'za', keys: ['south africa', 'cape town', 'johannesburg', 'kruger', 'durban'] },
+        { code: 'ma', keys: ['morocco', 'marrakech', 'casablanca', 'rabat', 'fez'] },
+
+        // Americas & Oceania
+        { code: 'us', keys: ['usa', 'united states', 'america', 'new york', 'california', 'florida', 'las vegas', 'hawaii', 'los angeles', 'san francisco', 'miami', 'orlando'] },
+        { code: 'ca', keys: ['canada', 'toronto', 'vancouver', 'montreal', 'banff', 'niagara'] },
+        { code: 'au', keys: ['australia', 'sydney', 'melbourne', 'brisbane', 'gold coast', 'cairns', 'perth'] },
+        { code: 'nz', keys: ['new zealand', 'auckland', 'queenstown', 'wellington', 'christchurch', 'rotorua'] },
+        { code: 'br', keys: ['brazil', 'rio de janeiro', 'rio', 'sao paulo'] },
+        { code: 'ar', keys: ['argentina', 'buenos aires', 'patagonia'] },
+        { code: 'pe', keys: ['peru', 'lima', 'cusco', 'machu picchu'] },
+        { code: 'mx', keys: ['mexico', 'cancun', 'mexico city', 'tulum'] },
+
+        // India / Domestic
+        { code: 'in', keys: ['india', 'kerala', 'goa', 'delhi', 'kashmir', 'manali', 'rajasthan', 'ladakh', 'shimla', 'andaman', 'munnar', 'wayanad', 'ooty', 'jaipur', 'agra', 'mumbai', 'varanasi', 'alleppey', 'kochi', 'trivandrum', 'coorg', 'hampi', 'rishikesh', 'darjeeling', 'sikkim', 'gangtok', 'leh'] }
+      ];
+
+      for (const entry of COUNTRY_MAP) {
+        if (entry.keys.some(k => name.includes(k))) {
+          return `https://flagcdn.com/w40/${entry.code}.png`;
+        }
+      }
+
+      return `https://flagcdn.com/w40/in.png`;
     }
 
     function destinationCard(destination) {
