@@ -1343,7 +1343,7 @@ function openPosterForm(p = null) {
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn-primary" onclick="savePoster(${posterId || 'null'})"><i class="fas fa-save"></i> ${p ? 'Update' : 'Save'}</button>
       </div>
-    </div>`, headerAction);
+    </div>`);
 }
 
 window.openPosterForm = openPosterForm;
