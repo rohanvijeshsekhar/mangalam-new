@@ -371,6 +371,30 @@ const contactHtml = `<!DOCTYPE html>
                                 </a>
                             </div>
                         </div>
+
+                        <!-- Chennai Branch -->
+                        <div class="bg-white rounded-3xl p-6 lg:p-8 border border-gray-100 shadow-md hover:shadow-xl hover:border-gray-300 transition-all duration-300 relative group flex flex-col justify-between" data-aos="fade-up" data-aos-delay="300">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-full uppercase tracking-wider font-dm-sans">
+                                        Branch Office
+                                    </span>
+                                    <div class="w-10 h-10 rounded-full bg-gray-50 text-gray-700 flex items-center justify-center group-hover:bg-gray-900 group-hover:text-white transition-colors duration-300">
+                                        <i class="fi fi-rr-marker text-lg"></i>
+                                    </div>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-900 font-[Quicksand] mb-2">Chennai</h3>
+                                <p class="text-xs font-bold text-gray-500 font-dm-sans uppercase tracking-wider mb-3">Tamil Nadu, India</p>
+                                <p class="text-gray-600 text-sm font-dm-sans leading-relaxed">
+                                    438, TTK Rd, Seetammal Colony, New Colony, Alwarpet, Chennai, Tamil Nadu 600018
+                                </p>
+                            </div>
+                            <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                                <a href="https://maps.google.com/?q=438,+TTK+Rd,+Seetammal+Colony,+New+Colony,+Alwarpet,+Chennai,+Tamil+Nadu+600018" target="_blank" class="inline-flex items-center text-xs font-bold text-gray-900 hover:text-red-600 transition-colors font-dm-sans">
+                                    Get Directions <i class="fi fi-rr-arrow-right ml-1.5"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
