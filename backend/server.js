@@ -86,8 +86,10 @@ app.post(['/action/submitTripEnquiry.html', '/action/submitTripEnquiry'], async 
 });
 
 // ── Static Files ────────────────────────────────────────────────────────────
-// Serve uploaded images
+// Serve uploaded images — check both backend/uploads AND root-level uploads
+// (root uploads may exist on Hostinger from legacy or direct File Manager uploads)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 // Serve admin panel
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 // Serve main website static files (HTML, CSS, JS, Assets)
@@ -160,7 +162,14 @@ app.get('/:page.html', (req, res, next) => {
 // ── Start Server & Initialize Database ──────────────────────────────────────
 async function start() {
   await testConnection();
-  await runMigrations();
+
+  // Set SKIP_MIGRATIONS=true in Hostinger Node.js environment variables to bypass
+  // schema checks if you want zero write activity at boot. Default is to run checks.
+  if (process.env.SKIP_MIGRATIONS !== 'true') {
+    await runMigrations();
+  } else {
+    console.log('⏭️  Skipping migrations (SKIP_MIGRATIONS=true)');
+  }
 
   app.listen(PORT, () => {
     console.log(`\n🚀 Mangalam Admin Backend running at http://localhost:${PORT}`);
