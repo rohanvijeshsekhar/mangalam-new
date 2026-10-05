@@ -25,6 +25,7 @@
     "qs": "^6.16.0",
     "multer-storage-cloudinary": {
       "cloudinary": "$cloudinary"
-    }
+    },
+    "chokidar": "^4.0.3"
   }
 }
