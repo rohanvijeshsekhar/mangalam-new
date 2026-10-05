@@ -40,6 +40,26 @@ function toAbsoluteUrl(urlStr) {
   return `https://mangalamtravel.com/${clean}`;
 }
 
+function normalizePageRoute(routeStr) {
+  if (!routeStr) return '/';
+  let r = routeStr.trim();
+  try {
+    const withoutSlash = r.replace(/^\/+/, '');
+    if (withoutSlash.startsWith('http://') || withoutSlash.startsWith('https://')) {
+      const u = new URL(withoutSlash);
+      r = (u.pathname || '/') + (u.search || '');
+    }
+  } catch (_) {
+    r = r.replace(/^\/?https?:\/\/[^\/]+/, '');
+  }
+  if (!r.startsWith('/')) r = `/${r}`;
+  const lower = r.toLowerCase();
+  if (lower === '' || lower === '/' || lower === '/index.html' || lower === '/index.php' || lower === '/home') {
+    return '/';
+  }
+  return r;
+}
+
 function escapeAttr(str) {
   if (!str) return '';
   return String(str)
@@ -60,14 +80,11 @@ function escapeHtml(str) {
 
 async function findSeoMatch(rawRoute) {
   try {
-    const raw = (rawRoute || '/').trim();
-    const route = raw.toLowerCase();
-    const normalizedRoute = route.startsWith('/') ? route : `/${route}`;
-
+    const normalizedRoute = normalizePageRoute(rawRoute).toLowerCase();
     const all = (await store.getAll('seo')).map(map);
 
-    // 1. Exact match (case-insensitive)
-    let matched = all.find(s => s.page_route.toLowerCase() === normalizedRoute);
+    // 1. Exact match with normalized routes
+    let matched = all.find(s => normalizePageRoute(s.page_route).toLowerCase() === normalizedRoute);
 
     // 2. Query param matching (e.g. /packages.html?slug=dubai or /packages.html?slug=dubai&type=package)
     if (!matched && normalizedRoute.includes('?')) {
@@ -77,24 +94,24 @@ async function findSeoMatch(rawRoute) {
       if (slug) {
         const cleanSlug = slug.toLowerCase().trim();
         matched = all.find(s => {
-          const sRoute = s.page_route.toLowerCase().trim();
-          if (!sRoute.includes('?')) return false;
-          const [sPart, sQuery] = sRoute.split('?');
+          const sNorm = normalizePageRoute(s.page_route).toLowerCase();
+          if (!sNorm.includes('?')) return false;
+          const [sPart, sQuery] = sNorm.split('?');
           const sParams = new URLSearchParams(sQuery);
           const sSlug = sParams.get('slug');
           if (sSlug && sSlug.toLowerCase().trim() === cleanSlug) {
             return true;
           }
-          return sRoute === `${pathPart}?slug=${cleanSlug}`;
+          return sNorm === `${pathPart}?slug=${cleanSlug}`;
         });
       }
     }
 
     // 3. Match root / homepage
-    if (!matched && (normalizedRoute === '' || normalizedRoute === '/' || normalizedRoute === '/index.html' || normalizedRoute === '/index.php')) {
+    if (!matched && normalizedRoute === '/') {
       matched = all.find(s => {
-        const r = s.page_route.toLowerCase().trim();
-        return r === '/' || r === '/index.html' || r === 'index.html' || r === '' || r === 'home';
+        const r = normalizePageRoute(s.page_route).toLowerCase();
+        return r === '/' || (s.page_name && s.page_name.toLowerCase().includes('home page'));
       });
     }
 
@@ -102,8 +119,9 @@ async function findSeoMatch(rawRoute) {
     if (!matched) {
       const base = normalizedRoute.split('?')[0].replace(/\.html$/i, '');
       matched = all.find(s => {
-        if (s.page_route.includes('?')) return false;
-        return s.page_route.split('?')[0].replace(/\.html$/i, '').toLowerCase() === base;
+        const sNorm = normalizePageRoute(s.page_route).toLowerCase();
+        if (sNorm.includes('?')) return false;
+        return sNorm.split('?')[0].replace(/\.html$/i, '') === base;
       });
     }
 
@@ -249,11 +267,12 @@ function injectSeoIntoHtml(html, entry) {
 
 function syncSeoToStaticHtml(entry) {
   if (!entry || !entry.page_route) return;
+  const normRoute = normalizePageRoute(entry.page_route);
   // Dynamic query-param routes (like /packages.html?slug=...) are handled dynamically by server and api.js
-  if (entry.page_route.includes('?')) return;
+  if (normRoute.includes('?')) return;
 
-  const isHome = entry.page_route === '/' || entry.page_route === '/index.html' || entry.page_route === 'index.html' || entry.page_route === '' || entry.page_route === 'home';
-  let filename = isHome ? 'index.html' : entry.page_route.replace(/^\//, '');
+  const isHome = normRoute === '/';
+  let filename = isHome ? 'index.html' : normRoute.replace(/^\//, '');
   if (!filename.endsWith('.html')) filename += '.html';
 
   const pathsToCheck = [
@@ -310,7 +329,7 @@ router.post('/', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'Page Route and Meta Title are required.' });
     }
 
-    const cleanRoute = page_route.startsWith('/') ? page_route.trim() : `/${page_route.trim()}`;
+    const cleanRoute = normalizePageRoute(page_route);
     
     // Check if route already exists in SEO table
     let existing = null;
@@ -362,7 +381,7 @@ router.put('/:id', verifyToken, async (req, res) => {
 
     const updates = {};
     if (page_route !== undefined) {
-      const cleanRoute = page_route.startsWith('/') ? page_route.trim() : `/${page_route.trim()}`;
+      const cleanRoute = normalizePageRoute(page_route);
       // Check if page_route is already used by another record (not this one)
       const existing = await store.getOne('seo', 'WHERE LOWER(page_route) = ? AND id != ?', [cleanRoute.toLowerCase(), Number(req.params.id)]);
       if (existing) {

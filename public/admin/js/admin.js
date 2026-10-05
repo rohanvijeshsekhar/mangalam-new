@@ -2010,7 +2010,7 @@ window.editSeo = async function(id) {
 };
 
 window.saveSeo = async function(id) {
-  const route = document.getElementById('seo-route').value.trim();
+  let route = document.getElementById('seo-route').value.trim();
   const pageName = document.getElementById('seo-page-name').value.trim();
   const title = document.getElementById('seo-title').value.trim();
   const desc = document.getElementById('seo-desc').value.trim();
@@ -2023,6 +2023,22 @@ window.saveSeo = async function(id) {
   if (!route) {
     showToast('Page Route / URL Path is required', 'error');
     return;
+  }
+
+  // Normalize route if user entered a full URL (e.g. https://mangalamtravel.com/ or https://mangalamtravel.com/about.html)
+  try {
+    const withoutSlash = route.replace(/^\/+/, '');
+    if (withoutSlash.startsWith('http://') || withoutSlash.startsWith('https://')) {
+      const u = new URL(withoutSlash);
+      route = (u.pathname || '/') + (u.search || '');
+    }
+  } catch (_) {
+    route = route.replace(/^\/?https?:\/\/[^\/]+/, '');
+  }
+  if (!route.startsWith('/')) route = '/' + route;
+  const lower = route.toLowerCase();
+  if (lower === '' || lower === '/' || lower === '/index.html' || lower === '/index.php' || lower === '/home') {
+    route = '/';
   }
 
   const body = {
