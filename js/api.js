@@ -200,10 +200,18 @@ async function loadDestinationDropdowns() {
 }
 
 // ─── Dynamic Google & Social SEO Meta Injector ───────────────────────────────
+function toAbsoluteUrl(urlStr) {
+  if (!urlStr) return '';
+  const trimmed = urlStr.trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  const clean = trimmed.replace(/^\.?\//, '');
+  return `https://mangalamtravel.com/${clean}`;
+}
+
 async function loadDynamicSeo(overrideSlug) {
   try {
     const pathname = window.location.pathname || '/';
-    const cleanPath = pathname === '/' || pathname.endsWith('/index.html') ? '/' : pathname;
+    const cleanPath = (pathname === '/' || pathname.endsWith('/index.html') || pathname.endsWith('/index.php')) ? '/' : pathname;
     const search = window.location.search || '';
     const params = new URLSearchParams(search);
     const slug = (overrideSlug || params.get('slug') || '').trim().toLowerCase();
@@ -223,7 +231,7 @@ async function loadDynamicSeo(overrideSlug) {
       } catch (_) {}
     }
 
-    // 2. If no match yet, fall back to clean base path (e.g. /about.html, /contact.html)
+    // 2. If no match yet, fall back to clean base path (e.g. /about.html, /contact.html, /)
     if (!seo || !seo.id) {
       try {
         seo = await apiGet(`/api/seo/match?route=${encodeURIComponent(cleanPath)}`);
@@ -267,10 +275,11 @@ async function loadDynamicSeo(overrideSlug) {
     if (seo.robots) {
       setMeta('robots', 'name', seo.robots);
     }
-    if (seo.canonical_url) {
-      setLink('canonical', seo.canonical_url);
-      setMeta('og:url', 'property', seo.canonical_url);
-      setMeta('twitter:url', 'name', seo.canonical_url);
+    const canUrl = seo.canonical_url ? toAbsoluteUrl(seo.canonical_url) : (cleanPath === '/' ? 'https://mangalamtravel.com/' : window.location.href.split('#')[0]);
+    if (canUrl) {
+      setLink('canonical', canUrl);
+      setMeta('og:url', 'property', canUrl);
+      setMeta('twitter:url', 'name', canUrl);
     } else if (slug) {
       const currentUrl = window.location.href.split('#')[0];
       setLink('canonical', currentUrl);
@@ -278,11 +287,27 @@ async function loadDynamicSeo(overrideSlug) {
       setMeta('twitter:url', 'name', currentUrl);
     }
     if (seo.og_image) {
-      const resolved = resolveImg(seo.og_image);
+      const resolved = toAbsoluteUrl(seo.og_image);
       setMeta('og:image', 'property', resolved);
+      setMeta('og:image:secure_url', 'property', resolved);
       setMeta('twitter:image', 'name', resolved);
       setMeta('twitter:card', 'name', 'summary_large_image');
     }
+    setMeta('og:type', 'property', 'website');
+    setMeta('og:site_name', 'property', 'Mangalam Travel & Tours');
+
+    // 5. Update Schema.org Structured Data if present
+    const schemaScripts = document.querySelectorAll('script[type="application/ld+json"]');
+    schemaScripts.forEach(script => {
+      try {
+        const json = JSON.parse(script.textContent);
+        if (json && json['@type'] === 'TravelAgency') {
+          if (seo.meta_description) json.description = seo.meta_description;
+          if (seo.og_image) json.image = toAbsoluteUrl(seo.og_image);
+          script.textContent = JSON.stringify(json, null, 2);
+        }
+      } catch (_) {}
+    });
   } catch (_) {}
 }
 

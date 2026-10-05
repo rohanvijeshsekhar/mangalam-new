@@ -27,15 +27,45 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET SEO for specific page path (Frontend dynamic meta injection)
-router.get('/match', async (req, res) => {
+const fs = require('fs');
+const path = require('path');
+
+function toAbsoluteUrl(urlStr) {
+  if (!urlStr) return '';
+  const trimmed = urlStr.trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  const clean = trimmed.replace(/^\.?\//, '');
+  return `https://mangalamtravel.com/${clean}`;
+}
+
+function escapeAttr(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+async function findSeoMatch(rawRoute) {
   try {
-    const rawRoute = (req.query.route || req.query.path || '/').trim();
-    const route = rawRoute.toLowerCase();
+    const raw = (rawRoute || '/').trim();
+    const route = raw.toLowerCase();
     const normalizedRoute = route.startsWith('/') ? route : `/${route}`;
 
     const all = (await store.getAll('seo')).map(map);
-    
+
     // 1. Exact match (case-insensitive)
     let matched = all.find(s => s.page_route.toLowerCase() === normalizedRoute);
 
@@ -60,9 +90,12 @@ router.get('/match', async (req, res) => {
       }
     }
 
-    // 3. Match root
+    // 3. Match root / homepage
     if (!matched && (normalizedRoute === '' || normalizedRoute === '/' || normalizedRoute === '/index.html' || normalizedRoute === '/index.php')) {
-      matched = all.find(s => s.page_route.toLowerCase() === '/' || s.page_route.toLowerCase() === '/index.html');
+      matched = all.find(s => {
+        const r = s.page_route.toLowerCase().trim();
+        return r === '/' || r === '/index.html' || r === 'index.html' || r === '' || r === 'home';
+      });
     }
 
     // 4. Base html extension match (only match static pages WITHOUT query parameters)
@@ -74,6 +107,184 @@ router.get('/match', async (req, res) => {
       });
     }
 
+    return matched || null;
+  } catch (err) {
+    console.warn('[SEO] findSeoMatch error:', err);
+    return null;
+  }
+}
+
+function injectSeoIntoHtml(html, entry) {
+  if (!html || !entry) return html;
+  let content = html;
+
+  const isHome = entry.page_route === '/' || entry.page_route === '/index.html' || entry.page_route === 'index.html' || entry.page_route === '' || entry.page_route === 'home';
+  const title = (entry.meta_title || '').trim();
+  const desc = (entry.meta_description || '').trim();
+  const keywords = (entry.meta_keywords || '').trim();
+  const canonical = entry.canonical_url ? toAbsoluteUrl(entry.canonical_url) : (isHome ? 'https://mangalamtravel.com/' : '');
+  const ogImg = entry.og_image ? toAbsoluteUrl(entry.og_image) : (isHome ? 'https://mangalamtravel.com/assets/images/home-hero-desktop.jpg' : '');
+  const robots = (entry.robots || 'index, follow').trim();
+
+  // Title
+  if (title) {
+    if (/<title>[\s\S]*?<\/title>/i.test(content)) {
+      content = content.replace(/<title>[\s\S]*?<\/title>/i, () => '<title>' + escapeHtml(title) + '</title>');
+    } else {
+      content = content.replace(/<head>/i, '<head>\n    <title>' + escapeHtml(title) + '</title>');
+    }
+    if (/<meta\s+[^>]*name=["']title["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*name=["']title["'][^>]*>/i, () => '<meta name="title" content="' + escapeAttr(title) + '">');
+    } else {
+      content = content.replace(/<\/title>/i, '</title>\n    <meta name="title" content="' + escapeAttr(title) + '">');
+    }
+    if (/<meta\s+[^>]*property=["']og:title["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*property=["']og:title["'][^>]*>/i, () => '<meta property="og:title" content="' + escapeAttr(title) + '">');
+    } else {
+      content = content.replace(/<\/head>/i, '    <meta property="og:title" content="' + escapeAttr(title) + '">\n</head>');
+    }
+    if (/<meta\s+[^>]*name=["']twitter:title["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*name=["']twitter:title["'][^>]*>/i, () => '<meta name="twitter:title" content="' + escapeAttr(title) + '">');
+    } else {
+      content = content.replace(/<\/head>/i, '    <meta name="twitter:title" content="' + escapeAttr(title) + '">\n</head>');
+    }
+  }
+
+  // Description
+  if (desc) {
+    if (/<meta\s+[^>]*name=["']description["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*name=["']description["'][^>]*>/i, () => '<meta name="description" content="' + escapeAttr(desc) + '">');
+    } else {
+      content = content.replace(/<\/head>/i, '    <meta name="description" content="' + escapeAttr(desc) + '">\n</head>');
+    }
+    if (/<meta\s+[^>]*property=["']og:description["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*property=["']og:description["'][^>]*>/i, () => '<meta property="og:description" content="' + escapeAttr(desc) + '">');
+    } else {
+      content = content.replace(/<\/head>/i, '    <meta property="og:description" content="' + escapeAttr(desc) + '">\n</head>');
+    }
+    if (/<meta\s+[^>]*name=["']twitter:description["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*name=["']twitter:description["'][^>]*>/i, () => '<meta name="twitter:description" content="' + escapeAttr(desc) + '">');
+    } else {
+      content = content.replace(/<\/head>/i, '    <meta name="twitter:description" content="' + escapeAttr(desc) + '">\n</head>');
+    }
+  }
+
+  // Keywords
+  if (keywords) {
+    if (/<meta\s+[^>]*name=["']keywords["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*name=["']keywords["'][^>]*>/i, () => '<meta name="keywords" content="' + escapeAttr(keywords) + '">');
+    } else {
+      content = content.replace(/<\/head>/i, '    <meta name="keywords" content="' + escapeAttr(keywords) + '">\n</head>');
+    }
+  }
+
+  // Canonical
+  if (canonical) {
+    if (/<link\s+[^>]*rel=["']canonical["'][^>]*>/i.test(content)) {
+      content = content.replace(/<link\s+[^>]*rel=["']canonical["'][^>]*>/i, () => '<link rel="canonical" href="' + escapeAttr(canonical) + '" />');
+    } else {
+      content = content.replace(/<\/head>/i, '    <link rel="canonical" href="' + escapeAttr(canonical) + '" />\n</head>');
+    }
+    if (/<meta\s+[^>]*property=["']og:url["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*property=["']og:url["'][^>]*>/i, () => '<meta property="og:url" content="' + escapeAttr(canonical) + '">');
+    }
+    if (/<meta\s+[^>]*name=["']twitter:url["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*name=["']twitter:url["'][^>]*>/i, () => '<meta name="twitter:url" content="' + escapeAttr(canonical) + '">');
+    }
+  }
+
+  // OG & Twitter Images
+  if (ogImg) {
+    if (/<meta\s+[^>]*property=["']og:image["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*property=["']og:image["'][^>]*>/i, () => '<meta property="og:image" content="' + escapeAttr(ogImg) + '">');
+    } else {
+      content = content.replace(/<\/head>/i, '    <meta property="og:image" content="' + escapeAttr(ogImg) + '">\n</head>');
+    }
+    if (/<meta\s+[^>]*property=["']og:image:secure_url["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*property=["']og:image:secure_url["'][^>]*>/i, () => '<meta property="og:image:secure_url" content="' + escapeAttr(ogImg) + '">');
+    } else {
+      content = content.replace(/(<meta\s+property=["']og:image["'][^>]*>)/i, '$1\n    <meta property="og:image:secure_url" content="' + escapeAttr(ogImg) + '">');
+    }
+    if (/<meta\s+[^>]*name=["']twitter:image["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*name=["']twitter:image["'][^>]*>/i, () => '<meta name="twitter:image" content="' + escapeAttr(ogImg) + '">');
+    } else {
+      content = content.replace(/<\/head>/i, '    <meta name="twitter:image" content="' + escapeAttr(ogImg) + '">\n</head>');
+    }
+  }
+
+  // Robots
+  if (robots) {
+    if (/<meta\s+[^>]*name=["']robots["'][^>]*>/i.test(content)) {
+      content = content.replace(/<meta\s+[^>]*name=["']robots["'][^>]*>/i, () => '<meta name="robots" content="' + escapeAttr(robots) + '" />');
+    } else {
+      content = content.replace(/<\/head>/i, '    <meta name="robots" content="' + escapeAttr(robots) + '" />\n</head>');
+    }
+  }
+
+  // Ensure og:type and og:site_name exist
+  if (/<meta\s+property=["']og:type["'][^>]*>/i.test(content)) {
+    content = content.replace(/<meta\s+property=["']og:type["'][^>]*>/i, '<meta property="og:type" content="website">');
+  }
+  if (!/<meta\s+property=["']og:site_name["']/i.test(content)) {
+    content = content.replace(/<\/head>/i, '    <meta property="og:site_name" content="Mangalam Travel & Tours">\n</head>');
+  }
+
+  // Update Schema.org Structured Data description and image if present
+  if (desc || ogImg) {
+    content = content.replace(/(<script\s+type=["']application\/ld\+json["']>[\s\S]*?"@type"\s*:\s*"TravelAgency"[\s\S]*?<\/script>)/i, (schemaBlock) => {
+      let updatedBlock = schemaBlock;
+      if (desc) {
+        const jsonSafeDesc = desc.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, ' ');
+        updatedBlock = updatedBlock.replace(/"description"\s*:\s*"[^"]*"/, () => `"description": "${jsonSafeDesc}"`);
+      }
+      if (ogImg) {
+        updatedBlock = updatedBlock.replace(/"image"\s*:\s*"[^"]*"/, () => `"image": "${ogImg}"`);
+      }
+      return updatedBlock;
+    });
+  }
+
+  return content;
+}
+
+function syncSeoToStaticHtml(entry) {
+  if (!entry || !entry.page_route) return;
+  // Dynamic query-param routes (like /packages.html?slug=...) are handled dynamically by server and api.js
+  if (entry.page_route.includes('?')) return;
+
+  const isHome = entry.page_route === '/' || entry.page_route === '/index.html' || entry.page_route === 'index.html' || entry.page_route === '' || entry.page_route === 'home';
+  let filename = isHome ? 'index.html' : entry.page_route.replace(/^\//, '');
+  if (!filename.endsWith('.html')) filename += '.html';
+
+  const pathsToCheck = [
+    path.join(__dirname, '../../', filename),
+    path.join(__dirname, '../public', filename),
+    path.join(__dirname, '../../public', filename),
+    path.join(process.cwd(), filename),
+    path.join(process.cwd(), 'public', filename),
+    path.join(process.cwd(), 'backend', 'public', filename)
+  ];
+
+  const uniquePaths = [...new Set(pathsToCheck)];
+  for (const filePath of uniquePaths) {
+    if (fs.existsSync(filePath)) {
+      try {
+        let content = fs.readFileSync(filePath, 'utf8');
+        content = injectSeoIntoHtml(content, entry);
+        fs.writeFileSync(filePath, content, 'utf8');
+        console.log(`[SEO Sync] Updated static file: ${filePath}`);
+      } catch (err) {
+        console.warn(`[SEO Sync] Error updating static HTML: ${filePath}`, err.message);
+      }
+    }
+  }
+}
+
+// GET SEO for specific page path (Frontend dynamic meta injection)
+router.get('/match', async (req, res) => {
+  try {
+    const rawRoute = (req.query.route || req.query.path || '/').trim();
+    const matched = await findSeoMatch(rawRoute);
     res.json(matched || {});
   } catch (e) {
     res.status(500).json({ error: 'Failed to match SEO config' });
@@ -90,129 +301,6 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch SEO config' });
   }
 });
-
-const fs = require('fs');
-const path = require('path');
-
-function toAbsoluteUrl(urlStr) {
-  if (!urlStr) return '';
-  const trimmed = urlStr.trim();
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-    return trimmed;
-  }
-  const clean = trimmed.replace(/^\.?\//, '');
-  return `https://mangalamtravel.com/${clean}`;
-}
-
-function syncSeoToStaticHtml(entry) {
-  if (!entry || !entry.page_route) return;
-  // Dynamic query-param routes (like /packages.html?slug=...) are handled dynamically by seo.js
-  if (entry.page_route.includes('?')) return;
-  let filename = entry.page_route === '/' ? 'index.html' : entry.page_route.replace(/^\//, '');
-  if (!filename.endsWith('.html')) filename += '.html';
-
-  const pathsToCheck = [
-    path.join(__dirname, '../../', filename),
-    path.join(__dirname, '../public', filename),
-    path.join(__dirname, '../../public', filename)
-  ];
-
-  for (const filePath of pathsToCheck) {
-    if (fs.existsSync(filePath)) {
-      try {
-        let content = fs.readFileSync(filePath, 'utf8');
-
-        // Update or insert <title>
-        if (entry.meta_title) {
-          if (/<title>[\s\S]*?<\/title>/i.test(content)) {
-            content = content.replace(/<title>[\s\S]*?<\/title>/i, `<title>${entry.meta_title}</title>`);
-          }
-          if (/<meta\s+name="title"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+name="title"\s+content="[^"]*"/i, `<meta name="title" content="${entry.meta_title}"`);
-          }
-          if (/<meta\s+property="og:title"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+property="og:title"\s+content="[^"]*"/i, `<meta property="og:title" content="${entry.meta_title}"`);
-          }
-          if (/<meta\s+name="twitter:title"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+name="twitter:title"\s+content="[^"]*"/i, `<meta name="twitter:title" content="${entry.meta_title}"`);
-          }
-        }
-
-        // Update or insert <meta name="description">
-        if (entry.meta_description) {
-          if (/<meta\s+name="description"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+name="description"\s+content="[^"]*"/i, `<meta name="description" content="${entry.meta_description}"`);
-          }
-          if (/<meta\s+property="og:description"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+property="og:description"\s+content="[^"]*"/i, `<meta property="og:description" content="${entry.meta_description}"`);
-          }
-          if (/<meta\s+name="twitter:description"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+name="twitter:description"\s+content="[^"]*"/i, `<meta name="twitter:description" content="${entry.meta_description}"`);
-          }
-        }
-
-        // Update or insert <meta name="keywords">
-        if (entry.meta_keywords) {
-          if (/<meta\s+name="keywords"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+name="keywords"\s+content="[^"]*"/i, `<meta name="keywords" content="${entry.meta_keywords}"`);
-          }
-        }
-
-        // Update or insert <link rel="canonical">
-        if (entry.canonical_url) {
-          const canonical = toAbsoluteUrl(entry.canonical_url);
-          if (/<link\s+rel="canonical"\s+href="[^"]*"/i.test(content)) {
-            content = content.replace(/<link\s+rel="canonical"\s+href="[^"]*"/i, `<link rel="canonical" href="${canonical}"`);
-          } else if (/<link\s+href="[^"]*"\s+rel="canonical"/i.test(content)) {
-            content = content.replace(/<link\s+href="[^"]*"\s+rel="canonical"/i, `<link rel="canonical" href="${canonical}"`);
-          }
-          if (/<meta\s+property="og:url"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+property="og:url"\s+content="[^"]*"/i, `<meta property="og:url" content="${canonical}"`);
-          }
-          if (/<meta\s+name="twitter:url"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+name="twitter:url"\s+content="[^"]*"/i, `<meta name="twitter:url" content="${canonical}"`);
-          }
-        }
-
-        // Update or insert <meta property="og:type">
-        if (/<meta\s+property="og:type"\s+content="[^"]*"/i.test(content)) {
-          content = content.replace(/<meta\s+property="og:type"\s+content="[^"]*"/i, `<meta property="og:type" content="website"`);
-        }
-
-        // Update or insert <meta property="og:image"> and <meta name="twitter:image">
-        if (entry.og_image) {
-          const absOgImage = toAbsoluteUrl(entry.og_image);
-          if (/<meta\s+property="og:image"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+property="og:image"\s+content="[^"]*"/i, `<meta property="og:image" content="${absOgImage}"`);
-          } else {
-            content = content.replace(/<\/head>/i, `    <meta property="og:image" content="${absOgImage}">\n</head>`);
-          }
-          if (/<meta\s+property="og:image:secure_url"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+property="og:image:secure_url"\s+content="[^"]*"/i, `<meta property="og:image:secure_url" content="${absOgImage}"`);
-          } else {
-            content = content.replace(/(<meta\s+property="og:image"[^>]*>)/i, `$1\n    <meta property="og:image:secure_url" content="${absOgImage}">`);
-          }
-          if (/<meta\s+name="twitter:image"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+name="twitter:image"\s+content="[^"]*"/i, `<meta name="twitter:image" content="${absOgImage}"`);
-          } else {
-            content = content.replace(/<\/head>/i, `    <meta name="twitter:image" content="${absOgImage}">\n</head>`);
-          }
-        }
-
-        // Update or insert <meta name="robots">
-        if (entry.robots) {
-          if (/<meta\s+name="robots"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+name="robots"\s+content="[^"]*"/i, `<meta name="robots" content="${entry.robots}"`);
-          }
-        }
-
-        fs.writeFileSync(filePath, content, 'utf8');
-      } catch (err) {
-        console.warn('[SEO Sync] Error updating static HTML:', filePath, err);
-      }
-    }
-  }
-}
 
 // POST create or upsert SEO entry (Admin)
 router.post('/', verifyToken, async (req, res) => {
@@ -315,4 +403,11 @@ router.delete('/:id', verifyToken, async (req, res) => {
   }
 });
 
+router.findSeoMatch = findSeoMatch;
+router.injectSeoIntoHtml = injectSeoIntoHtml;
+router.toAbsoluteUrl = toAbsoluteUrl;
+router.syncSeoToStaticHtml = syncSeoToStaticHtml;
+
 module.exports = router;
+
+

@@ -92,10 +92,82 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 // Serve admin panel
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
-// Serve main website static files (HTML, CSS, JS, Assets)
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, '..')));
-app.use(express.static(path.join(__dirname, '../public')));
+
+// ── Dynamic SEO & HTML Page Serving ──────────────────────────────────────────
+const { findSeoMatch, injectSeoIntoHtml } = require('./routes/seo');
+
+// 1. Homepage Router with dynamic SEO injection from database
+app.get(['/', '/index.html', '/index.php'], async (req, res) => {
+  const possiblePaths = [
+    path.join(__dirname, 'public', 'index.html'),
+    path.join(__dirname, '..', 'index.html'),
+    path.join(__dirname, '../public', 'index.html'),
+    path.join(__dirname, 'index.html')
+  ];
+  let filePath = null;
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      filePath = p;
+      break;
+    }
+  }
+  if (!filePath) {
+    return res.status(404).send('index.html not found');
+  }
+
+  try {
+    let content = fs.readFileSync(filePath, 'utf8');
+    const seo = await findSeoMatch('/');
+    if (seo && (seo.meta_title || seo.meta_description || seo.og_image)) {
+      content = injectSeoIntoHtml(content, seo);
+    }
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(content);
+  } catch (err) {
+    console.warn('[Server] Error rendering dynamic homepage SEO:', err.message);
+    return res.sendFile(filePath);
+  }
+});
+
+// 2. HTML Page Router with dynamic SEO injection from database
+app.get('/:page.html', async (req, res, next) => {
+  const pageName = `${req.params.page}.html`;
+  const possiblePaths = [
+    path.join(__dirname, 'public', pageName),
+    path.join(__dirname, '..', pageName),
+    path.join(__dirname, '../public', pageName)
+  ];
+  let filePath = null;
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      filePath = p;
+      break;
+    }
+  }
+  if (!filePath) {
+    return next();
+  }
+
+  try {
+    let content = fs.readFileSync(filePath, 'utf8');
+    const fullRoute = req.originalUrl || `/${pageName}`;
+    const seo = await findSeoMatch(fullRoute);
+    if (seo && (seo.meta_title || seo.meta_description || seo.og_image)) {
+      content = injectSeoIntoHtml(content, seo);
+    }
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(content);
+  } catch (err) {
+    console.warn(`[Server] Error rendering dynamic SEO for ${pageName}:`, err.message);
+    return res.sendFile(filePath);
+  }
+});
+
+// Serve main website static files (CSS, JS, Assets) — index: false ensures HTML routes above take priority
+const staticOpts = { index: false };
+app.use(express.static(path.join(__dirname, 'public'), staticOpts));
+app.use(express.static(path.join(__dirname, '..'), staticOpts));
+app.use(express.static(path.join(__dirname, '../public'), staticOpts));
 
 // ── Stats endpoint for dashboard ───────────────────────────────────────────
 app.get('/api/stats', async (req, res) => {
@@ -126,38 +198,6 @@ app.get('/api/debug/env', (req, res) => {
   });
 });
 
-
-// ── Serve Main Website Homepage (index.html) ────────────────────────────────
-app.get('/', (req, res) => {
-  const possiblePaths = [
-    path.join(__dirname, 'public', 'index.html'),
-    path.join(__dirname, '..', 'index.html'),
-    path.join(__dirname, '../public', 'index.html'),
-    path.join(__dirname, 'index.html')
-  ];
-  for (const p of possiblePaths) {
-    if (fs.existsSync(p)) {
-      return res.sendFile(p);
-    }
-  }
-  res.status(404).send('index.html not found');
-});
-
-// ── Fallback HTML Page Router ────────────────────────────────────────────────
-app.get('/:page.html', (req, res, next) => {
-  const pageName = `${req.params.page}.html`;
-  const possiblePaths = [
-    path.join(__dirname, 'public', pageName),
-    path.join(__dirname, '..', pageName),
-    path.join(__dirname, '../public', pageName)
-  ];
-  for (const p of possiblePaths) {
-    if (fs.existsSync(p)) {
-      return res.sendFile(p);
-    }
-  }
-  next();
-});
 
 // ── Start Server & Initialize Database ──────────────────────────────────────
 async function start() {
