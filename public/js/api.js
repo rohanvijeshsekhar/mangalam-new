@@ -214,7 +214,10 @@ async function loadDynamicSeo(overrideSlug) {
     const cleanPath = (pathname === '/' || pathname.endsWith('/index.html') || pathname.endsWith('/index.php')) ? '/' : pathname;
     const search = window.location.search || '';
     const params = new URLSearchParams(search);
-    const slug = (overrideSlug || params.get('slug') || '').trim().toLowerCase();
+    // Guarantee publisher meta tags are present on every page
+    setMeta('publisher', 'name', 'Mangalam Travel & Tours');
+    setLink('publisher', 'https://mangalamtravel.com/');
+    setMeta('article:publisher', 'property', 'https://www.facebook.com/MangalamTravelandTours/');
 
     let seo = null;
 
@@ -295,6 +298,9 @@ async function loadDynamicSeo(overrideSlug) {
     }
     setMeta('og:type', 'property', 'website');
     setMeta('og:site_name', 'property', 'Mangalam Travel & Tours');
+    setMeta('publisher', 'name', 'Mangalam Travel & Tours');
+    setLink('publisher', 'https://mangalamtravel.com/');
+    setMeta('article:publisher', 'property', 'https://www.facebook.com/MangalamTravelandTours/');
 
     // 5. Update Schema.org Structured Data if present
     const schemaScripts = document.querySelectorAll('script[type="application/ld+json"]');

@@ -247,6 +247,26 @@ function injectSeoIntoHtml(html, entry) {
     content = content.replace(/<\/head>/i, '    <meta property="og:site_name" content="Mangalam Travel & Tours">\n</head>');
   }
 
+  // Publisher tags (for SEO extensions and social crawlers)
+  const publisherName = 'Mangalam Travel & Tours';
+  const publisherUrl = 'https://mangalamtravel.com/';
+  const publisherFb = 'https://www.facebook.com/MangalamTravelandTours/';
+  if (/<meta\s+[^>]*name=["']publisher["'][^>]*>/i.test(content)) {
+    content = content.replace(/<meta\s+[^>]*name=["']publisher["'][^>]*>/i, () => `<meta name="publisher" content="${escapeAttr(publisherName)}">`);
+  } else {
+    content = content.replace(/<\/head>/i, `    <meta name="publisher" content="${escapeAttr(publisherName)}">\n</head>`);
+  }
+  if (/<link\s+[^>]*rel=["']publisher["'][^>]*>/i.test(content)) {
+    content = content.replace(/<link\s+[^>]*rel=["']publisher["'][^>]*>/i, () => `<link rel="publisher" href="${escapeAttr(publisherUrl)}" />`);
+  } else {
+    content = content.replace(/<\/head>/i, `    <link rel="publisher" href="${escapeAttr(publisherUrl)}" />\n</head>`);
+  }
+  if (/<meta\s+[^>]*property=["']article:publisher["'][^>]*>/i.test(content)) {
+    content = content.replace(/<meta\s+[^>]*property=["']article:publisher["'][^>]*>/i, () => `<meta property="article:publisher" content="${escapeAttr(publisherFb)}">`);
+  } else {
+    content = content.replace(/<\/head>/i, `    <meta property="article:publisher" content="${escapeAttr(publisherFb)}">\n</head>`);
+  }
+
   // Update Schema.org Structured Data description and image if present
   if (desc || ogImg) {
     content = content.replace(/(<script\s+type=["']application\/ld\+json["']>[\s\S]*?"@type"\s*:\s*"TravelAgency"[\s\S]*?<\/script>)/i, (schemaBlock) => {
