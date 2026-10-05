@@ -94,6 +94,16 @@ router.get('/:id', async (req, res) => {
 const fs = require('fs');
 const path = require('path');
 
+function toAbsoluteUrl(urlStr) {
+  if (!urlStr) return '';
+  const trimmed = urlStr.trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  const clean = trimmed.replace(/^\.?\//, '');
+  return `https://mangalamtravel.com/${clean}`;
+}
+
 function syncSeoToStaticHtml(entry) {
   if (!entry || !entry.page_route) return;
   // Dynamic query-param routes (like /packages.html?slug=...) are handled dynamically by seo.js
@@ -150,16 +160,42 @@ function syncSeoToStaticHtml(entry) {
 
         // Update or insert <link rel="canonical">
         if (entry.canonical_url) {
+          const canonical = toAbsoluteUrl(entry.canonical_url);
           if (/<link\s+rel="canonical"\s+href="[^"]*"/i.test(content)) {
-            content = content.replace(/<link\s+rel="canonical"\s+href="[^"]*"/i, `<link rel="canonical" href="${entry.canonical_url}"`);
+            content = content.replace(/<link\s+rel="canonical"\s+href="[^"]*"/i, `<link rel="canonical" href="${canonical}"`);
           } else if (/<link\s+href="[^"]*"\s+rel="canonical"/i.test(content)) {
-            content = content.replace(/<link\s+href="[^"]*"\s+rel="canonical"/i, `<link rel="canonical" href="${entry.canonical_url}"`);
+            content = content.replace(/<link\s+href="[^"]*"\s+rel="canonical"/i, `<link rel="canonical" href="${canonical}"`);
           }
           if (/<meta\s+property="og:url"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+property="og:url"\s+content="[^"]*"/i, `<meta property="og:url" content="${entry.canonical_url}"`);
+            content = content.replace(/<meta\s+property="og:url"\s+content="[^"]*"/i, `<meta property="og:url" content="${canonical}"`);
           }
           if (/<meta\s+name="twitter:url"\s+content="[^"]*"/i.test(content)) {
-            content = content.replace(/<meta\s+name="twitter:url"\s+content="[^"]*"/i, `<meta name="twitter:url" content="${entry.canonical_url}"`);
+            content = content.replace(/<meta\s+name="twitter:url"\s+content="[^"]*"/i, `<meta name="twitter:url" content="${canonical}"`);
+          }
+        }
+
+        // Update or insert <meta property="og:type">
+        if (/<meta\s+property="og:type"\s+content="[^"]*"/i.test(content)) {
+          content = content.replace(/<meta\s+property="og:type"\s+content="[^"]*"/i, `<meta property="og:type" content="website"`);
+        }
+
+        // Update or insert <meta property="og:image"> and <meta name="twitter:image">
+        if (entry.og_image) {
+          const absOgImage = toAbsoluteUrl(entry.og_image);
+          if (/<meta\s+property="og:image"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+property="og:image"\s+content="[^"]*"/i, `<meta property="og:image" content="${absOgImage}"`);
+          } else {
+            content = content.replace(/<\/head>/i, `    <meta property="og:image" content="${absOgImage}">\n</head>`);
+          }
+          if (/<meta\s+property="og:image:secure_url"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+property="og:image:secure_url"\s+content="[^"]*"/i, `<meta property="og:image:secure_url" content="${absOgImage}"`);
+          } else {
+            content = content.replace(/(<meta\s+property="og:image"[^>]*>)/i, `$1\n    <meta property="og:image:secure_url" content="${absOgImage}">`);
+          }
+          if (/<meta\s+name="twitter:image"\s+content="[^"]*"/i.test(content)) {
+            content = content.replace(/<meta\s+name="twitter:image"\s+content="[^"]*"/i, `<meta name="twitter:image" content="${absOgImage}"`);
+          } else {
+            content = content.replace(/<\/head>/i, `    <meta name="twitter:image" content="${absOgImage}">\n</head>`);
           }
         }
 
