@@ -62,7 +62,7 @@
         } catch (_) {}
       }
 
-      if (!seo || !seo.id) {
+      if (!seo || !seo.id || (seo.status && seo.status !== 'Active')) {
         if (slug) {
           const destTitle = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/[-_]/g, ' ');
           const fallbackTitle = `${destTitle} Holiday Packages | Mangalam Travel & Tours`;

@@ -82,9 +82,11 @@ async function findSeoMatch(rawRoute) {
   try {
     const normalizedRoute = normalizePageRoute(rawRoute).toLowerCase();
     const all = (await store.getAll('seo')).map(map);
+    // Only match SEO configs that are Active (Inactive configs are blocked)
+    const activeEntries = all.filter(s => s.status === 'Active');
 
     // 1. Exact match with normalized routes
-    let matched = all.find(s => normalizePageRoute(s.page_route).toLowerCase() === normalizedRoute);
+    let matched = activeEntries.find(s => normalizePageRoute(s.page_route).toLowerCase() === normalizedRoute);
 
     // 2. Query param matching (e.g. /packages.html?slug=dubai or /packages.html?slug=dubai&type=package)
     if (!matched && normalizedRoute.includes('?')) {
@@ -93,7 +95,7 @@ async function findSeoMatch(rawRoute) {
       const slug = qParams.get('slug');
       if (slug) {
         const cleanSlug = slug.toLowerCase().trim();
-        matched = all.find(s => {
+        matched = activeEntries.find(s => {
           const sNorm = normalizePageRoute(s.page_route).toLowerCase();
           if (!sNorm.includes('?')) return false;
           const [sPart, sQuery] = sNorm.split('?');
@@ -109,7 +111,7 @@ async function findSeoMatch(rawRoute) {
 
     // 3. Match root / homepage
     if (!matched && normalizedRoute === '/') {
-      matched = all.find(s => {
+      matched = activeEntries.find(s => {
         const r = normalizePageRoute(s.page_route).toLowerCase();
         return r === '/' || (s.page_name && s.page_name.toLowerCase().includes('home page'));
       });
@@ -118,9 +120,9 @@ async function findSeoMatch(rawRoute) {
     // 4. Base html extension match (only match static pages WITHOUT query parameters)
     if (!matched) {
       const base = normalizedRoute.split('?')[0].replace(/\.html$/i, '');
-      matched = all.find(s => {
+      matched = activeEntries.find(s => {
         const sNorm = normalizePageRoute(s.page_route).toLowerCase();
-        if (sNorm.includes('?')) return false;
+        if (!sNorm.includes('?')) return false;
         return sNorm.split('?')[0].replace(/\.html$/i, '') === base;
       });
     }
@@ -287,6 +289,8 @@ function injectSeoIntoHtml(html, entry) {
 
 function syncSeoToStaticHtml(entry) {
   if (!entry || !entry.page_route) return;
+  // Do NOT sync inactive/blocked SEO configs to static HTML files
+  if (entry.status && entry.status !== 'Active') return;
   const normRoute = normalizePageRoute(entry.page_route);
   // Dynamic query-param routes (like /packages.html?slug=...) are handled dynamically by server and api.js
   if (normRoute.includes('?')) return;

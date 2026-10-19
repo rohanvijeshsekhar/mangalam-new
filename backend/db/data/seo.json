@@ -158,13 +158,13 @@
   {
     "page_route": "/",
     "page_name": "Home Page",
-    "meta_title": "Mangalam Travel & Tours — Best International & Domestic Holiday Packages",
-    "meta_description": "Explore curated holiday packages, flight bookings, visa assistance, and stress-free EMI vacation packages with Mangalam Travel & Tours.",
+    "meta_title": "Best Domestic and International Travel Agency in Kerala & Tamil Nadu | Mangalam Travel & Tours",
+    "meta_description": "Mangalam Travel & Tours offers domestic and international tour packages, customized holidays and memorable travel experiences for travelers in Kerala and Tamil Nadu.",
     "meta_keywords": "travel agency kerala, holiday packages, dubai packages from trivandrum, emi holiday tours, visa services trivandrum, flights booking",
     "canonical_url": "https://mangalamtravel.com/",
     "og_image": "https://mangalamtravel.com/assets/images/home-hero-desktop.jpg",
     "robots": "index, follow",
-    "status": "Active",
+    "status": "Inactive",
     "id": 1,
     "created_at": "2026-08-15T06:33:46.454Z"
   }

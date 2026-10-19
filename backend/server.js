@@ -120,7 +120,7 @@ app.get(['/', '/index.html', '/index.php'], async (req, res) => {
   try {
     let content = fs.readFileSync(filePath, 'utf8');
     const seo = await findSeoMatch('/');
-    if (seo && (seo.meta_title || seo.meta_description || seo.og_image)) {
+    if (seo && seo.status === 'Active' && (seo.meta_title || seo.meta_description || seo.og_image)) {
       content = injectSeoIntoHtml(content, seo);
     }
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -154,7 +154,7 @@ app.get('/:page.html', async (req, res, next) => {
     let content = fs.readFileSync(filePath, 'utf8');
     const fullRoute = req.originalUrl || `/${pageName}`;
     const seo = await findSeoMatch(fullRoute);
-    if (seo && (seo.meta_title || seo.meta_description || seo.og_image)) {
+    if (seo && seo.status === 'Active' && (seo.meta_title || seo.meta_description || seo.og_image)) {
       content = injectSeoIntoHtml(content, seo);
     }
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
