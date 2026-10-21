@@ -35,6 +35,11 @@
       const search = window.location.search || '';
       const params = new URLSearchParams(search);
       const slug = params.get('slug');
+
+      // Home page SEO is configured directly in index.html — skip dynamic overwrite
+      if (cleanPath === '/' && !slug) {
+        return;
+      }
       
       const apiOrigin = window.MT?.API_BASE?.replace(/\/api$/, '') || '';
       

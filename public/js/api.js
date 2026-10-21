@@ -214,10 +214,17 @@ async function loadDynamicSeo(overrideSlug) {
     const cleanPath = (pathname === '/' || pathname.endsWith('/index.html') || pathname.endsWith('/index.php')) ? '/' : pathname;
     const search = window.location.search || '';
     const params = new URLSearchParams(search);
+    const slug = overrideSlug || params.get('slug');
+
     // Guarantee publisher meta tags are present on every page
     setMeta('publisher', 'name', 'Mangalam Travel & Tours');
     setLink('publisher', 'https://mangalamtravel.com/');
     setMeta('article:publisher', 'property', 'https://www.facebook.com/MangalamTravelandTours/');
+
+    // Home page SEO is configured directly in index.html — skip dynamic overwrite
+    if (cleanPath === '/' && !slug) {
+      return;
+    }
 
     let seo = null;
 
