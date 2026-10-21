@@ -292,12 +292,11 @@ function syncSeoToStaticHtml(entry) {
   // Do NOT sync inactive/blocked SEO configs to static HTML files
   if (entry.status && entry.status !== 'Active') return;
   const normRoute = normalizePageRoute(entry.page_route);
-  // Home Page SEO is configured in static index.html and blocked from admin sync
-  if (normRoute === '/' || normRoute === '/index.html') return;
   // Dynamic query-param routes (like /packages.html?slug=...) are handled dynamically by server and api.js
   if (normRoute.includes('?')) return;
 
-  let filename = normRoute.replace(/^\//, '');
+  const isHome = normRoute === '/';
+  let filename = isHome ? 'index.html' : normRoute.replace(/^\//, '');
   if (!filename.endsWith('.html')) filename += '.html';
 
   const pathsToCheck = [
@@ -355,9 +354,6 @@ router.post('/', verifyToken, async (req, res) => {
     }
 
     const cleanRoute = normalizePageRoute(page_route);
-    if (cleanRoute === '/' || cleanRoute === '/index.html' || (page_name && page_name.toLowerCase().includes('home page'))) {
-      return res.status(403).json({ error: 'Home Page SEO is blocked from Admin Panel modifications.' });
-    }
     
     // Check if route already exists in SEO table
     let existing = null;
@@ -407,20 +403,9 @@ router.put('/:id', verifyToken, async (req, res) => {
   try {
     const { page_route, page_name, meta_title, meta_description, meta_keywords, canonical_url, og_image, robots, status } = req.body;
 
-    const target = await store.getById('seo', req.params.id);
-    if (target) {
-      const targetRoute = normalizePageRoute(target.page_route || '');
-      if (targetRoute === '/' || targetRoute === '/index.html' || (target.page_name && target.page_name.toLowerCase().includes('home page'))) {
-        return res.status(403).json({ error: 'Home Page SEO is blocked from Admin Panel modifications.' });
-      }
-    }
-
     const updates = {};
     if (page_route !== undefined) {
       const cleanRoute = normalizePageRoute(page_route);
-      if (cleanRoute === '/' || cleanRoute === '/index.html') {
-        return res.status(403).json({ error: 'Home Page SEO is blocked from Admin Panel modifications.' });
-      }
       // Check if page_route is already used by another record (not this one)
       const existing = await store.getOne('seo', 'WHERE LOWER(page_route) = ? AND id != ?', [cleanRoute.toLowerCase(), Number(req.params.id)]);
       if (existing) {
@@ -453,13 +438,6 @@ router.put('/:id', verifyToken, async (req, res) => {
 // DELETE SEO entry (Admin)
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
-    const target = await store.getById('seo', req.params.id);
-    if (target) {
-      const targetRoute = normalizePageRoute(target.page_route || '');
-      if (targetRoute === '/' || targetRoute === '/index.html' || (target.page_name && target.page_name.toLowerCase().includes('home page'))) {
-        return res.status(403).json({ error: 'Home Page SEO is blocked from deletion in the Admin Panel.' });
-      }
-    }
     await store.remove('seo', req.params.id);
     res.json({ success: true, message: 'SEO record deleted!' });
   } catch (e) {

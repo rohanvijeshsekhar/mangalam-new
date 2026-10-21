@@ -1764,9 +1764,6 @@ function renderSeoTable() {
   tbody.innerHTML = filtered.map(s => {
     const seoId = s.id || s.seo_id;
     const isDest = (s.page_route || '').includes('/packages.html?slug=') || (s.page_name || '').toLowerCase().startsWith('destination:');
-    const isHome = s.page_route === '/' || s.page_route === '/index.html' || (s.page_name || '').toLowerCase() === 'home page';
-    const isBlocked = isHome || s.status === 'Blocked';
-
     const typeBadge = isDest
       ? `<span class="badge blue" style="background:#eff6ff;color:#2563eb;font-size:10px;padding:2px 6px;margin-left:6px;font-weight:600"><i class="fas fa-map-marker-alt"></i> Destination</span>`
       : `<span class="badge gray" style="font-size:10px;padding:2px 6px;margin-left:6px"><i class="fas fa-file-alt"></i> Page</span>`;
@@ -1778,18 +1775,6 @@ function renderSeoTable() {
     const keywordsBadges = keywordsList.length
       ? keywordsList.map(k => `<span class="badge gray" style="font-size:11px;margin:2px 2px 2px 0;display:inline-block">#${k}</span>`).join('') + (s.meta_keywords.split(/,|;/).length > 4 ? ` <span style="font-size:10px;color:#9ca3af">+${s.meta_keywords.split(/,|;/).length - 4} more</span>` : '')
       : `<span style="color:#9ca3af;font-size:12px">No keywords added</span>`;
-
-    const statusBadge = isBlocked
-      ? `<span class="badge" style="background:#fee2e2;color:#dc2626;font-weight:700;font-size:11px;padding:3px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px"><i class="fas fa-ban"></i> Blocked</span>`
-      : `<span class="badge ${s.status === 'Active' ? 'green' : 'gray'}">${s.status || 'Active'}</span>`;
-
-    const actionButtons = isBlocked
-      ? `<button class="btn-sm" disabled style="opacity:0.6;cursor:not-allowed;background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1" title="Home SEO is blocked in Admin Panel"><i class="fas fa-lock"></i> Blocked</button>`
-      : `
-        <div class="table-actions">
-          <button class="btn-sm btn-edit" onclick="editSeo(${seoId})"><i class="fas fa-pen"></i> Edit</button>
-          <button class="btn-sm btn-delete" onclick="deleteSeo(${seoId})" title="Delete SEO"><i class="fas fa-trash"></i> Delete</button>
-        </div>`;
 
     return `
       <tr>
@@ -1807,10 +1792,13 @@ function renderSeoTable() {
           <div>${keywordsBadges}</div>
         </td>
         <td>
-          ${statusBadge}
+          <span class="badge ${s.status === 'Active' ? 'green' : 'gray'}">${s.status || 'Active'}</span>
         </td>
         <td>
-          ${actionButtons}
+          <div class="table-actions">
+            <button class="btn-sm btn-edit" onclick="editSeo(${seoId})"><i class="fas fa-pen"></i> Edit</button>
+            <button class="btn-sm btn-delete" onclick="deleteSeo(${seoId})" title="Delete SEO"><i class="fas fa-trash"></i> Delete</button>
+          </div>
         </td>
       </tr>`;
   }).join('');
@@ -1822,7 +1810,7 @@ window.searchSeo = function(val) {
 };
 
 const COMMON_PAGE_ROUTES = [
-  // Home Page is blocked in Admin Panel SEO page
+  { route: '/', name: 'Home Page' },
   { route: '/holiday-package.html', name: 'Holiday Packages' },
   { route: '/packages.html', name: 'All Packages Listing' },
   { route: '/attraction.html', name: 'Attractions & Sightseeing' },
@@ -2018,14 +2006,7 @@ window.updateSeoPreview = function() {
 
 window.editSeo = async function(id) {
   const s = seoList.find(x => String(x.id || x.seo_id) === String(id));
-  if (s) {
-    const isHome = s.page_route === '/' || s.page_route === '/index.html' || (s.page_name || '').toLowerCase() === 'home page';
-    if (isHome || s.status === 'Blocked') {
-      showToast('Home Page SEO is blocked in the Admin Panel.', 'error');
-      return;
-    }
-    await openSeoForm(s);
-  }
+  if (s) await openSeoForm(s);
 };
 
 window.saveSeo = async function(id) {
@@ -2057,8 +2038,7 @@ window.saveSeo = async function(id) {
   if (!route.startsWith('/')) route = '/' + route;
   const lower = route.toLowerCase();
   if (lower === '' || lower === '/' || lower === '/index.html' || lower === '/index.php' || lower === '/home') {
-    showToast('Home Page SEO is blocked in the Admin Panel.', 'error');
-    return;
+    route = '/';
   }
 
   const body = {
@@ -2083,14 +2063,6 @@ window.saveSeo = async function(id) {
 
 window.deleteSeo = async function(id) {
   if (!id || id === 'null') return;
-  const s = seoList.find(x => String(x.id || x.seo_id) === String(id));
-  if (s) {
-    const isHome = s.page_route === '/' || s.page_route === '/index.html' || (s.page_name || '').toLowerCase() === 'home page';
-    if (isHome || s.status === 'Blocked') {
-      showToast('Home Page SEO is blocked in the Admin Panel.', 'error');
-      return;
-    }
-  }
   if (!confirm('Are you sure you want to delete this SEO configuration?')) return;
   const res = await api('DELETE', `/seo/${id}`);
   if (res?.error) { showToast(res.error, 'error'); return; }

@@ -221,11 +221,6 @@ async function loadDynamicSeo(overrideSlug) {
     setLink('publisher', 'https://mangalamtravel.com/');
     setMeta('article:publisher', 'property', 'https://www.facebook.com/MangalamTravelandTours/');
 
-    // Home page SEO is configured directly in index.html — skip dynamic overwrite
-    if (cleanPath === '/' && !slug) {
-      return;
-    }
-
     let seo = null;
 
     // 1. If destination page with slug, match destination route first
