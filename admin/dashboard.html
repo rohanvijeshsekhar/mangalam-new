@@ -408,9 +408,76 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════
+     BLOG HYPERLINK MODAL (INSERT / EDIT LINK)
+════════════════════════════════════════════════════════════ -->
+<div class="link-modal-overlay" id="blog-link-modal" style="display:none">
+  <div class="link-modal-box">
+    <div class="link-modal-header">
+      <h4 class="link-modal-title" id="blog-link-modal-title">
+        <i class="fas fa-link" style="color:var(--accent);margin-right:8px"></i>
+        <span id="link-modal-header-text">Insert Hyperlink</span>
+      </h4>
+      <button type="button" class="link-modal-close" id="btn-close-link-modal" title="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="link-modal-body">
+      <div class="link-form-group">
+        <label for="link-input-text">Text to Display</label>
+        <input type="text" id="link-input-text" placeholder="Word, phrase, or sentence to link...">
+      </div>
+      <div class="link-form-group">
+        <label for="link-input-url">Link URL *</label>
+        <input type="text" id="link-input-url" placeholder="https://example.com or /holiday-package.html" autocomplete="off">
+        <div class="link-url-error" id="link-url-error" style="display:none"></div>
+        <div class="link-hint">
+          <i class="fas fa-shield-alt"></i> Safe protocols: <code>https://</code>, <code>http://</code>, or relative links (e.g. <code>/packages.html</code>, <code>#section</code>)
+        </div>
+      </div>
+      <div class="link-form-group">
+        <label for="link-input-title">Link Title (Optional Tooltip)</label>
+        <input type="text" id="link-input-title" placeholder="Optional tooltip text shown on hover...">
+      </div>
+      <div class="link-form-check">
+        <label>
+          <input type="checkbox" id="link-input-target" checked>
+          <span>Open link in new tab (<code>target="_blank"</code>)</span>
+        </label>
+      </div>
+    </div>
+    <div class="link-modal-footer">
+      <button type="button" class="btn-link-remove" id="btn-link-modal-remove" style="display:none">
+        <i class="fas fa-unlink"></i> Remove Link
+      </button>
+      <div class="link-modal-footer-right">
+        <button type="button" class="btn-cancel" id="btn-link-modal-cancel">Cancel</button>
+        <button type="button" class="btn-primary" id="btn-link-modal-apply">
+          <i class="fas fa-check"></i> <span id="btn-link-modal-apply-text">Apply Link</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Link Popover for quick edit / remove -->
+<div class="blog-link-popover" id="blog-link-popover" style="display:none">
+  <div class="blog-link-popover-inner">
+    <a href="#" target="_blank" rel="noopener noreferrer" class="blog-link-popover-url" id="popover-link-preview" title="Open link preview">
+      <i class="fas fa-external-link-alt"></i> <span id="popover-url-text">https://...</span>
+    </a>
+    <div class="blog-link-popover-actions">
+      <button type="button" class="popover-btn" id="popover-btn-edit" title="Edit Link URL and Options">
+        <i class="fas fa-pen"></i> Edit
+      </button>
+      <button type="button" class="popover-btn popover-btn-danger" id="popover-btn-unlink" title="Remove Link (keep original text)">
+        <i class="fas fa-unlink"></i> Unlink
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script src="js/admin.js?v=1.1.2"></script>
+<script src="js/admin.js?v=1.2.0"></script>
 </body>
 </html>

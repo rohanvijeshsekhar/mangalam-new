@@ -920,6 +920,25 @@
             .c-inside-alert {
                 display: none;
             }
+
+            /* Blog Article Hyperlinks Styling */
+            .prose a,
+            .blog-article-link,
+            .prose a:visited {
+                color: #dc2626 !important;
+                font-weight: 600 !important;
+                text-decoration: underline !important;
+                text-underline-offset: 3px !important;
+                text-decoration-thickness: 1.5px !important;
+                transition: color 0.15s ease, text-decoration-color 0.15s ease !important;
+                word-break: break-word !important;
+            }
+            .prose a:hover,
+            .blog-article-link:hover,
+            .prose a:focus {
+                color: #991b1b !important;
+                text-decoration-color: #991b1b !important;
+            }
         </style>
         <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
         <script>

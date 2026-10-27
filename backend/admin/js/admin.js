@@ -996,9 +996,426 @@ async function loadBlogs() {
   }).join('');
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// BLOG HYPERLINK & RICH EDITOR LOGIC
+// ══════════════════════════════════════════════════════════════════════════════
+window._blogSavedRange = null;
+window._blogCurrentAnchor = null;
+
+function formatBlogContentForEditor(raw) {
+  if (!raw) return '';
+  const str = String(raw).trim();
+  if (!str) return '';
+  // If it already contains HTML block tags, return as-is
+  if (/<(p|div|h[1-6]|ul|ol|li|blockquote|br)[^>]*>/i.test(str)) {
+    return str;
+  }
+  // Convert plain text linebreaks to paragraphs
+  return str.split(/\n\n+/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+}
+
+function validateBlogUrl(inputUrl) {
+  if (!inputUrl || !inputUrl.trim()) {
+    return { valid: false, error: 'Please enter a URL.' };
+  }
+  let url = inputUrl.trim();
+  const lower = url.toLowerCase();
+
+  // Block dangerous schemes and script injections
+  if (
+    lower.startsWith('javascript:') ||
+    lower.startsWith('data:') ||
+    lower.startsWith('vbscript:') ||
+    lower.startsWith('file:') ||
+    url.includes('<') ||
+    url.includes('>') ||
+    url.includes('"')
+  ) {
+    return { valid: false, error: 'Unsafe URL protocol or invalid characters detected.' };
+  }
+
+  // Safe relative paths (/packages.html, #section, mailto:, tel:)
+  if (url.startsWith('/') || url.startsWith('#') || url.startsWith('mailto:') || url.startsWith('tel:')) {
+    return { valid: true, url };
+  }
+
+  // Safe absolute HTTP / HTTPS protocols
+  if (/^https?:\/\//i.test(url)) {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        return { valid: true, url };
+      }
+    } catch {
+      return { valid: false, error: 'Invalid URL format.' };
+    }
+  }
+
+  // Auto-prefix domain-like URLs (e.g. mangalamtravel.com or travel.com/packages)
+  if (/^[a-zA-Z0-9][-a-zA-Z0-9@:%._\+~#=]{0,256}\.[a-zA-Z0-9()]{2,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/i.test(url)) {
+    return { valid: true, url: 'https://' + url };
+  }
+
+  return { valid: false, error: 'Please enter a valid URL (e.g. https://mangalamtravel.com or /holiday-package.html)' };
+}
+
+function getSelectedBlogAnchor() {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return null;
+  let node = sel.getRangeAt(0).commonAncestorContainer;
+  if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+  const editor = document.getElementById('b-content-editor');
+  if (!editor || !editor.contains(node)) return null;
+  return node ? node.closest('a') : null;
+}
+
+function updateBlogToolbarStates() {
+  const btnLink = document.getElementById('btn-blog-link');
+  const btnUnlink = document.getElementById('btn-blog-unlink');
+  if (!btnLink) return;
+
+  const anchor = getSelectedBlogAnchor();
+  if (anchor) {
+    btnLink.classList.add('active');
+    if (btnUnlink) btnUnlink.style.display = 'inline-flex';
+  } else {
+    btnLink.classList.remove('active');
+    if (btnUnlink) btnUnlink.style.display = 'none';
+  }
+}
+
+function showLinkPopover(anchor) {
+  if (!anchor) return;
+  window._blogCurrentAnchor = anchor;
+  const popover = document.getElementById('blog-link-popover');
+  const preview = document.getElementById('popover-link-preview');
+  const urlText = document.getElementById('popover-url-text');
+  if (!popover || !preview || !urlText) return;
+
+  const href = anchor.getAttribute('href') || '#';
+  preview.href = href;
+  urlText.textContent = href.length > 32 ? href.slice(0, 32) + '...' : href;
+
+  const rect = anchor.getBoundingClientRect();
+  popover.style.display = 'block';
+  const top = rect.bottom + window.scrollY + 6;
+  const left = Math.max(10, Math.min(window.innerWidth - 320, rect.left + window.scrollX));
+  popover.style.top = `${top}px`;
+  popover.style.left = `${left}px`;
+}
+
+function hideLinkPopover() {
+  const popover = document.getElementById('blog-link-popover');
+  if (popover) popover.style.display = 'none';
+}
+
+function openBlogLinkModal() {
+  const editor = document.getElementById('b-content-editor');
+  if (!editor) return;
+
+  // Capture current selection range
+  const sel = window.getSelection();
+  let range = null;
+  if (sel && sel.rangeCount > 0) {
+    const r = sel.getRangeAt(0);
+    if (editor.contains(r.commonAncestorContainer)) {
+      range = r.cloneRange();
+    }
+  }
+  window._blogSavedRange = range;
+
+  // Check if cursor/selection is on an existing anchor
+  let anchor = window._blogCurrentAnchor || getSelectedBlogAnchor();
+  window._blogCurrentAnchor = anchor;
+
+  const modal = document.getElementById('blog-link-modal');
+  const inputUrl = document.getElementById('link-input-url');
+  const inputText = document.getElementById('link-input-text');
+  const inputTitle = document.getElementById('link-input-title');
+  const inputTarget = document.getElementById('link-input-target');
+  const btnRemove = document.getElementById('btn-link-modal-remove');
+  const errorDiv = document.getElementById('link-url-error');
+  const headerText = document.getElementById('link-modal-header-text');
+  const applyText = document.getElementById('btn-link-modal-apply-text');
+
+  if (!modal || !inputUrl || !inputText) return;
+
+  errorDiv.style.display = 'none';
+  errorDiv.textContent = '';
+
+  if (anchor) {
+    headerText.textContent = 'Edit Hyperlink';
+    applyText.textContent = 'Update Link';
+    inputUrl.value = anchor.getAttribute('href') || '';
+    inputText.value = anchor.textContent || '';
+    inputTitle.value = anchor.getAttribute('title') || '';
+    inputTarget.checked = anchor.getAttribute('target') === '_blank';
+    btnRemove.style.display = 'inline-flex';
+  } else {
+    headerText.textContent = 'Insert Hyperlink';
+    applyText.textContent = 'Insert Link';
+    const selectedText = range ? range.toString().trim() : '';
+    inputText.value = selectedText;
+    inputUrl.value = '';
+    inputTitle.value = '';
+    inputTarget.checked = true; // recommended default for blog references
+    btnRemove.style.display = 'none';
+  }
+
+  hideLinkPopover();
+  modal.style.display = 'flex';
+  setTimeout(() => {
+    if (inputUrl.value) {
+      inputUrl.select();
+    } else {
+      inputUrl.focus();
+    }
+  }, 50);
+}
+
+function closeBlogLinkModal() {
+  const modal = document.getElementById('blog-link-modal');
+  if (modal) modal.style.display = 'none';
+  window._blogCurrentAnchor = null;
+  hideLinkPopover();
+}
+
+function applyBlogHyperlink() {
+  const inputUrl = document.getElementById('link-input-url');
+  const inputText = document.getElementById('link-input-text');
+  const inputTitle = document.getElementById('link-input-title');
+  const inputTarget = document.getElementById('link-input-target');
+  const errorDiv = document.getElementById('link-url-error');
+  const editor = document.getElementById('b-content-editor');
+  const textarea = document.getElementById('b-content');
+
+  if (!inputUrl || !editor) return;
+
+  const validation = validateBlogUrl(inputUrl.value);
+  if (!validation.valid) {
+    errorDiv.textContent = validation.error;
+    errorDiv.style.display = 'flex';
+    inputUrl.focus();
+    return;
+  }
+  errorDiv.style.display = 'none';
+
+  const finalUrl = validation.url;
+  const linkText = (inputText.value || '').trim();
+  const linkTitle = (inputTitle.value || '').trim();
+  const openInNewTab = inputTarget.checked;
+
+  editor.focus();
+
+  if (window._blogCurrentAnchor) {
+    // ── Editing Existing Link ──────────────────────────────────────────
+    const a = window._blogCurrentAnchor;
+    a.setAttribute('href', finalUrl);
+    if (linkTitle) a.setAttribute('title', linkTitle); else a.removeAttribute('title');
+    if (openInNewTab) {
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+    } else {
+      a.removeAttribute('target');
+      a.removeAttribute('rel');
+    }
+    if (linkText && linkText !== a.textContent) {
+      a.textContent = linkText;
+    }
+    showToast('Hyperlink updated!', 'success');
+  } else {
+    // ── Inserting New Link ─────────────────────────────────────────────
+    // Restore selection range
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    if (window._blogSavedRange) {
+      sel.addRange(window._blogSavedRange);
+    }
+
+    const a = document.createElement('a');
+    a.href = finalUrl;
+    if (linkTitle) a.title = linkTitle;
+    if (openInNewTab) {
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+    }
+    a.className = 'blog-link';
+    a.textContent = linkText || (window._blogSavedRange ? window._blogSavedRange.toString().trim() : '') || finalUrl;
+
+    if (window._blogSavedRange && !window._blogSavedRange.collapsed) {
+      window._blogSavedRange.deleteContents();
+      window._blogSavedRange.insertNode(a);
+    } else if (window._blogSavedRange) {
+      window._blogSavedRange.insertNode(a);
+    } else {
+      editor.appendChild(a);
+    }
+
+    // Move cursor after the inserted link
+    const newRange = document.createRange();
+    newRange.setStartAfter(a);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+
+    showToast('Hyperlink inserted!', 'success');
+  }
+
+  // Synchronize to hidden textarea
+  if (textarea) textarea.value = editor.innerHTML;
+  closeBlogLinkModal();
+  updateBlogToolbarStates();
+}
+
+function removeBlogHyperlink() {
+  const anchor = window._blogCurrentAnchor || getSelectedBlogAnchor();
+  const editor = document.getElementById('b-content-editor');
+  const textarea = document.getElementById('b-content');
+
+  if (anchor && editor && editor.contains(anchor)) {
+    const parent = anchor.parentNode;
+    // Unwrap anchor: insert all child nodes before the anchor and remove anchor
+    while (anchor.firstChild) {
+      parent.insertBefore(anchor.firstChild, anchor);
+    }
+    parent.removeChild(anchor);
+
+    if (textarea) textarea.value = editor.innerHTML;
+    showToast('Hyperlink removed. Original text preserved.', 'info');
+  }
+
+  closeBlogLinkModal();
+  hideLinkPopover();
+  updateBlogToolbarStates();
+}
+
+function initBlogEditor() {
+  const editor = document.getElementById('b-content-editor');
+  const textarea = document.getElementById('b-content');
+  const toolbar = document.getElementById('blog-editor-toolbar');
+  if (!editor || !textarea || !toolbar) return;
+
+  // Sync content from editable surface to hidden textarea
+  editor.addEventListener('input', () => {
+    textarea.value = editor.innerHTML;
+  });
+
+  // Track cursor position to update toolbar button states
+  ['keyup', 'mouseup', 'selectionchange'].forEach(evt => {
+    editor.addEventListener(evt, updateBlogToolbarStates);
+  });
+
+  // Keyboard shortcut Ctrl+K / Cmd+K for Link
+  editor.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      openBlogLinkModal();
+    }
+  });
+
+  // Handle click on existing links inside editor: prevent navigation & show popover
+  editor.addEventListener('click', (e) => {
+    const a = e.target.closest('a');
+    if (a && editor.contains(a)) {
+      e.preventDefault();
+      showLinkPopover(a);
+    } else {
+      hideLinkPopover();
+    }
+    updateBlogToolbarStates();
+  });
+
+  // Toolbar Formatting Actions
+  toolbar.querySelectorAll('button[data-cmd]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const cmd = btn.getAttribute('data-cmd');
+      document.execCommand(cmd, false, null);
+      textarea.value = editor.innerHTML;
+      editor.focus();
+    });
+  });
+
+  toolbar.querySelectorAll('button[data-format]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const fmt = btn.getAttribute('data-format');
+      document.execCommand('formatBlock', false, `<${fmt}>`);
+      textarea.value = editor.innerHTML;
+      editor.focus();
+    });
+  });
+
+  // Toolbar Link & Unlink Buttons
+  document.getElementById('btn-blog-link')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openBlogLinkModal();
+  });
+
+  document.getElementById('btn-blog-unlink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    removeBlogHyperlink();
+  });
+
+  // Toggle HTML Source Code view
+  const btnCode = document.getElementById('btn-blog-toggle-code');
+  if (btnCode) {
+    btnCode.addEventListener('click', (e) => {
+      e.preventDefault();
+      const isCodeView = textarea.style.display !== 'none';
+      if (isCodeView) {
+        // Switch back to Visual Rich Editor
+        editor.innerHTML = textarea.value;
+        textarea.style.display = 'none';
+        editor.style.display = 'block';
+        btnCode.classList.remove('active');
+        btnCode.innerHTML = `<i class="fas fa-code"></i> <span>HTML</span>`;
+        editor.focus();
+      } else {
+        // Switch to HTML Source Code view
+        textarea.value = editor.innerHTML;
+        editor.style.display = 'none';
+        textarea.style.display = 'block';
+        btnCode.classList.add('active');
+        btnCode.innerHTML = `<i class="fas fa-eye"></i> <span>Visual</span>`;
+        textarea.focus();
+      }
+    });
+  }
+
+  // Setup Link Modal event listeners
+  document.getElementById('btn-close-link-modal')?.addEventListener('click', closeBlogLinkModal);
+  document.getElementById('btn-link-modal-cancel')?.addEventListener('click', closeBlogLinkModal);
+  document.getElementById('btn-link-modal-apply')?.addEventListener('click', applyBlogHyperlink);
+  document.getElementById('btn-link-modal-remove')?.addEventListener('click', removeBlogHyperlink);
+
+  // Setup Popover action listeners
+  document.getElementById('popover-btn-edit')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    hideLinkPopover();
+    openBlogLinkModal();
+  });
+  document.getElementById('popover-btn-unlink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    removeBlogHyperlink();
+  });
+
+  // Close Popover when clicking outside
+  document.addEventListener('click', (e) => {
+    const popover = document.getElementById('blog-link-popover');
+    if (popover && popover.style.display !== 'none') {
+      if (!popover.contains(e.target) && !editor.contains(e.target)) {
+        hideLinkPopover();
+      }
+    }
+  });
+}
+
 function openBlogForm(b = null) {
   const today = new Date().toISOString().split('T')[0];
   const blogId = b ? (b.blog_id || b.id) : null;
+  const initialHtml = formatBlogContentForEditor(b?.content || '');
+
   openModal(b ? 'Edit Blog' : 'Add Blog', `
     <div class="form-group"><label>Title *</label><input id="b-title" value="${b?.title||''}" placeholder="Blog post title"></div>
     <div class="form-row">
@@ -1007,7 +1424,53 @@ function openBlogForm(b = null) {
     </div>
     <div class="form-group"><label>Cover / Banner Image</label>${createImageUpload('b-card', b?.card_image||b?.banner_image||'')}</div>
     <div class="form-group"><label>Short Overview / Excerpt (Optional)</label><textarea id="b-desc" rows="2" placeholder="Brief 1-2 sentence excerpt for cards...">${b?.description||''}</textarea></div>
-    <div class="form-group"><label>Full Article Content *</label><textarea id="b-content" rows="8" placeholder="Write or paste your article content here...">${b?.content||''}</textarea></div>
+    
+    <!-- Rich Text Blog Editor with Hyperlink Support -->
+    <div class="form-group">
+      <label style="display:flex;align-items:center;justify-content:space-between">
+        <span>Full Article Content *</span>
+        <span style="font-weight:normal;color:#64748b;font-size:11px"><i class="fas fa-keyboard"></i> Tip: Press Ctrl+K to add link</span>
+      </label>
+      <div class="blog-editor-wrapper" id="blog-editor-wrapper">
+        <div class="blog-editor-toolbar" id="blog-editor-toolbar" role="toolbar" aria-label="Blog Content Toolbar">
+          <div class="blog-toolbar-group">
+            <button type="button" class="blog-tool-btn" data-cmd="bold" title="Bold (Ctrl+B)"><i class="fas fa-bold"></i></button>
+            <button type="button" class="blog-tool-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i class="fas fa-italic"></i></button>
+            <button type="button" class="blog-tool-btn" data-cmd="underline" title="Underline (Ctrl+U)"><i class="fas fa-underline"></i></button>
+          </div>
+          <div class="blog-toolbar-divider"></div>
+          <div class="blog-toolbar-group">
+            <button type="button" class="blog-tool-btn blog-tool-btn-link" id="btn-blog-link" title="Insert / Edit Hyperlink (Ctrl+K)">
+              <i class="fas fa-link"></i> <span>Link</span>
+            </button>
+            <button type="button" class="blog-tool-btn" id="btn-blog-unlink" title="Remove Hyperlink" style="display:none">
+              <i class="fas fa-unlink"></i>
+            </button>
+          </div>
+          <div class="blog-toolbar-divider"></div>
+          <div class="blog-toolbar-group">
+            <button type="button" class="blog-tool-btn" data-format="h2" title="Heading 2">H2</button>
+            <button type="button" class="blog-tool-btn" data-format="h3" title="Heading 3">H3</button>
+            <button type="button" class="blog-tool-btn" data-format="p" title="Paragraph">¶</button>
+            <button type="button" class="blog-tool-btn" data-cmd="insertUnorderedList" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+            <button type="button" class="blog-tool-btn" data-cmd="insertOrderedList" title="Numbered List"><i class="fas fa-list-ol"></i></button>
+          </div>
+          <div class="blog-toolbar-divider"></div>
+          <div class="blog-toolbar-group" style="margin-left:auto">
+            <button type="button" class="blog-tool-btn" id="btn-blog-toggle-code" title="View / Edit HTML Source Code">
+              <i class="fas fa-code"></i> <span>HTML</span>
+            </button>
+          </div>
+        </div>
+        <div id="b-content-editor" class="blog-content-editor" contenteditable="true" spellcheck="true" placeholder="Write or paste your article content here...">${initialHtml}</div>
+        <textarea id="b-content" class="blog-content-textarea" rows="8">${b?.content||''}</textarea>
+      </div>
+      <div class="blog-editor-hint">
+        <i class="fas fa-info-circle text-amber-500"></i>
+        <span>Select any text and click <strong>Link</strong> to insert a hyperlink. Click any existing link to edit its URL or remove it.</span>
+      </div>
+    </div>
+
     <div class="modal-actions">
       <div>
         ${blogId ? `<button type="button" class="btn-danger" onclick="deleteBlog(${blogId})"><i class="fas fa-trash-alt"></i> Delete Blog</button>` : ''}
@@ -1017,12 +1480,23 @@ function openBlogForm(b = null) {
         <button type="button" class="btn-primary" onclick="saveBlog(${blogId || 'null'})"><i class="fas fa-save"></i> ${b ? 'Update' : 'Save'}</button>
       </div>
     </div>`);
+
+  // Initialize Blog Editor interactions
+  initBlogEditor();
 }
 
 window.editBlog = function(id) { const b = blogs.find(x => String(x.blog_id || x.id) === String(id)); if (b) openBlogForm(b); };
 
 window.saveBlog = async function(id) {
   const cardImg = document.getElementById('img-url-b-card')?.value || '';
+  const editor = document.getElementById('b-content-editor');
+  const textarea = document.getElementById('b-content');
+
+  // Synchronize visual editor contents into the form payload
+  if (editor && editor.style.display !== 'none') {
+    textarea.value = editor.innerHTML;
+  }
+
   const body = {
     title: document.getElementById('b-title').value.trim(),
     category: document.getElementById('b-category')?.value.trim() || 'Travel Guide',
@@ -1030,7 +1504,7 @@ window.saveBlog = async function(id) {
     card_image: cardImg,
     banner_image: cardImg,
     description: document.getElementById('b-desc')?.value.trim() || '',
-    content: document.getElementById('b-content').value.trim(),
+    content: textarea ? textarea.value.trim() : '',
   };
   if (!body.title) { showToast('Title required', 'error'); return; }
   const res = id ? await api('PUT', `/blogs/${id}`, body) : await api('POST', '/blogs', body);

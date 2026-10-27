@@ -43,15 +43,76 @@ document.addEventListener('DOMContentLoaded', async () => {
     const author = blog.author || 'Mangalam Editorial Team';
     const category = blog.category || 'Travel Guide';
 
+    // Client-side HTML and hyperlink sanitization
+    function sanitizeClientContent(html) {
+      if (!html || typeof html !== 'string') return '';
+      // 1. Strip unsafe tags
+      let clean = html
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+        .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+        .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
+        .replace(/<form\b[^<]*(?:(?!<\/form>)<[^<]*)*<\/form>/gi, '');
+
+      // 2. Remove inline event handlers (onerror, onload, onclick, etc.)
+      clean = clean.replace(/\s+on[a-zA-Z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+
+      // 3. Sanitize anchor tags and ensure secure attributes
+      clean = clean.replace(/<a\b([^>]*)>/gi, (match, attrs) => {
+        const hrefMatch = attrs.match(/href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+        let href = hrefMatch ? (hrefMatch[1] || hrefMatch[2] || hrefMatch[3] || '').trim() : '';
+        const lower = href.toLowerCase();
+
+        if (
+          !href ||
+          lower.startsWith('javascript:') ||
+          lower.startsWith('data:') ||
+          lower.startsWith('vbscript:') ||
+          lower.startsWith('file:') ||
+          href.includes('<') ||
+          href.includes('>')
+        ) {
+          return '<span class="blog-link-neutralized">';
+        }
+
+        const isSafe = /^https?:\/\//i.test(href) || href.startsWith('/') || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:');
+        if (!isSafe) {
+          if (/^[a-zA-Z0-9][-a-zA-Z0-9@:%._\+~#=]{0,256}\.[a-zA-Z0-9()]{2,6}/i.test(href)) {
+            href = 'https://' + href;
+          } else {
+            return '<span class="blog-link-neutralized">';
+          }
+        }
+
+        const titleMatch = attrs.match(/title\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+        const title = titleMatch ? (titleMatch[1] || titleMatch[2] || titleMatch[3] || '').trim() : '';
+
+        const targetMatch = attrs.match(/target\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+        const target = targetMatch ? (targetMatch[1] || targetMatch[2] || targetMatch[3] || '').trim() : '';
+        const isBlank = target.toLowerCase() === '_blank';
+
+        let safeTag = `<a href="${href.replace(/"/g, '&quot;')}"`;
+        if (title) safeTag += ` title="${title.replace(/"/g, '&quot;')}"`;
+        if (isBlank) safeTag += ` target="_blank" rel="noopener noreferrer"`;
+        safeTag += ` class="blog-article-link"`;
+        safeTag += '>';
+        return safeTag;
+      });
+
+      return clean;
+    }
+
     // Format content (support raw HTML or plain text linebreaks)
     let rawContent = blog.content || blog.description || '';
     let formattedContent = rawContent;
-    if (rawContent && !rawContent.includes('<p>') && !rawContent.includes('<div>') && !rawContent.includes('<br>')) {
+    if (rawContent && !rawContent.includes('<p>') && !rawContent.includes('<div>') && !rawContent.includes('<br>') && !rawContent.includes('<h2>') && !rawContent.includes('<h3>')) {
       formattedContent = rawContent.split(/\n\n+/).map(p => `<p class="mb-4">${p.replace(/\n/g, '<br>')}</p>`).join('');
     }
+    formattedContent = sanitizeClientContent(formattedContent);
 
     // Estimated read time
-    const words = rawContent.replace(/<[^>]*>?/gm, '').split(/\s+/).length;
+    const words = rawContent.replace(/<[^>]*>?/gm, '').split(/\s+/).filter(Boolean).length;
     const readTime = Math.max(1, Math.round(words / 180)) + ' min read';
 
     // Other related blogs
