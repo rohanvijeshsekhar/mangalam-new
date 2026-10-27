@@ -1150,6 +1150,7 @@ function openBlogLinkModal() {
   const inputText = document.getElementById('link-input-text');
   const inputTitle = document.getElementById('link-input-title');
   const inputTarget = document.getElementById('link-input-target');
+  const inputAllMatches = document.getElementById('link-input-all-matches');
   const btnRemove = document.getElementById('btn-link-modal-remove');
   const errorDiv = document.getElementById('link-url-error');
   const headerText = document.getElementById('link-modal-header-text');
@@ -1159,6 +1160,8 @@ function openBlogLinkModal() {
 
   errorDiv.style.display = 'none';
   errorDiv.textContent = '';
+
+  if (inputAllMatches) inputAllMatches.checked = true;
 
   if (anchor) {
     headerText.textContent = 'Edit Hyperlink';
@@ -1184,8 +1187,10 @@ function openBlogLinkModal() {
   setTimeout(() => {
     if (inputUrl.value) {
       inputUrl.select();
-    } else {
+    } else if (inputText.value) {
       inputUrl.focus();
+    } else {
+      inputText.focus();
     }
   }, 50);
 }
@@ -1197,11 +1202,117 @@ function closeBlogLinkModal() {
   hideLinkPopover();
 }
 
+/**
+ * Searches the editor's text nodes and converts all matching occurrences of targetPhrase into hyperlinks.
+ * - Matches case-insensitively while preserving original document casing
+ * - Never wraps text that is already inside an anchor tag
+ * - Updates any existing anchors that have matching text
+ * - Returns total number of linked/updated occurrences
+ */
+function hyperlinkWordsInEditor(editor, targetPhrase, url, title, openInNewTab, matchAll = true) {
+  if (!editor || !targetPhrase || !targetPhrase.trim()) return 0;
+  const phrase = targetPhrase.trim();
+
+  // Create word-boundary-aware regex
+  const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const startsWordChar = /^\w/.test(phrase);
+  const endsWordChar = /\w$/.test(phrase);
+  const prefix = startsWordChar ? '\\b' : '';
+  const suffix = endsWordChar ? '\\b' : '';
+  const regex = new RegExp(`${prefix}(${escaped})${suffix}`, 'gi');
+
+  let count = 0;
+
+  // 1. Update any existing <a> tags in editor if they match this phrase
+  if (matchAll) {
+    editor.querySelectorAll('a').forEach(existingA => {
+      if (existingA.textContent.trim().toLowerCase() === phrase.toLowerCase()) {
+        existingA.setAttribute('href', url);
+        if (title) existingA.setAttribute('title', title); else existingA.removeAttribute('title');
+        if (openInNewTab) {
+          existingA.setAttribute('target', '_blank');
+          existingA.setAttribute('rel', 'noopener noreferrer');
+        } else {
+          existingA.removeAttribute('target');
+          existingA.removeAttribute('rel');
+        }
+        existingA.className = 'blog-link';
+        count++;
+      }
+    });
+  }
+
+  // 2. Find matching text nodes outside existing <a> tags
+  const textNodes = [];
+  const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (!node.textContent || !node.textContent.trim()) return NodeFilter.FILTER_SKIP;
+      if (node.parentNode && node.parentNode.closest('a')) return NodeFilter.FILTER_REJECT;
+      regex.lastIndex = 0;
+      return regex.test(node.textContent) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+    }
+  });
+
+  while (walker.nextNode()) {
+    textNodes.push(walker.currentNode);
+  }
+
+  for (const textNode of textNodes) {
+    const parent = textNode.parentNode;
+    if (!parent) continue;
+
+    const text = textNode.textContent;
+    regex.lastIndex = 0;
+
+    let match;
+    let lastIndex = 0;
+    const fragment = document.createDocumentFragment();
+    let hasMatch = false;
+
+    while ((match = regex.exec(text)) !== null) {
+      hasMatch = true;
+      count++;
+
+      // Text before match
+      if (match.index > lastIndex) {
+        fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
+      }
+
+      // Create new hyperlink for the matched word/phrase
+      const a = document.createElement('a');
+      a.href = url;
+      if (title) a.title = title;
+      if (openInNewTab) {
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      }
+      a.className = 'blog-link';
+      a.textContent = match[0]; // Preserves original document casing!
+      fragment.appendChild(a);
+
+      lastIndex = regex.lastIndex;
+
+      if (!matchAll) break;
+    }
+
+    if (hasMatch) {
+      if (lastIndex < text.length) {
+        fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+      }
+      parent.replaceChild(fragment, textNode);
+      if (!matchAll) break;
+    }
+  }
+
+  return count;
+}
+
 function applyBlogHyperlink() {
   const inputUrl = document.getElementById('link-input-url');
   const inputText = document.getElementById('link-input-text');
   const inputTitle = document.getElementById('link-input-title');
   const inputTarget = document.getElementById('link-input-target');
+  const inputAllMatches = document.getElementById('link-input-all-matches');
   const errorDiv = document.getElementById('link-url-error');
   const editor = document.getElementById('b-content-editor');
   const textarea = document.getElementById('b-content');
@@ -1220,13 +1331,22 @@ function applyBlogHyperlink() {
   const finalUrl = validation.url;
   const linkText = (inputText.value || '').trim();
   const linkTitle = (inputTitle.value || '').trim();
-  const openInNewTab = inputTarget.checked;
+  const openInNewTab = inputTarget ? inputTarget.checked : true;
+  const matchAll = inputAllMatches ? inputAllMatches.checked : true;
+
+  if (!linkText) {
+    errorDiv.textContent = 'Please enter the word or phrase in the article to hyperlink.';
+    errorDiv.style.display = 'flex';
+    if (inputText) inputText.focus();
+    return;
+  }
 
   editor.focus();
 
   if (window._blogCurrentAnchor) {
     // ── Editing Existing Link ──────────────────────────────────────────
     const a = window._blogCurrentAnchor;
+    const oldText = a.textContent.trim();
     a.setAttribute('href', finalUrl);
     if (linkTitle) a.setAttribute('title', linkTitle); else a.removeAttribute('title');
     if (openInNewTab) {
@@ -1236,46 +1356,54 @@ function applyBlogHyperlink() {
       a.removeAttribute('target');
       a.removeAttribute('rel');
     }
-    if (linkText && linkText !== a.textContent) {
+    if (linkText && linkText !== oldText) {
       a.textContent = linkText;
     }
-    showToast('Hyperlink updated!', 'success');
-  } else {
-    // ── Inserting New Link ─────────────────────────────────────────────
-    // Restore selection range
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    if (window._blogSavedRange) {
-      sel.addRange(window._blogSavedRange);
-    }
 
-    const a = document.createElement('a');
-    a.href = finalUrl;
-    if (linkTitle) a.title = linkTitle;
-    if (openInNewTab) {
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-    }
-    a.className = 'blog-link';
-    a.textContent = linkText || (window._blogSavedRange ? window._blogSavedRange.toString().trim() : '') || finalUrl;
-
-    if (window._blogSavedRange && !window._blogSavedRange.collapsed) {
-      window._blogSavedRange.deleteContents();
-      window._blogSavedRange.insertNode(a);
-    } else if (window._blogSavedRange) {
-      window._blogSavedRange.insertNode(a);
+    if (matchAll) {
+      const additionalCount = hyperlinkWordsInEditor(editor, linkText || oldText, finalUrl, linkTitle, openInNewTab, true);
+      showToast(additionalCount > 1 ? `Updated ${additionalCount} occurrences of "${linkText || oldText}"!` : 'Hyperlink updated!', 'success');
     } else {
-      editor.appendChild(a);
+      showToast('Hyperlink updated!', 'success');
     }
+  } else {
+    // ── Hyperlinking Words Inside the Blog Content ────────────────────
+    const count = hyperlinkWordsInEditor(editor, linkText, finalUrl, linkTitle, openInNewTab, matchAll);
 
-    // Move cursor after the inserted link
-    const newRange = document.createRange();
-    newRange.setStartAfter(a);
-    newRange.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(newRange);
+    if (count > 0) {
+      const msg = count === 1
+        ? `Hyperlinked 1 occurrence of "${linkText}" in the article!`
+        : `Hyperlinked all ${count} occurrences of "${linkText}" in the article!`;
+      showToast(msg, 'success');
+    } else {
+      // If the word was not found in the article text nodes:
+      // Check if user has an active highlighted selection range in the editor
+      if (window._blogSavedRange && !window._blogSavedRange.collapsed && editor.contains(window._blogSavedRange.commonAncestorContainer)) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(window._blogSavedRange);
 
-    showToast('Hyperlink inserted!', 'success');
+        const a = document.createElement('a');
+        a.href = finalUrl;
+        if (linkTitle) a.title = linkTitle;
+        if (openInNewTab) {
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+        }
+        a.className = 'blog-link';
+        a.textContent = linkText;
+
+        window._blogSavedRange.deleteContents();
+        window._blogSavedRange.insertNode(a);
+        showToast(`Hyperlinked "${linkText}"!`, 'success');
+      } else {
+        // DO NOT append to the bottom of the page!
+        errorDiv.textContent = `The text "${linkText}" was not found inside the article content. Please select the words in the editor or enter words that appear in the article.`;
+        errorDiv.style.display = 'flex';
+        if (inputText) inputText.focus();
+        return;
+      }
+    }
   }
 
   // Synchronize to hidden textarea
@@ -1288,19 +1416,35 @@ function removeBlogHyperlink() {
   const anchor = window._blogCurrentAnchor || getSelectedBlogAnchor();
   const editor = document.getElementById('b-content-editor');
   const textarea = document.getElementById('b-content');
+  const inputAllMatches = document.getElementById('link-input-all-matches');
+  const removeAll = inputAllMatches ? inputAllMatches.checked : false;
 
   if (anchor && editor && editor.contains(anchor)) {
-    const parent = anchor.parentNode;
-    // Unwrap anchor: insert all child nodes before the anchor and remove anchor
-    while (anchor.firstChild) {
-      parent.insertBefore(anchor.firstChild, anchor);
+    const wordText = anchor.textContent.trim();
+    if (removeAll && wordText) {
+      let count = 0;
+      editor.querySelectorAll('a').forEach(a => {
+        if (a.textContent.trim().toLowerCase() === wordText.toLowerCase()) {
+          const textNode = document.createTextNode(a.textContent);
+          a.parentNode.replaceChild(textNode, a);
+          count++;
+        }
+      });
+      showToast(`Removed hyperlinks for ${count} occurrences of "${wordText}". Original text preserved.`, 'info');
+    } else {
+      const parent = anchor.parentNode;
+      while (anchor.firstChild) {
+        parent.insertBefore(anchor.firstChild, anchor);
+      }
+      parent.removeChild(anchor);
+      showToast('Hyperlink removed. Original text preserved.', 'info');
     }
-    parent.removeChild(anchor);
-
-    if (textarea) textarea.value = editor.innerHTML;
-    showToast('Hyperlink removed. Original text preserved.', 'info');
+  } else if (window._blogSavedRange) {
+    document.execCommand('unlink', false, null);
+    showToast('Hyperlink removed.', 'info');
   }
 
+  if (textarea) textarea.value = editor.innerHTML;
   closeBlogLinkModal();
   hideLinkPopover();
   updateBlogToolbarStates();
