@@ -19,7 +19,9 @@ function resolveImg(src, fallback = '/assets/images/logo-color.png') {
 /** Generic GET helper */
 async function apiGet(path) {
   try {
-    const res = await fetch(API_BASE + path);
+    const sep = path.includes('?') ? '&' : '?';
+    const noCachePath = `${path}${sep}_t=${Date.now()}`;
+    const res = await fetch(API_BASE + noCachePath, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (e) {

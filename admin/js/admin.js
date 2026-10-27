@@ -1034,8 +1034,25 @@ function validateBlogUrl(inputUrl) {
     return { valid: false, error: 'Unsafe URL protocol or invalid characters detected.' };
   }
 
-  // Safe relative paths (/packages.html, #section, mailto:, tel:)
-  if (url.startsWith('/') || url.startsWith('#') || url.startsWith('mailto:') || url.startsWith('tel:')) {
+  // Safe relative paths (/packages.html, #section, ./page.html, ../page.html, ?query)
+  if (
+    url.startsWith('/') ||
+    url.startsWith('#') ||
+    url.startsWith('?') ||
+    url.startsWith('./') ||
+    url.startsWith('../') ||
+    lower.startsWith('mailto:') ||
+    lower.startsWith('tel:') ||
+    lower.startsWith('whatsapp:')
+  ) {
+    return { valid: true, url };
+  }
+
+  // Safe relative HTML pages (e.g. packages.html, contact.html, holiday-package.html?id=1)
+  if (/^[a-zA-Z0-9_\-\.\/]+(?:\.html|\.php)?(?:\?[^"'\s<>]*)?(?:#[^"'\s<>]*)?$/i.test(url)) {
+    if (/^(?:www\.)?[a-zA-Z0-9][-a-zA-Z0-9@:%._\+~#=]{0,256}\.(?:com|org|net|in|io|co|ai|me|info|biz|gov|edu|uk|us|de|travel)\b/i.test(url)) {
+      return { valid: true, url: 'https://' + url };
+    }
     return { valid: true, url };
   }
 
@@ -1056,7 +1073,7 @@ function validateBlogUrl(inputUrl) {
     return { valid: true, url: 'https://' + url };
   }
 
-  return { valid: false, error: 'Please enter a valid URL (e.g. https://mangalamtravel.com or /holiday-package.html)' };
+  return { valid: false, error: 'Please enter a valid URL (e.g. https://mangalamtravel.com or /packages.html)' };
 }
 
 function getSelectedBlogAnchor() {
@@ -1289,11 +1306,16 @@ function removeBlogHyperlink() {
   updateBlogToolbarStates();
 }
 
-function initBlogEditor() {
+function initBlogEditor(initialContent = '') {
   const editor = document.getElementById('b-content-editor');
   const textarea = document.getElementById('b-content');
   const toolbar = document.getElementById('blog-editor-toolbar');
   if (!editor || !textarea || !toolbar) return;
+
+  if (initialContent) {
+    editor.innerHTML = initialContent;
+    textarea.value = initialContent;
+  }
 
   // Sync content from editable surface to hidden textarea
   editor.addEventListener('input', () => {
@@ -1462,8 +1484,8 @@ function openBlogForm(b = null) {
             </button>
           </div>
         </div>
-        <div id="b-content-editor" class="blog-content-editor" contenteditable="true" spellcheck="true" placeholder="Write or paste your article content here...">${initialHtml}</div>
-        <textarea id="b-content" class="blog-content-textarea" rows="8">${b?.content||''}</textarea>
+        <div id="b-content-editor" class="blog-content-editor" contenteditable="true" spellcheck="true" placeholder="Write or paste your article content here..."></div>
+        <textarea id="b-content" class="blog-content-textarea" rows="8"></textarea>
       </div>
       <div class="blog-editor-hint">
         <i class="fas fa-info-circle text-amber-500"></i>
@@ -1473,21 +1495,22 @@ function openBlogForm(b = null) {
 
     <div class="modal-actions">
       <div>
-        ${blogId ? `<button type="button" class="btn-danger" onclick="deleteBlog(${blogId})"><i class="fas fa-trash-alt"></i> Delete Blog</button>` : ''}
+        ${blogId ? `<button type="button" class="btn-danger" onclick="deleteBlog('${blogId}')"><i class="fas fa-trash-alt"></i> Delete Blog</button>` : ''}
       </div>
       <div class="modal-actions-right">
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button type="button" class="btn-primary" onclick="saveBlog(${blogId || 'null'})"><i class="fas fa-save"></i> ${b ? 'Update' : 'Save'}</button>
+        <button type="button" class="btn-primary" onclick="saveBlog('${blogId || ''}')"><i class="fas fa-save"></i> ${b ? 'Update' : 'Save'}</button>
       </div>
     </div>`);
 
-  // Initialize Blog Editor interactions
-  initBlogEditor();
+  // Initialize Blog Editor interactions and safely set content
+  initBlogEditor(initialHtml);
 }
 
 window.editBlog = function(id) { const b = blogs.find(x => String(x.blog_id || x.id) === String(id)); if (b) openBlogForm(b); };
 
 window.saveBlog = async function(id) {
+  const blogId = (id && id !== 'null' && id !== 'undefined' && String(id).trim()) ? String(id).trim() : null;
   const cardImg = document.getElementById('img-url-b-card')?.value || '';
   const editor = document.getElementById('b-content-editor');
   const textarea = document.getElementById('b-content');
@@ -1497,6 +1520,8 @@ window.saveBlog = async function(id) {
     textarea.value = editor.innerHTML;
   }
 
+  const contentVal = textarea ? textarea.value.trim() : '';
+
   const body = {
     title: document.getElementById('b-title').value.trim(),
     category: document.getElementById('b-category')?.value.trim() || 'Travel Guide',
@@ -1504,21 +1529,47 @@ window.saveBlog = async function(id) {
     card_image: cardImg,
     banner_image: cardImg,
     description: document.getElementById('b-desc')?.value.trim() || '',
-    content: textarea ? textarea.value.trim() : '',
+    content: contentVal,
   };
   if (!body.title) { showToast('Title required', 'error'); return; }
-  const res = id ? await api('PUT', `/blogs/${id}`, body) : await api('POST', '/blogs', body);
-  if (res?.error) { showToast(res.error, 'error'); return; }
-  showToast(id ? 'Blog updated!' : 'Blog added!', 'success');
-  closeModal(); loadBlogs(); loadDashboard();
+
+  const saveBtn = document.querySelector('.modal-actions .btn-primary');
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+  }
+
+  try {
+    const res = blogId ? await api('PUT', `/blogs/${blogId}`, body) : await api('POST', '/blogs', body);
+    if (res?.error) {
+      showToast(res.error, 'error');
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<i class="fas fa-save"></i> ${blogId ? 'Update' : 'Save'}`;
+      }
+      return;
+    }
+    showToast(blogId ? 'Blog updated successfully!' : 'Blog added successfully!', 'success');
+    closeModal();
+    await loadBlogs();
+    loadDashboard();
+  } catch (err) {
+    showToast('Failed to save blog: ' + err.message, 'error');
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = `<i class="fas fa-save"></i> ${blogId ? 'Update' : 'Save'}`;
+    }
+  }
 };
 
 window.deleteBlog = async function(id) {
+  const blogId = (id && id !== 'null' && id !== 'undefined') ? String(id).trim() : null;
+  if (!blogId) return;
   if (!confirm('Are you sure you want to delete this blog?')) return;
-  const res = await api('DELETE', `/blogs/${id}`);
+  const res = await api('DELETE', `/blogs/${blogId}`);
   if (res?.error) { showToast(res.error, 'error'); return; }
   showToast('Blog deleted', 'success');
-  closeModal(); loadBlogs(); loadDashboard();
+  closeModal(); await loadBlogs(); loadDashboard();
 };
 
 document.getElementById('btn-add-blog')?.addEventListener('click', () => openBlogForm());
