@@ -229,7 +229,10 @@ function openModal(title, bodyHtml) {
   document.getElementById('modal-body').innerHTML = bodyHtml;
   document.getElementById('modal-overlay').classList.add('open');
 }
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  if (typeof hideBubbleToolbar === 'function') hideBubbleToolbar();
+}
 document.getElementById('modal-close').addEventListener('click', closeModal);
 // Do NOT close modal when clicking outside the modal box, so user data is never lost by accident.
 
@@ -1076,6 +1079,10 @@ function validateBlogUrl(inputUrl) {
   return { valid: false, error: 'Please enter a valid URL (e.g. https://mangalamtravel.com or /packages.html)' };
 }
 
+// State for Blog Floating Bubble Toolbar
+window._bubbleSavedRange = null;
+window._bubbleTargetAnchor = null;
+
 function getSelectedBlogAnchor() {
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0) return null;
@@ -1101,254 +1108,217 @@ function updateBlogToolbarStates() {
   }
 }
 
-function showLinkPopover(anchor) {
-  if (!anchor) return;
-  window._blogCurrentAnchor = anchor;
-  const popover = document.getElementById('blog-link-popover');
-  const preview = document.getElementById('popover-link-preview');
-  const urlText = document.getElementById('popover-url-text');
-  if (!popover || !preview || !urlText) return;
-
-  const href = anchor.getAttribute('href') || '#';
-  preview.href = href;
-  urlText.textContent = href.length > 32 ? href.slice(0, 32) + '...' : href;
-
-  const rect = anchor.getBoundingClientRect();
-  popover.style.display = 'block';
-  const top = rect.bottom + window.scrollY + 6;
-  const left = Math.max(10, Math.min(window.innerWidth - 320, rect.left + window.scrollX));
-  popover.style.top = `${top}px`;
-  popover.style.left = `${left}px`;
-}
-
-function hideLinkPopover() {
-  const popover = document.getElementById('blog-link-popover');
-  if (popover) popover.style.display = 'none';
-}
-
-function openBlogLinkModal() {
-  const editor = document.getElementById('b-content-editor');
-  if (!editor) return;
-
-  // Capture current selection range
-  const sel = window.getSelection();
+/**
+ * Calculates the exact word boundary under the cursor (x, y) coordinates.
+ * Returns a DOM Range containing only that word.
+ */
+function getWordRangeAtPoint(x, y) {
   let range = null;
-  if (sel && sel.rangeCount > 0) {
-    const r = sel.getRangeAt(0);
-    if (editor.contains(r.commonAncestorContainer)) {
-      range = r.cloneRange();
+  if (document.caretRangeFromPoint) {
+    range = document.caretRangeFromPoint(x, y);
+  } else if (document.caretPositionFromPoint) {
+    const pos = document.caretPositionFromPoint(x, y);
+    if (pos && pos.offsetNode) {
+      range = document.createRange();
+      range.setStart(pos.offsetNode, pos.offset);
+      range.collapse(true);
     }
   }
-  window._blogSavedRange = range;
+  if (!range) return null;
 
-  // Check if cursor/selection is on an existing anchor
-  let anchor = window._blogCurrentAnchor || getSelectedBlogAnchor();
-  window._blogCurrentAnchor = anchor;
-
-  const modal = document.getElementById('blog-link-modal');
-  const inputUrl = document.getElementById('link-input-url');
-  const inputText = document.getElementById('link-input-text');
-  const inputTitle = document.getElementById('link-input-title');
-  const inputTarget = document.getElementById('link-input-target');
-  const inputAllMatches = document.getElementById('link-input-all-matches');
-  const btnRemove = document.getElementById('btn-link-modal-remove');
-  const errorDiv = document.getElementById('link-url-error');
-  const headerText = document.getElementById('link-modal-header-text');
-  const applyText = document.getElementById('btn-link-modal-apply-text');
-
-  if (!modal || !inputUrl || !inputText) return;
-
-  errorDiv.style.display = 'none';
-  errorDiv.textContent = '';
-
-  if (inputAllMatches) inputAllMatches.checked = true;
-
-  if (anchor) {
-    headerText.textContent = 'Edit Hyperlink';
-    applyText.textContent = 'Update Link';
-    inputUrl.value = anchor.getAttribute('href') || '';
-    inputText.value = anchor.textContent || '';
-    inputTitle.value = anchor.getAttribute('title') || '';
-    inputTarget.checked = anchor.getAttribute('target') === '_blank';
-    btnRemove.style.display = 'inline-flex';
-  } else {
-    headerText.textContent = 'Insert Hyperlink';
-    applyText.textContent = 'Insert Link';
-    const selectedText = range ? range.toString().trim() : '';
-    inputText.value = selectedText;
-    inputUrl.value = '';
-    inputTitle.value = '';
-    inputTarget.checked = true; // recommended default for blog references
-    btnRemove.style.display = 'none';
+  let node = range.startContainer;
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    if (range.startOffset < node.childNodes.length) {
+      node = node.childNodes[range.startOffset];
+    } else if (node.lastChild) {
+      node = node.lastChild;
+    }
   }
+  if (!node || node.nodeType !== Node.TEXT_NODE) return null;
 
-  hideLinkPopover();
-  modal.style.display = 'flex';
-  setTimeout(() => {
-    if (inputUrl.value) {
-      inputUrl.select();
-    } else if (inputText.value) {
-      inputUrl.focus();
+  const text = node.textContent;
+  let offset = range.startOffset;
+  if (offset >= text.length && offset > 0) offset = text.length - 1;
+
+  const isWordChar = (char) => char && /[\w\u00C0-\u024F\u1E00-\u1EFF'-]/i.test(char);
+  if (!isWordChar(text[offset])) {
+    if (offset > 0 && isWordChar(text[offset - 1])) {
+      offset--;
     } else {
-      inputText.focus();
+      return null;
     }
-  }, 50);
-}
+  }
 
-function closeBlogLinkModal() {
-  const modal = document.getElementById('blog-link-modal');
-  if (modal) modal.style.display = 'none';
-  window._blogCurrentAnchor = null;
-  hideLinkPopover();
+  let start = offset;
+  while (start > 0 && isWordChar(text[start - 1])) {
+    start--;
+  }
+
+  let end = offset;
+  while (end < text.length && isWordChar(text[end])) {
+    end++;
+  }
+
+  if (start >= end) return null;
+
+  const wordRange = document.createRange();
+  wordRange.setStart(node, start);
+  wordRange.setEnd(node, end);
+  return wordRange;
 }
 
 /**
- * Searches the editor's text nodes and converts all matching occurrences of targetPhrase into hyperlinks.
- * - Matches case-insensitively while preserving original document casing
- * - Never wraps text that is already inside an anchor tag
- * - Updates any existing anchors that have matching text
- * - Returns total number of linked/updated occurrences
+ * Positions the floating bubble toolbar above targetRect (centered with arrow pointing down).
  */
-function hyperlinkWordsInEditor(editor, targetPhrase, url, title, openInNewTab, matchAll = true) {
-  if (!editor || !targetPhrase || !targetPhrase.trim()) return 0;
-  const phrase = targetPhrase.trim();
+function positionBubbleToolbar(rect) {
+  const toolbar = document.getElementById('blog-bubble-toolbar');
+  const arrow = document.getElementById('bubble-arrow');
+  if (!toolbar || !arrow || !rect) return;
 
-  // Create word-boundary-aware regex
-  const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const startsWordChar = /^\w/.test(phrase);
-  const endsWordChar = /\w$/.test(phrase);
-  const prefix = startsWordChar ? '\\b' : '';
-  const suffix = endsWordChar ? '\\b' : '';
-  const regex = new RegExp(`${prefix}(${escaped})${suffix}`, 'gi');
+  toolbar.style.display = 'flex';
+  const toolbarRect = toolbar.getBoundingClientRect();
+  const tbWidth = toolbarRect.width || 320;
+  const tbHeight = toolbarRect.height || 42;
 
-  let count = 0;
+  const wordCenterX = rect.left + (rect.width / 2);
+  let left = wordCenterX - (tbWidth / 2);
+  const minLeft = 12;
+  const maxLeft = window.innerWidth - tbWidth - 12;
+  left = Math.max(minLeft, Math.min(maxLeft, left));
 
-  // 1. Update any existing <a> tags in editor if they match this phrase
-  if (matchAll) {
-    editor.querySelectorAll('a').forEach(existingA => {
-      if (existingA.textContent.trim().toLowerCase() === phrase.toLowerCase()) {
-        existingA.setAttribute('href', url);
-        if (title) existingA.setAttribute('title', title); else existingA.removeAttribute('title');
-        if (openInNewTab) {
-          existingA.setAttribute('target', '_blank');
-          existingA.setAttribute('rel', 'noopener noreferrer');
-        } else {
-          existingA.removeAttribute('target');
-          existingA.removeAttribute('rel');
-        }
-        existingA.className = 'blog-link';
-        count++;
-      }
-    });
+  let top = rect.top - tbHeight - 10;
+  let isAbove = true;
+  if (top < 10) {
+    top = rect.bottom + 10;
+    isAbove = false;
   }
 
-  // 2. Find matching text nodes outside existing <a> tags
-  const textNodes = [];
-  const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, {
-    acceptNode(node) {
-      if (!node.textContent || !node.textContent.trim()) return NodeFilter.FILTER_SKIP;
-      if (node.parentNode && node.parentNode.closest('a')) return NodeFilter.FILTER_REJECT;
-      regex.lastIndex = 0;
-      return regex.test(node.textContent) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
-    }
-  });
+  toolbar.style.top = `${Math.round(top)}px`;
+  toolbar.style.left = `${Math.round(left)}px`;
 
-  while (walker.nextNode()) {
-    textNodes.push(walker.currentNode);
-  }
-
-  for (const textNode of textNodes) {
-    const parent = textNode.parentNode;
-    if (!parent) continue;
-
-    const text = textNode.textContent;
-    regex.lastIndex = 0;
-
-    let match;
-    let lastIndex = 0;
-    const fragment = document.createDocumentFragment();
-    let hasMatch = false;
-
-    while ((match = regex.exec(text)) !== null) {
-      hasMatch = true;
-      count++;
-
-      // Text before match
-      if (match.index > lastIndex) {
-        fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
-      }
-
-      // Create new hyperlink for the matched word/phrase
-      const a = document.createElement('a');
-      a.href = url;
-      if (title) a.title = title;
-      if (openInNewTab) {
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-      }
-      a.className = 'blog-link';
-      a.textContent = match[0]; // Preserves original document casing!
-      fragment.appendChild(a);
-
-      lastIndex = regex.lastIndex;
-
-      if (!matchAll) break;
-    }
-
-    if (hasMatch) {
-      if (lastIndex < text.length) {
-        fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
-      }
-      parent.replaceChild(fragment, textNode);
-      if (!matchAll) break;
-    }
-  }
-
-  return count;
+  arrow.className = isAbove ? 'bubble-arrow arrow-bottom' : 'bubble-arrow arrow-top';
+  const arrowOffset = wordCenterX - left;
+  const clampedArrow = Math.max(16, Math.min(tbWidth - 16, arrowOffset));
+  arrow.style.left = `${Math.round(clampedArrow)}px`;
+  arrow.style.transform = 'translateX(-50%)';
 }
 
-function applyBlogHyperlink() {
-  const inputUrl = document.getElementById('link-input-url');
-  const inputText = document.getElementById('link-input-text');
-  const inputTitle = document.getElementById('link-input-title');
-  const inputTarget = document.getElementById('link-input-target');
-  const inputAllMatches = document.getElementById('link-input-all-matches');
-  const errorDiv = document.getElementById('link-url-error');
+/**
+ * Shows the floating bubble toolbar in either 'main' (formatting) or 'link' (inline URL input) mode.
+ */
+function showBubbleToolbar(mode = 'main', anchor = null) {
+  const toolbar = document.getElementById('blog-bubble-toolbar');
+  const modeMain = document.getElementById('bubble-mode-main');
+  const modeLink = document.getElementById('bubble-mode-link');
+  const inputUrl = document.getElementById('bubble-link-url');
+  const inputBlank = document.getElementById('bubble-link-blank');
+  const btnUnlink = document.getElementById('bubble-link-unlink');
+  const btnPreview = document.getElementById('bubble-link-preview-btn');
+  const errorDiv = document.getElementById('bubble-link-error');
+  if (!toolbar || !modeMain || !modeLink) return;
+
+  window._bubbleTargetAnchor = anchor;
+  if (errorDiv) {
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+  }
+
+  if (mode === 'link') {
+    modeMain.style.display = 'none';
+    modeLink.style.display = 'flex';
+
+    if (anchor) {
+      const href = anchor.getAttribute('href') || '';
+      inputUrl.value = href;
+      inputBlank.checked = anchor.getAttribute('target') === '_blank';
+      if (btnUnlink) btnUnlink.style.display = 'inline-flex';
+      if (btnPreview) {
+        btnPreview.href = href || '#';
+        btnPreview.style.display = 'inline-flex';
+      }
+    } else {
+      inputUrl.value = '';
+      inputBlank.checked = true;
+      if (btnUnlink) btnUnlink.style.display = 'none';
+      if (btnPreview) btnPreview.style.display = 'none';
+    }
+
+    const rect = anchor
+      ? anchor.getBoundingClientRect()
+      : (window._bubbleSavedRange ? window._bubbleSavedRange.getBoundingClientRect() : null);
+    if (rect) positionBubbleToolbar(rect);
+
+    toolbar.classList.remove('bubble-anim-in');
+    void toolbar.offsetWidth;
+    toolbar.classList.add('bubble-anim-in');
+
+    setTimeout(() => {
+      inputUrl.focus();
+      inputUrl.select();
+    }, 40);
+  } else {
+    modeMain.style.display = 'flex';
+    modeLink.style.display = 'none';
+
+    // Highlight active formatting buttons
+    const btnBold = modeMain.querySelector('[data-bubble-cmd="bold"]');
+    const btnItalic = modeMain.querySelector('[data-bubble-cmd="italic"]');
+    if (btnBold) btnBold.classList.toggle('active', document.queryCommandState('bold'));
+    if (btnItalic) btnItalic.classList.toggle('active', document.queryCommandState('italic'));
+
+    const rect = anchor
+      ? anchor.getBoundingClientRect()
+      : (window._bubbleSavedRange ? window._bubbleSavedRange.getBoundingClientRect() : null);
+    if (rect) positionBubbleToolbar(rect);
+
+    toolbar.classList.remove('bubble-anim-in');
+    void toolbar.offsetWidth;
+    toolbar.classList.add('bubble-anim-in');
+  }
+}
+
+/**
+ * Hides the floating bubble toolbar.
+ */
+function hideBubbleToolbar() {
+  const toolbar = document.getElementById('blog-bubble-toolbar');
+  if (toolbar) toolbar.style.display = 'none';
+  const errorDiv = document.getElementById('bubble-link-error');
+  if (errorDiv) errorDiv.style.display = 'none';
+  window._bubbleTargetAnchor = null;
+}
+
+/**
+ * Applies a hyperlink ONLY to the targeted word/selection (never anywhere else in the document).
+ */
+function applyBubbleLink() {
+  const inputUrl = document.getElementById('bubble-link-url');
+  const inputBlank = document.getElementById('bubble-link-blank');
+  const errorDiv = document.getElementById('bubble-link-error');
   const editor = document.getElementById('b-content-editor');
   const textarea = document.getElementById('b-content');
-
   if (!inputUrl || !editor) return;
 
   const validation = validateBlogUrl(inputUrl.value);
   if (!validation.valid) {
-    errorDiv.textContent = validation.error;
-    errorDiv.style.display = 'flex';
+    if (errorDiv) {
+      errorDiv.textContent = validation.error;
+      errorDiv.style.display = 'block';
+    }
     inputUrl.focus();
     return;
   }
-  errorDiv.style.display = 'none';
+  if (errorDiv) errorDiv.style.display = 'none';
 
   const finalUrl = validation.url;
-  const linkText = (inputText.value || '').trim();
-  const linkTitle = (inputTitle.value || '').trim();
-  const openInNewTab = inputTarget ? inputTarget.checked : true;
-  const matchAll = inputAllMatches ? inputAllMatches.checked : true;
-
-  if (!linkText) {
-    errorDiv.textContent = 'Please enter the word or phrase in the article to hyperlink.';
-    errorDiv.style.display = 'flex';
-    if (inputText) inputText.focus();
-    return;
-  }
+  const openInNewTab = inputBlank ? inputBlank.checked : true;
 
   editor.focus();
 
-  if (window._blogCurrentAnchor) {
-    // ── Editing Existing Link ──────────────────────────────────────────
-    const a = window._blogCurrentAnchor;
-    const oldText = a.textContent.trim();
+  if (window._bubbleTargetAnchor) {
+    // ── Update this specific anchor ONLY ──
+    const a = window._bubbleTargetAnchor;
     a.setAttribute('href', finalUrl);
-    if (linkTitle) a.setAttribute('title', linkTitle); else a.removeAttribute('title');
     if (openInNewTab) {
       a.setAttribute('target', '_blank');
       a.setAttribute('rel', 'noopener noreferrer');
@@ -1356,97 +1326,60 @@ function applyBlogHyperlink() {
       a.removeAttribute('target');
       a.removeAttribute('rel');
     }
-    if (linkText && linkText !== oldText) {
-      a.textContent = linkText;
+    a.className = 'blog-link';
+    showToast('Hyperlink updated for this word!', 'success');
+  } else if (window._bubbleSavedRange) {
+    // ── Wrap ONLY this specific selected word / range in a New <a> ──
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(window._bubbleSavedRange);
+
+    const a = document.createElement('a');
+    a.href = finalUrl;
+    if (openInNewTab) {
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
     }
+    a.className = 'blog-link';
 
-    if (matchAll) {
-      const additionalCount = hyperlinkWordsInEditor(editor, linkText || oldText, finalUrl, linkTitle, openInNewTab, true);
-      showToast(additionalCount > 1 ? `Updated ${additionalCount} occurrences of "${linkText || oldText}"!` : 'Hyperlink updated!', 'success');
-    } else {
-      showToast('Hyperlink updated!', 'success');
-    }
-  } else {
-    // ── Hyperlinking Words Inside the Blog Content ────────────────────
-    const count = hyperlinkWordsInEditor(editor, linkText, finalUrl, linkTitle, openInNewTab, matchAll);
-
-    if (count > 0) {
-      const msg = count === 1
-        ? `Hyperlinked 1 occurrence of "${linkText}" in the article!`
-        : `Hyperlinked all ${count} occurrences of "${linkText}" in the article!`;
-      showToast(msg, 'success');
-    } else {
-      // If the word was not found in the article text nodes:
-      // Check if user has an active highlighted selection range in the editor
-      if (window._blogSavedRange && !window._blogSavedRange.collapsed && editor.contains(window._blogSavedRange.commonAncestorContainer)) {
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(window._blogSavedRange);
-
-        const a = document.createElement('a');
-        a.href = finalUrl;
-        if (linkTitle) a.title = linkTitle;
-        if (openInNewTab) {
-          a.target = '_blank';
-          a.rel = 'noopener noreferrer';
-        }
-        a.className = 'blog-link';
-        a.textContent = linkText;
-
-        window._blogSavedRange.deleteContents();
-        window._blogSavedRange.insertNode(a);
-        showToast(`Hyperlinked "${linkText}"!`, 'success');
-      } else {
-        // DO NOT append to the bottom of the page!
-        errorDiv.textContent = `The text "${linkText}" was not found inside the article content. Please select the words in the editor or enter words that appear in the article.`;
-        errorDiv.style.display = 'flex';
-        if (inputText) inputText.focus();
-        return;
-      }
+    try {
+      const fragment = window._bubbleSavedRange.extractContents();
+      a.appendChild(fragment);
+      window._bubbleSavedRange.insertNode(a);
+      showToast('Hyperlink added to this word!', 'success');
+    } catch (err) {
+      console.error('Error inserting link:', err);
+      document.execCommand('createLink', false, finalUrl);
     }
   }
 
-  // Synchronize to hidden textarea
   if (textarea) textarea.value = editor.innerHTML;
-  closeBlogLinkModal();
+  hideBubbleToolbar();
   updateBlogToolbarStates();
 }
 
-function removeBlogHyperlink() {
-  const anchor = window._blogCurrentAnchor || getSelectedBlogAnchor();
+/**
+ * Removes hyperlink from the target anchor, keeping its original text completely intact.
+ */
+function unlinkBubbleLink() {
+  const a = window._bubbleTargetAnchor || getSelectedBlogAnchor();
   const editor = document.getElementById('b-content-editor');
   const textarea = document.getElementById('b-content');
-  const inputAllMatches = document.getElementById('link-input-all-matches');
-  const removeAll = inputAllMatches ? inputAllMatches.checked : false;
 
-  if (anchor && editor && editor.contains(anchor)) {
-    const wordText = anchor.textContent.trim();
-    if (removeAll && wordText) {
-      let count = 0;
-      editor.querySelectorAll('a').forEach(a => {
-        if (a.textContent.trim().toLowerCase() === wordText.toLowerCase()) {
-          const textNode = document.createTextNode(a.textContent);
-          a.parentNode.replaceChild(textNode, a);
-          count++;
-        }
-      });
-      showToast(`Removed hyperlinks for ${count} occurrences of "${wordText}". Original text preserved.`, 'info');
-    } else {
-      const parent = anchor.parentNode;
-      while (anchor.firstChild) {
-        parent.insertBefore(anchor.firstChild, anchor);
-      }
-      parent.removeChild(anchor);
-      showToast('Hyperlink removed. Original text preserved.', 'info');
+  if (a && editor && editor.contains(a)) {
+    const parent = a.parentNode;
+    while (a.firstChild) {
+      parent.insertBefore(a.firstChild, a);
     }
-  } else if (window._blogSavedRange) {
+    parent.removeChild(a);
+    showToast('Hyperlink removed. Original word preserved.', 'info');
+  } else if (window._bubbleSavedRange) {
     document.execCommand('unlink', false, null);
     showToast('Hyperlink removed.', 'info');
   }
 
   if (textarea) textarea.value = editor.innerHTML;
-  closeBlogLinkModal();
-  hideLinkPopover();
+  hideBubbleToolbar();
   updateBlogToolbarStates();
 }
 
@@ -1454,7 +1387,8 @@ function initBlogEditor(initialContent = '') {
   const editor = document.getElementById('b-content-editor');
   const textarea = document.getElementById('b-content');
   const toolbar = document.getElementById('blog-editor-toolbar');
-  if (!editor || !textarea || !toolbar) return;
+  const bubble = document.getElementById('blog-bubble-toolbar');
+  if (!editor || !textarea) return;
 
   if (initialContent) {
     editor.innerHTML = initialContent;
@@ -1471,110 +1405,279 @@ function initBlogEditor(initialContent = '') {
     editor.addEventListener(evt, updateBlogToolbarStates);
   });
 
+  // ── RIGHT CLICK TO HYPERLINK SPECIFIC WORD ───────────────────────
+  editor.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+
+    const sel = window.getSelection();
+    let clickedAnchor = e.target.closest('a');
+    if (clickedAnchor && !editor.contains(clickedAnchor)) clickedAnchor = null;
+
+    if (clickedAnchor) {
+      // Right-clicked directly on an existing link: edit just this link
+      window._bubbleTargetAnchor = clickedAnchor;
+      const r = document.createRange();
+      r.selectNodeContents(clickedAnchor);
+      sel.removeAllRanges();
+      sel.addRange(r);
+      window._bubbleSavedRange = r.cloneRange();
+      showBubbleToolbar('link', clickedAnchor);
+      return;
+    }
+
+    // If user already has an active selection in the editor
+    if (sel && !sel.isCollapsed && editor.contains(sel.anchorNode)) {
+      window._bubbleSavedRange = sel.getRangeAt(0).cloneRange();
+      window._bubbleTargetAnchor = null;
+      showBubbleToolbar('link', null);
+      return;
+    }
+
+    // Auto-detect word boundary under the cursor
+    const wordRange = getWordRangeAtPoint(e.clientX, e.clientY);
+    if (wordRange && editor.contains(wordRange.commonAncestorContainer)) {
+      sel.removeAllRanges();
+      sel.addRange(wordRange);
+      window._bubbleSavedRange = wordRange.cloneRange();
+      window._bubbleTargetAnchor = null;
+      showBubbleToolbar('link', null);
+    } else {
+      hideBubbleToolbar();
+    }
+  });
+
+  // ── MOUSEUP / TEXT SELECTION: SHOW FLOATING BUBBLE TOOLBAR ────────
+  editor.addEventListener('mouseup', (e) => {
+    // If clicked directly on an existing link: open bubble in link mode
+    const a = e.target.closest('a');
+    if (a && editor.contains(a)) {
+      e.preventDefault();
+      const sel = window.getSelection();
+      const r = document.createRange();
+      r.selectNodeContents(a);
+      sel.removeAllRanges();
+      sel.addRange(r);
+      window._bubbleSavedRange = r.cloneRange();
+      showBubbleToolbar('link', a);
+      return;
+    }
+
+    // Delay slightly to allow browser selection to settle
+    setTimeout(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || !sel.rangeCount) {
+        const tb = document.getElementById('blog-bubble-toolbar');
+        if (!tb || !tb.contains(document.activeElement)) {
+          hideBubbleToolbar();
+        }
+        return;
+      }
+
+      const r = sel.getRangeAt(0);
+      if (!editor.contains(r.commonAncestorContainer)) {
+        hideBubbleToolbar();
+        return;
+      }
+
+      const text = r.toString().trim();
+      if (text.length > 0) {
+        window._bubbleSavedRange = r.cloneRange();
+        window._bubbleTargetAnchor = null;
+        showBubbleToolbar('main', null);
+      } else {
+        hideBubbleToolbar();
+      }
+    }, 15);
+  });
+
   // Keyboard shortcut Ctrl+K / Cmd+K for Link
   editor.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
-      openBlogLinkModal();
-    }
-  });
-
-  // Handle click on existing links inside editor: prevent navigation & show popover
-  editor.addEventListener('click', (e) => {
-    const a = e.target.closest('a');
-    if (a && editor.contains(a)) {
-      e.preventDefault();
-      showLinkPopover(a);
-    } else {
-      hideLinkPopover();
-    }
-    updateBlogToolbarStates();
-  });
-
-  // Toolbar Formatting Actions
-  toolbar.querySelectorAll('button[data-cmd]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const cmd = btn.getAttribute('data-cmd');
-      document.execCommand(cmd, false, null);
-      textarea.value = editor.innerHTML;
-      editor.focus();
-    });
-  });
-
-  toolbar.querySelectorAll('button[data-format]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const fmt = btn.getAttribute('data-format');
-      document.execCommand('formatBlock', false, `<${fmt}>`);
-      textarea.value = editor.innerHTML;
-      editor.focus();
-    });
-  });
-
-  // Toolbar Link & Unlink Buttons
-  document.getElementById('btn-blog-link')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    openBlogLinkModal();
-  });
-
-  document.getElementById('btn-blog-unlink')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    removeBlogHyperlink();
-  });
-
-  // Toggle HTML Source Code view
-  const btnCode = document.getElementById('btn-blog-toggle-code');
-  if (btnCode) {
-    btnCode.addEventListener('click', (e) => {
-      e.preventDefault();
-      const isCodeView = textarea.style.display !== 'none';
-      if (isCodeView) {
-        // Switch back to Visual Rich Editor
-        editor.innerHTML = textarea.value;
-        textarea.style.display = 'none';
-        editor.style.display = 'block';
-        btnCode.classList.remove('active');
-        btnCode.innerHTML = `<i class="fas fa-code"></i> <span>HTML</span>`;
-        editor.focus();
+      const sel = window.getSelection();
+      const a = getSelectedBlogAnchor();
+      if (a) {
+        showBubbleToolbar('link', a);
+      } else if (sel && !sel.isCollapsed && editor.contains(sel.anchorNode)) {
+        window._bubbleSavedRange = sel.getRangeAt(0).cloneRange();
+        showBubbleToolbar('link', null);
       } else {
-        // Switch to HTML Source Code view
-        textarea.value = editor.innerHTML;
-        editor.style.display = 'none';
-        textarea.style.display = 'block';
-        btnCode.classList.add('active');
-        btnCode.innerHTML = `<i class="fas fa-eye"></i> <span>Visual</span>`;
-        textarea.focus();
+        // Try word expansion under caret
+        const r = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+        if (r) {
+          const rect = r.getBoundingClientRect();
+          const wordRange = getWordRangeAtPoint(rect.left, rect.top);
+          if (wordRange) {
+            sel.removeAllRanges();
+            sel.addRange(wordRange);
+            window._bubbleSavedRange = wordRange.cloneRange();
+            showBubbleToolbar('link', null);
+            return;
+          }
+        }
+        showToast('Select a word or right-click any word to add a link.', 'info');
       }
+    }
+  });
+
+  // ── FLOATING BUBBLE TOOLBAR ACTIONS ──────────────────────────────
+  if (bubble) {
+    // Formatting buttons in bubble
+    bubble.querySelectorAll('[data-bubble-cmd]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const cmd = btn.getAttribute('data-bubble-cmd');
+        if (window._bubbleSavedRange) {
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(window._bubbleSavedRange);
+        }
+        document.execCommand(cmd, false, null);
+        textarea.value = editor.innerHTML;
+        editor.focus();
+        showBubbleToolbar('main', null);
+      });
     });
+
+    bubble.querySelectorAll('[data-bubble-format]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const fmt = btn.getAttribute('data-bubble-format');
+        if (window._bubbleSavedRange) {
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(window._bubbleSavedRange);
+        }
+        document.execCommand('formatBlock', false, `<${fmt}>`);
+        textarea.value = editor.innerHTML;
+        editor.focus();
+        showBubbleToolbar('main', null);
+      });
+    });
+
+    // Trigger link input mode from bubble
+    document.getElementById('bubble-trigger-link')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      showBubbleToolbar('link', window._bubbleTargetAnchor || getSelectedBlogAnchor());
+    });
+
+    // Apply hyperlink button
+    document.getElementById('bubble-link-apply')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      applyBubbleLink();
+    });
+
+    // Unlink button
+    document.getElementById('bubble-link-unlink')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      unlinkBubbleLink();
+    });
+
+    // Close button
+    document.getElementById('bubble-link-close')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      hideBubbleToolbar();
+    });
+
+    // Enter & Escape in Link input
+    const linkInput = document.getElementById('bubble-link-url');
+    if (linkInput) {
+      linkInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyBubbleLink();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          hideBubbleToolbar();
+        }
+      });
+    }
   }
 
-  // Setup Link Modal event listeners
-  document.getElementById('btn-close-link-modal')?.addEventListener('click', closeBlogLinkModal);
-  document.getElementById('btn-link-modal-cancel')?.addEventListener('click', closeBlogLinkModal);
-  document.getElementById('btn-link-modal-apply')?.addEventListener('click', applyBlogHyperlink);
-  document.getElementById('btn-link-modal-remove')?.addEventListener('click', removeBlogHyperlink);
-
-  // Setup Popover action listeners
-  document.getElementById('popover-btn-edit')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    hideLinkPopover();
-    openBlogLinkModal();
-  });
-  document.getElementById('popover-btn-unlink')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    removeBlogHyperlink();
-  });
-
-  // Close Popover when clicking outside
+  // Dismiss bubble when clicking outside or pressing Escape
   document.addEventListener('click', (e) => {
-    const popover = document.getElementById('blog-link-popover');
-    if (popover && popover.style.display !== 'none') {
-      if (!popover.contains(e.target) && !editor.contains(e.target)) {
-        hideLinkPopover();
+    const tb = document.getElementById('blog-bubble-toolbar');
+    if (tb && tb.style.display !== 'none') {
+      if (!tb.contains(e.target) && !editor.contains(e.target)) {
+        hideBubbleToolbar();
       }
     }
   });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      hideBubbleToolbar();
+    }
+  });
+
+  // ── TOP EDITOR TOOLBAR ACTIONS (COMPATIBILITY) ─────────────────────
+  if (toolbar) {
+    toolbar.querySelectorAll('button[data-cmd]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const cmd = btn.getAttribute('data-cmd');
+        document.execCommand(cmd, false, null);
+        textarea.value = editor.innerHTML;
+        editor.focus();
+      });
+    });
+
+    toolbar.querySelectorAll('button[data-format]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const fmt = btn.getAttribute('data-format');
+        document.execCommand('formatBlock', false, `<${fmt}>`);
+        textarea.value = editor.innerHTML;
+        editor.focus();
+      });
+    });
+
+    // Top Toolbar Link & Unlink Buttons
+    document.getElementById('btn-blog-link')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const a = getSelectedBlogAnchor();
+      const sel = window.getSelection();
+      if (a) {
+        showBubbleToolbar('link', a);
+      } else if (sel && !sel.isCollapsed && editor.contains(sel.anchorNode)) {
+        window._bubbleSavedRange = sel.getRangeAt(0).cloneRange();
+        showBubbleToolbar('link', null);
+      } else {
+        editor.focus();
+        showToast('Right-click any word or select text to add a link.', 'info');
+      }
+    });
+
+    document.getElementById('btn-blog-unlink')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      unlinkBubbleLink();
+    });
+
+    // Toggle HTML Source Code view
+    const btnCode = document.getElementById('btn-blog-toggle-code');
+    if (btnCode) {
+      btnCode.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isCodeView = textarea.style.display !== 'none';
+        if (isCodeView) {
+          editor.innerHTML = textarea.value;
+          textarea.style.display = 'none';
+          editor.style.display = 'block';
+          btnCode.classList.remove('active');
+          btnCode.innerHTML = `<i class="fas fa-code"></i> <span>HTML</span>`;
+          editor.focus();
+        } else {
+          hideBubbleToolbar();
+          textarea.value = editor.innerHTML;
+          editor.style.display = 'none';
+          textarea.style.display = 'block';
+          btnCode.classList.add('active');
+          btnCode.innerHTML = `<i class="fas fa-eye"></i> <span>Visual</span>`;
+          textarea.focus();
+        }
+      });
+    }
+  }
 }
 
 function openBlogForm(b = null) {
@@ -1591,11 +1694,11 @@ function openBlogForm(b = null) {
     <div class="form-group"><label>Cover / Banner Image</label>${createImageUpload('b-card', b?.card_image||b?.banner_image||'')}</div>
     <div class="form-group"><label>Short Overview / Excerpt (Optional)</label><textarea id="b-desc" rows="2" placeholder="Brief 1-2 sentence excerpt for cards...">${b?.description||''}</textarea></div>
     
-    <!-- Rich Text Blog Editor with Hyperlink Support -->
+    <!-- Rich Text Blog Editor with Floating Bubble Toolbar -->
     <div class="form-group">
       <label style="display:flex;align-items:center;justify-content:space-between">
         <span>Full Article Content *</span>
-        <span style="font-weight:normal;color:#64748b;font-size:11px"><i class="fas fa-keyboard"></i> Tip: Press Ctrl+K to add link</span>
+        <span style="font-weight:normal;color:#64748b;font-size:11px"><i class="fas fa-mouse-pointer"></i> Right-click any word or select text to link</span>
       </label>
       <div class="blog-editor-wrapper" id="blog-editor-wrapper">
         <div class="blog-editor-toolbar" id="blog-editor-toolbar" role="toolbar" aria-label="Blog Content Toolbar">
@@ -1633,7 +1736,7 @@ function openBlogForm(b = null) {
       </div>
       <div class="blog-editor-hint">
         <i class="fas fa-info-circle text-amber-500"></i>
-        <span>Select any text and click <strong>Link</strong> to insert a hyperlink. Click any existing link to edit its URL or remove it.</span>
+        <span><strong>Right-click on any word</strong> or select text to open the floating toolbar and add a link just to that word. Click an existing link to edit its URL or remove it.</span>
       </div>
     </div>
 
