@@ -223,6 +223,12 @@ async function runMigrations() {
     }
   }
 
+  // Ensure blogs columns exist on existing databases
+  try { await query("ALTER TABLE blogs ADD COLUMN description TEXT NULL"); } catch (_) {}
+  try { await query("ALTER TABLE blogs ADD COLUMN banner_image VARCHAR(500) DEFAULT ''"); } catch (_) {}
+  try { await query("ALTER TABLE blogs ADD COLUMN author VARCHAR(100) DEFAULT 'Mangalam Editorial'"); } catch (_) {}
+  try { await query("ALTER TABLE blogs ADD COLUMN category VARCHAR(100) DEFAULT 'Travel Guide'"); } catch (_) {}
+
   // Seed default admin user only if users table is empty
   try {
     const users = await query('SELECT id FROM users LIMIT 1');

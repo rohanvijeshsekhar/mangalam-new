@@ -7,6 +7,9 @@ const slugify = t => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').r
 const map = b => {
   const plainText = b.content ? b.content.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim() : '';
   const pk = (b.id !== undefined && b.id !== null) ? b.id : b.blog_id;
+  const rawDesc = (b.description !== undefined && b.description !== null && String(b.description).trim() !== '')
+    ? String(b.description).trim()
+    : plainText.slice(0, 180);
   return {
     id: pk,
     blog_id: pk,
@@ -19,7 +22,7 @@ const map = b => {
     author: b.author || 'Mangalam Editorial',
     category: b.category || 'Travel Guide',
     content: b.content || '',
-    description: b.description || plainText.slice(0, 180),
+    description: rawDesc,
     created_at: b.created_at || ''
   };
 };
@@ -178,7 +181,8 @@ router.put('/:id', verifyToken, async (req, res) => {
   try {
     const { title, card_image, banner_image, date, content, author, category, description } = req.body;
     const cleanContent = content !== undefined ? sanitizeBlogContent(content) : undefined;
-    const updates = { card_image, banner_image, date, author, category, description };
+    const updates = { card_image, banner_image, date, author, category };
+    if (description !== undefined) updates.description = (description || '').trim();
     if (cleanContent !== undefined) updates.content = cleanContent;
     
     // Preserve existing slug_url unless explicitly changed or missing
@@ -211,4 +215,5 @@ router.delete('/:id', verifyToken, async (req, res) => {
 });
 
 module.exports = router;
+
 

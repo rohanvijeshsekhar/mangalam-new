@@ -127,6 +127,54 @@ async function findSeoMatch(rawRoute) {
       });
     }
 
+    // 5. Automatic dynamic SEO fallback for blogs (uses Admin Short Overview / Excerpt)
+    if (!matched && (normalizedRoute.includes('blog-details') || normalizedRoute.startsWith('/blog'))) {
+      try {
+        const queryIdx = rawRoute.indexOf('?');
+        const queryStr = queryIdx !== -1 ? rawRoute.slice(queryIdx + 1) : '';
+        const qParams = new URLSearchParams(queryStr);
+        const slugParam = (qParams.get('slug') || '').trim();
+        const idParam = (qParams.get('id') || '').trim();
+        const targetKey = (slugParam || idParam).toLowerCase();
+
+        if (targetKey) {
+          const allBlogs = await store.getAll('blogs');
+          const blog = allBlogs.find(b => {
+            const bSlug = String(b.slug_url || b.slug || '').toLowerCase().trim();
+            const bId = String((b.id !== undefined && b.id !== null) ? b.id : (b.blog_id || '')).trim();
+            return (slugParam && bSlug === slugParam.toLowerCase()) ||
+                   (idParam && bId === idParam) ||
+                   bSlug === targetKey ||
+                   bId === targetKey;
+          });
+
+          if (blog) {
+            const plainText = blog.content ? blog.content.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim() : '';
+            const desc = (blog.description || blog.meta_description || plainText.slice(0, 180) || '').trim();
+            const title = blog.title || 'Travel Blog';
+            const slug = blog.slug_url || blog.slug || blog.id || targetKey;
+            const bannerImg = blog.banner_image || blog.card_image || 'https://mangalamtravel.com/assets/images/banner-img.webp';
+
+            matched = {
+              id: `blog-${blog.id || blog.blog_id || 0}`,
+              page_route: rawRoute,
+              page_name: title,
+              meta_title: title,
+              meta_description: desc,
+              meta_keywords: `${blog.category || 'Travel Guide'}, ${title}, Mangalam Travel`,
+              canonical_url: `https://mangalamtravel.com/blog-details.html?slug=${encodeURIComponent(slug)}`,
+              og_image: toAbsoluteUrl(bannerImg),
+              robots: 'index, follow',
+              status: 'Active',
+              created_at: blog.created_at || new Date().toISOString()
+            };
+          }
+        }
+      } catch (err) {
+        console.warn('[SEO] Failed to resolve dynamic blog SEO:', err.message);
+      }
+    }
+
     return matched || null;
   } catch (err) {
     console.warn('[SEO] findSeoMatch error:', err);

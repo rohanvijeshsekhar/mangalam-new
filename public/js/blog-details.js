@@ -34,14 +34,95 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Process fields
-        const title = blog.title || 'Travel Blog';
+    const title = blog.title || 'Travel Blog';
     document.title = title;
+
+    // Short Overview / Excerpt written in Admin Panel
+    const plainTextContent = blog.content ? blog.content.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim() : '';
+    const blogDesc = (blog.description || blog.meta_description || plainTextContent.slice(0, 180) || '').trim();
 
     const imgStr = blog.banner_image || blog.card_image || (blog.images && blog.images.length > 0 ? (typeof blog.images[0] === 'object' ? (blog.images[0].file_name || blog.images[0].name || blog.images[0].image) : blog.images[0]) : '');
     const bannerImg = MT.resolveImg(imgStr) || './assets/images/banner-img.webp';
     const date = blog.date || (blog.created_at ? new Date(blog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '');
     const author = blog.author || 'Mangalam Editorial Team';
     const category = blog.category || 'Travel Guide';
+
+    // Canonical & Social sharing absolute URL
+    const slugVal = blog.slug_url || blog.slug || param || '';
+    const blogCanonical = `https://mangalamtravel.com/blog-details.html?slug=${encodeURIComponent(slugVal)}`;
+    const absBannerImg = (bannerImg.startsWith('http://') || bannerImg.startsWith('https://'))
+      ? bannerImg
+      : `https://mangalamtravel.com/${bannerImg.replace(/^\.?\//, '')}`;
+
+    // Update Meta Tags so browser extensions, crawlers and social previews reflect Admin Short Overview
+    const setMetaTag = (nameOrProp, attr, val) => {
+      if (!val) return;
+      let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, nameOrProp);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', val);
+    };
+
+    const setLinkTag = (rel, href) => {
+      if (!href) return;
+      let el = document.querySelector(`link[rel="${rel}"]`);
+      if (!el) {
+        el = document.createElement('link');
+        el.setAttribute('rel', rel);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('href', href);
+    };
+
+    if (blogDesc) {
+      setMetaTag('description', 'name', blogDesc);
+      setMetaTag('og:description', 'property', blogDesc);
+      setMetaTag('twitter:description', 'name', blogDesc);
+    }
+    setMetaTag('title', 'name', title);
+    setMetaTag('og:title', 'property', title);
+    setMetaTag('twitter:title', 'name', title);
+    setMetaTag('og:image', 'property', absBannerImg);
+    setMetaTag('og:image:secure_url', 'property', absBannerImg);
+    setMetaTag('twitter:image', 'name', absBannerImg);
+    setMetaTag('og:url', 'property', blogCanonical);
+    setMetaTag('twitter:url', 'name', blogCanonical);
+    setLinkTag('canonical', blogCanonical);
+
+    // Dynamic Schema.org structured data injection
+    try {
+      let bSchema = document.getElementById('blog-posting-ldjson');
+      if (!bSchema) {
+        bSchema = document.createElement('script');
+        bSchema.id = 'blog-posting-ldjson';
+        bSchema.type = 'application/ld+json';
+        document.head.appendChild(bSchema);
+      }
+      bSchema.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": title,
+        "description": blogDesc,
+        "image": absBannerImg,
+        "author": {
+          "@type": "Person",
+          "name": author
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Mangalam Travel & Tours",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://mangalamtravel.com/assets/images/logo-color.png"
+          }
+        },
+        "datePublished": blog.created_at || blog.date || new Date().toISOString(),
+        "mainEntityOfPage": blogCanonical
+      }, null, 2);
+    } catch (_) {}
 
     // Client-side URL cleaner matching backend rules
     function cleanHref(rawHref) {

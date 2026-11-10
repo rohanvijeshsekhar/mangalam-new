@@ -247,7 +247,7 @@ async function loadDynamicSeo(overrideSlug) {
 
     // 3. Fallback for destination pages without a custom SEO entry in Admin Panel
     if (!seo || !seo.id || (seo.status && seo.status !== 'Active')) {
-      if (slug) {
+      if (slug && !cleanPath.includes('blog')) {
         const destTitle = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/[-_]/g, ' ');
         const fallbackTitle = `${destTitle} Holiday Packages | Mangalam Travel & Tours`;
         if (!document.title || document.title.includes('Explore All Travel Packages') || document.title.includes('Malaysia')) {
