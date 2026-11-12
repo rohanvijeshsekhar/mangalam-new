@@ -616,28 +616,43 @@ function injectMobileNavStyles() {
 
 // ─── Home Page Testimonials Running Marquee ──────────────────────────────────
 async function loadHomeTestimonials() {
+  const section = document.getElementById('home-testimonials-section');
   const track = document.getElementById('testimonials-marquee-track');
   if (!track) return;
 
   try {
-    let list = await apiGet('/api/testimonials');
-    if (!Array.isArray(list) || !list.length) {
-      list = [
-        { name: 'Arun & Sneha Krishnan', location: 'Dubai Luxury Tour (5N/6D)', feedback: 'Mangalam Tours made our honeymoon to Dubai unforgettable! From the private yacht cruise to the desert safari, everything was planned to perfection.', rating: 5 },
-        { name: 'Dr. Ramesh Nair & Family', location: 'Switzerland & Paris Tour', feedback: 'Exceptional service from the Trivandrum team. All alpine excursions, train passes, and hotel bookings were flawless. Highly recommended!', rating: 5 },
-        { name: 'Ananya Menon', location: 'Bali Tropical Paradise', feedback: 'Booking through Mangalam was the best travel decision! The private pool villa in Ubud and sunrise volcano tour were breathtaking. 10/10 hospitality.', rating: 5 },
-        { name: 'Vishnu & Divya Pillai', location: 'Singapore & Malaysia Tour', feedback: 'We were amazed by the attention to detail. Every day itinerary was smoothly coordinated with private chauffeurs and priority entry passes.', rating: 5 },
-        { name: 'Capt. Joseph Thomas', location: 'Vietnam & Cambodia Discovery', feedback: 'Flawless visa assistance, fantastic local guides, and top-tier 5-star accommodations throughout Hanoi and Siem Reap.', rating: 5 },
-        { name: 'Meera Balakrishnan', location: 'Thailand Island Hopping', feedback: 'Super responsive team! They customized our Phuket and Krabi itinerary within hours and gave us the best price guarantee.', rating: 5 }
-      ];
+    const list = await apiGet('/api/testimonials');
+    const valid = Array.isArray(list)
+      ? list.filter(t => t && t.name && String(t.feedback || '').trim() !== '')
+      : [];
+
+    if (!valid.length) {
+      if (section) {
+        section.classList.add('hidden');
+        section.style.display = 'none';
+      }
+      track.innerHTML = '';
+      return;
     }
 
+    if (section) {
+      section.classList.remove('hidden');
+      section.style.display = '';
+    }
+
+    const esc = (s) => String(s || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
     const renderCard = (t) => {
-      const rating = Number(t.rating) || 5;
+      const rating = Math.min(5, Math.max(1, Number(t.rating) || 5));
       const stars = '★'.repeat(rating) + '☆'.repeat(Math.max(0, 5 - rating));
-      const initials = (t.name || 'Traveler').split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'TT';
+      const safeName = (t.name || 'Happy Traveler').trim();
+      const initials = safeName.split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'TT';
       const colors = ['bg-rose-500', 'bg-blue-600', 'bg-emerald-600', 'bg-amber-500', 'bg-purple-600', 'bg-indigo-600'];
-      const bgCol = colors[Math.abs((t.name || '').charCodeAt(0) || 0) % colors.length];
+      const bgCol = colors[Math.abs(safeName.charCodeAt(0) || 0) % colors.length];
 
       return `
         <div class="testimonial-card flex flex-col justify-between flex-shrink-0">
@@ -649,17 +664,17 @@ async function loadHomeTestimonials() {
               </div>
             </div>
             <p class="text-gray-700 font-dm-sans text-sm leading-relaxed mb-3 italic testimonial-text">
-              "${t.feedback || 'Outstanding experience with Mangalam Travel & Tours!'}"
+              "${esc(t.feedback)}"
             </p>
           </div>
           <div class="flex items-center gap-3 pt-3 border-t border-gray-100">
             <div class="w-10 h-10 rounded-full ${bgCol} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
-              ${initials}
+              ${esc(initials)}
             </div>
             <div class="overflow-hidden">
-              <h4 class="font-bold text-gray-900 font-dm-sans text-sm truncate">${t.name || 'Happy Traveler'}</h4>
+              <h4 class="font-bold text-gray-900 font-dm-sans text-sm truncate">${esc(safeName)}</h4>
               <p class="text-gray-500 font-dm-sans text-xs truncate flex items-center gap-1">
-                <i class="fas fa-map-marker-alt text-red-500 text-[10px]"></i> ${t.location || 'Verified Traveler'}
+                <i class="fas fa-map-marker-alt text-red-500 text-[10px]"></i> ${esc(t.location || 'Verified Traveler')}
               </p>
             </div>
           </div>
@@ -668,9 +683,10 @@ async function loadHomeTestimonials() {
     };
 
     // Duplicate list 3 times so the marquee loop is completely seamless and infinite
-    const itemsHTML = list.map(renderCard).join('');
+    const itemsHTML = valid.map(renderCard).join('');
     track.innerHTML = itemsHTML + itemsHTML + itemsHTML;
   } catch (err) {
+    if (section) section.classList.add('hidden');
     console.warn('[Testimonials] Load error:', err);
   }
 }

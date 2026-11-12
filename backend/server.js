@@ -131,6 +131,11 @@ app.get(['/', '/index.html', '/index.php'], async (req, res) => {
   }
 });
 
+// Landing page clean slug redirect to canonical .html
+app.get('/best-travel-agency-trivandrum', (req, res) => {
+  res.redirect(301, '/best-travel-agency-trivandrum.html');
+});
+
 // 2. HTML Page Router with dynamic SEO injection from database
 app.get('/:page.html', async (req, res, next) => {
   const pageName = `${req.params.page}.html`;

@@ -253,7 +253,8 @@ async function runMigrations() {
         ['/packages.html', 'All Packages Listing', 'Explore All Travel Packages | Mangalam Travel & Tours', 'Browse through our full catalog of holiday packages, fixed departures, and tailored itineraries.', 'tour packages list, best holiday deals, budget tours, luxury holiday packages', 'https://mangalamtravel.com/packages.html', 'https://mangalamtravel.com/assets/images/package-2.webp', 'index, follow', 'Active'],
         ['/attraction.html', 'Attractions & Activities', 'Top Tourist Attractions & Entry Passes | Mangalam Travel & Tours', 'Book tickets for top world attractions, theme parks, dhow cruises, and museum tours with instant confirmation.', 'attractions tickets, burj khalifa tickets, miracle garden pass, theme park bookings', 'https://mangalamtravel.com/attraction.html', 'https://mangalamtravel.com/assets/images/destination-1.webp', 'index, follow', 'Active'],
         ['/about.html', 'About Us', 'About Mangalam Travel & Tours — Your Trusted Kerala Travel Partner', 'Learn about Mangalam Travel & Tours, our values, our experience, and our mission to provide hassle-free, memorable vacations.', 'about mangalam travel, travel company trivandrum, trusted kerala tour operator', 'https://mangalamtravel.com/about.html', 'https://mangalamtravel.com/assets/images/abt-img-1.webp', 'index, follow', 'Active'],
-        ['/contact.html', 'Contact Us', 'Contact Mangalam Travel & Tours — Trivandrum, Kerala', 'Get in touch with our expert travel consultants for holiday bookings, visa assistance, and custom trip planning.', 'contact mangalam travel, travel agency phone number, trivandrum travel office', 'https://mangalamtravel.com/contact.html', 'https://mangalamtravel.com/assets/images/logo-color.png', 'index, follow', 'Active']
+        ['/contact.html', 'Contact Us', 'Contact Mangalam Travel & Tours — Trivandrum, Kerala', 'Get in touch with our expert travel consultants for holiday bookings, visa assistance, and custom trip planning.', 'contact mangalam travel, travel agency phone number, trivandrum travel office', 'https://mangalamtravel.com/contact.html', 'https://mangalamtravel.com/assets/images/logo-color.png', 'index, follow', 'Active'],
+        ['/best-travel-agency-trivandrum.html', 'Best Travel Agency in Trivandrum', 'Best Travel Agency in Trivandrum | Mangalam Travel & Tours', 'Looking for the best travel agency in Trivandrum? Explore domestic and international holidays, flight booking and visa assistance with Mangalam Travel & Tours.', 'best travel agency in trivandrum, travel agency trivandrum, tour operators trivandrum, holiday packages trivandrum, flight booking trivandrum, visa assistance trivandrum', 'https://mangalamtravel.com/best-travel-agency-trivandrum.html', 'https://mangalamtravel.com/assets/images/holiday-packages-hero.jpg', 'index, follow', 'Active']
       ];
       for (const p of defaultPages) {
         await query(
@@ -266,6 +267,14 @@ async function runMigrations() {
   } catch (e) {
     console.error(`⚠️ SEO seed check error: ${e.message}`);
   }
+
+  // Ensure landing page SEO configuration exists
+  try {
+    await query(
+      `INSERT IGNORE INTO seo (page_route, page_name, meta_title, meta_description, meta_keywords, canonical_url, og_image, robots, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ['/best-travel-agency-trivandrum.html', 'Best Travel Agency in Trivandrum', 'Best Travel Agency in Trivandrum | Mangalam Travel & Tours', 'Looking for the best travel agency in Trivandrum? Explore domestic and international holidays, flight booking and visa assistance with Mangalam Travel & Tours.', 'best travel agency in trivandrum, travel agency trivandrum, tour operators trivandrum, holiday packages trivandrum, flight booking trivandrum, visa assistance trivandrum', 'https://mangalamtravel.com/best-travel-agency-trivandrum.html', 'https://mangalamtravel.com/assets/images/holiday-packages-hero.jpg', 'index, follow', 'Active']
+    );
+  } catch (_) {}
 
   console.log('✅ MySQL schema check complete.');
 }
