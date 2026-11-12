@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!container) return;
 
   container.innerHTML = `
-    <div class="col-span-full py-20 text-center text-gray-400 font-dm-sans">
+    <div class="col-span-full py-20 text-center text-gray-600 font-dm-sans">
       <i class="fa-solid fa-spinner animate-spin text-3xl text-red-600 mb-3"></i>
       <p class="text-base">Loading attractions & experiences...</p>
     </div>`;
@@ -52,12 +52,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Experience badge color mappings
     const expColors = {
-      'Adventure': 'bg-amber-500 text-white',
+      'Adventure': 'bg-amber-800 text-white',
       'Cultural':  'bg-indigo-600 text-white',
       'Luxury':    'bg-yellow-400 text-slate-900',
-      'Sightseeing':'bg-emerald-600 text-white',
-      'Nature':    'bg-green-600 text-white',
-      'Family':    'bg-purple-600 text-white',
+      'Sightseeing':'bg-emerald-700 text-white',
+      'Nature':    'bg-green-700 text-white',
+      'Family':    'bg-purple-700 text-white',
     };
     const badgeColor = expColors[expType] || 'bg-red-600 text-white';
 
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <!-- Card Footer & Action Button -->
           <div class="pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
             <div>
-              <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider block font-dm-sans">Starting From</span>
+              <span class="text-[11px] text-gray-600 font-bold uppercase tracking-wider block font-dm-sans">Starting From</span>
               <span class="text-lg font-extrabold text-gray-900 font-[Quicksand]">${price}</span>
             </div>
             <a href="${link}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-bold text-xs uppercase tracking-wider font-dm-sans hover:bg-red-600 transition-all shadow-md">

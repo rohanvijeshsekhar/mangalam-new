@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const grid = document.getElementById('packages-grid');
     if (!grid) return;
     if (!pkgs || !pkgs.length) {
-      grid.innerHTML = '<div class="col-span-full text-center py-20 bg-gray-50 rounded-3xl p-8 border border-gray-100"><p class="text-gray-400 font-dm-sans">No packages available.</p></div>';
+      grid.innerHTML = '<div class="col-span-full text-center py-20 bg-gray-50 rounded-3xl p-8 border border-gray-100"><p class="text-gray-600 font-dm-sans">No packages available.</p></div>';
       return;
     }
     let list = pkgs;
@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const grid = document.getElementById('activities-grid') || document.getElementById('attractions-grid');
     if (!grid) return;
     if (!attractions || !attractions.length) {
-      grid.innerHTML = '<div class="col-span-full text-center py-20 bg-gray-50 rounded-3xl p-8 border border-gray-100"><p class="text-gray-400 font-dm-sans">No attractions available.</p></div>';
+      grid.innerHTML = '<div class="col-span-full text-center py-20 bg-gray-50 rounded-3xl p-8 border border-gray-100"><p class="text-gray-600 font-dm-sans">No attractions available.</p></div>';
       return;
     }
 

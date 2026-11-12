@@ -258,10 +258,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       placesLoading.classList.add('hidden');
       placesGrid.classList.remove('hidden');
       placesGrid.innerHTML = `
-        <div class="col-span-full text-center py-8 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
-          <i class="fas fa-map-marker-alt text-3xl text-slate-400 mb-2 block"></i>
+        <div class="col-span-full text-center py-8 text-slate-600 bg-slate-50 rounded-2xl border border-slate-200">
+          <i class="fas fa-map-marker-alt text-3xl text-slate-500 mb-2 block" aria-hidden="true"></i>
           <p class="font-semibold text-slate-700 text-base">No specific places listed for ${destName} yet.</p>
-          <p class="text-xs text-slate-400 mt-1">You can skip this step or specify any custom places in the notes box below.</p>
+          <p class="text-xs text-slate-600 mt-1">You can skip this step or specify any custom places in the notes box below.</p>
         </div>
       `;
       availablePlaces = [];
@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           ${imgHtml}
           <div class="flex-1 w-full flex items-center justify-between gap-3">
             <div>
-              <h4 class="font-bold text-slate-900 text-sm sm:text-base leading-snug">${placeName}</h4>
+              <h3 class="font-bold text-slate-900 text-sm sm:text-base leading-snug">${placeName}</h3>
             </div>
             <input type="checkbox" value="${placeName}" class="place-checkbox w-6 h-6 text-red-500 rounded-lg focus:ring-red-500 border-slate-300 cursor-pointer flex-shrink-0" ${isChecked ? 'checked' : ''}>
           </div>

@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     <div class="col-span-full flex justify-center items-center py-16">
       <div class="flex flex-col items-center gap-3">
         <div class="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-gray-400 text-sm font-dm-sans">Loading packages...</p>
+        <p class="text-gray-600 text-sm font-dm-sans">Loading packages...</p>
       </div>
     </div>`;
 
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     grid.innerHTML = `
       <div class="col-span-full text-center py-16">
         <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
-          <i class="fi ${l.icon} text-3xl text-gray-400"></i>
+          <i class="fi ${l.icon} text-3xl text-gray-600"></i>
         </div>
         <h3 class="text-lg font-semibold text-gray-900 font-[Quicksand]">${l.msg}</h3>
         <p class="text-gray-500 text-sm mt-1 font-dm-sans">${l.sub}</p>

@@ -294,13 +294,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           <!-- Article Content -->
           <div class="prose prose-lg max-w-none text-gray-700 font-dm-sans leading-relaxed text-base md:text-lg space-y-6">
-            ${formattedContent || '<p class="text-gray-400 italic">No written content available for this post.</p>'}
+            ${formattedContent || '<p class="text-gray-600 italic">No written content available for this post.</p>'}
           </div>
 
           <!-- Article Footer & Social Share -->
           <div class="mt-12 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-              <span class="text-xs font-bold text-gray-400 uppercase tracking-wider font-dm-sans">Share this story:</span>
+              <span class="text-xs font-bold text-gray-600 uppercase tracking-wider font-dm-sans">Share this story:</span>
               <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(title + ' ' + window.location.href)}" target="_blank" class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-colors shadow-sm">
                 <i class="fa-brands fa-whatsapp text-sm"></i>
               </a>

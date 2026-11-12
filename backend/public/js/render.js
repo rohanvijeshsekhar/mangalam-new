@@ -148,13 +148,13 @@
 
             <div>
               <!-- Subtitle / Places Count -->
-              <span class="text-slate-400 font-medium text-[11px] sm:text-xs tracking-tight block mb-0.5 mt-0.5">${placesText}</span>
+              <span class="text-slate-600 font-medium text-[11px] sm:text-xs tracking-tight block mb-0.5 mt-0.5">${placesText}</span>
               
               <!-- Pink Accent Title -->
-              <h3 class="text-xl sm:text-2xl font-bold font-[Quicksand] text-pink-600 mb-1 leading-tight group-hover:text-rose-600 transition-colors capitalize">${title}</h3>
+              <h3 class="text-xl sm:text-2xl font-bold font-[Quicksand] text-pink-700 mb-1 leading-tight group-hover:text-rose-700 transition-colors capitalize">${title}</h3>
               
               <!-- Description Text -->
-              <p class="text-slate-500 text-xs leading-snug font-dm-sans line-clamp-1 sm:line-clamp-2">${rawDesc || 'Explore famous attractions, rich culture, and curated travel experiences.'}</p>
+              <p class="text-slate-600 text-xs leading-snug font-dm-sans line-clamp-1 sm:line-clamp-2">${rawDesc || 'Explore famous attractions, rich culture, and curated travel experiences.'}</p>
             </div>
 
             <!-- Footer Divider & Explore Link -->
@@ -274,8 +274,8 @@
                   ${name.charAt(0)}
               </div>
               <div>
-                  <h4 class="font-bold text-gray-900 font-dm-sans">${name}</h4>
-                  ${location ? `<p class="text-xs text-gray-500 font-dm-sans">${location}</p>` : ''}
+                  <h3 class="font-bold text-gray-900 font-dm-sans">${name}</h3>
+                  ${location ? `<p class="text-xs text-gray-600 font-dm-sans">${location}</p>` : ''}
               </div>
           </div>
       </div>`;
@@ -311,12 +311,12 @@
 
         // Type badge label & colors
         const typeConfig = {
-            'honeymoon': { label: 'Honeymoon', color: 'bg-rose-500 text-white', icon: 'fa-solid fa-heart' },
+            'honeymoon': { label: 'Honeymoon', color: 'bg-rose-700 text-white', icon: 'fa-solid fa-heart' },
             'curated':   { label: 'Curated',   color: 'bg-indigo-600 text-white', icon: 'fa-solid fa-sparkles' },
             'luxury':    { label: 'Luxury',    color: 'bg-yellow-400 text-slate-900', icon: 'fa-solid fa-crown' },
-            'adventure': { label: 'Adventure', color: 'bg-amber-500 text-white', icon: 'fa-solid fa-compass' },
-            'family':    { label: 'Family',    color: 'bg-purple-600 text-white', icon: 'fa-solid fa-users' },
-            'fixed':     { label: 'Group Tour',color: 'bg-emerald-600 text-white', icon: 'fa-solid fa-people-group' },
+            'adventure': { label: 'Adventure', color: 'bg-amber-800 text-white', icon: 'fa-solid fa-compass' },
+            'family':    { label: 'Family',    color: 'bg-purple-700 text-white', icon: 'fa-solid fa-users' },
+            'fixed':     { label: 'Group Tour',color: 'bg-emerald-700 text-white', icon: 'fa-solid fa-people-group' },
             'package':   { label: 'Featured',  color: 'bg-red-600 text-white', icon: 'fa-solid fa-star' }
         };
         const badge = typeConfig[rawType] || { label: (rawType.charAt(0).toUpperCase() + rawType.slice(1)), color: 'bg-red-600 text-white', icon: 'fa-solid fa-sparkles' };
@@ -362,12 +362,12 @@
                       <a href="${url}">${title}</a>
                   </h3>
                   ${overview ? `
-                  <p class="text-gray-500 font-dm-sans text-sm line-clamp-2 leading-relaxed">
+                  <p class="text-gray-600 font-dm-sans text-sm line-clamp-2 leading-relaxed">
                       ${overview}
                   </p>` : ''}
                   ${inclusions ? `
                   <div class="pt-2 flex items-center gap-2 text-xs text-emerald-700 font-dm-sans font-medium">
-                      <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                      <i class="fa-solid fa-circle-check text-emerald-600" aria-hidden="true"></i>
                       <span class="truncate">${inclusions}</span>
                   </div>` : ''}
               </div>
@@ -375,8 +375,8 @@
               <!-- Card Footer & Action Button -->
               <div class="pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
                   <div>
-                      <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider block font-dm-sans">Starting From</span>
-                      ${price ? `<div class="text-lg font-extrabold text-gray-900 font-[Quicksand]">₹ ${Number(price).toLocaleString('en-IN')} <span class="text-xs text-gray-400 font-dm-sans font-normal">/ person</span></div>` : '<div class="text-base font-bold text-gray-900 font-[Quicksand]">On Request</div>'}
+                      <span class="text-xs text-gray-600 font-bold uppercase tracking-wider block font-dm-sans">Starting From</span>
+                      ${price ? `<div class="text-lg font-extrabold text-gray-900 font-[Quicksand]">₹ ${Number(price).toLocaleString('en-IN')} <span class="text-xs text-gray-600 font-dm-sans font-normal">/ person</span></div>` : '<div class="text-base font-bold text-gray-900 font-[Quicksand]">On Request</div>'}
                   </div>
                   <a href="${url}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900 text-white font-bold text-xs uppercase tracking-wider font-dm-sans group-hover:bg-red-600 hover:bg-red-600 transition-all shadow-md">
                       <span>View Box</span>
@@ -435,12 +435,12 @@
         const included = a.included || '';
 
         const expColors = {
-            'Adventure': 'bg-amber-500 text-white',
+            'Adventure': 'bg-amber-800 text-white',
             'Cultural':  'bg-indigo-600 text-white',
             'Luxury':    'bg-yellow-400 text-slate-900',
-            'Sightseeing':'bg-emerald-600 text-white',
-            'Nature':    'bg-green-600 text-white',
-            'Family':    'bg-purple-600 text-white',
+            'Sightseeing':'bg-emerald-700 text-white',
+            'Nature':    'bg-green-700 text-white',
+            'Family':    'bg-purple-700 text-white',
         };
         const badgeColor = expColors[expType] || 'bg-red-600 text-white';
 
@@ -495,7 +495,7 @@
           <!-- Footer & Action -->
           <div class="pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
             <div>
-              <span class="text-xs uppercase tracking-wider text-gray-400 font-bold font-dm-sans block">Starting from</span>
+              <span class="text-xs uppercase tracking-wider text-gray-600 font-bold font-dm-sans block">Starting from</span>
               <div class="text-xl font-extrabold text-gray-900 font-[Quicksand]">${price}</div>
             </div>
             <a href="${link}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900 text-white font-bold text-xs uppercase tracking-wider font-dm-sans group-hover:bg-red-600 hover:bg-red-600 transition-all shadow-md">
