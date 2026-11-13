@@ -10,6 +10,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
+const zlib = require('zlib');
 const { testConnection } = require('./db/mysql');
 const { runMigrations } = require('./db/migrate');
 const store = require('./db/store');
@@ -17,7 +18,74 @@ const store = require('./db/store');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Built-in HTTP compression (Brotli / Gzip) for text assets & API JSON
+function compressionMiddleware(req, res, next) {
+  if (req.method === 'HEAD' || req.headers.range) return next();
+  const accept = String(req.headers['accept-encoding'] || '');
+  const useBr = /\bbr\b/i.test(accept);
+  const useGzip = !useBr && /\bgzip\b/i.test(accept);
+  if (!useBr && !useGzip) return next();
+
+  const origWrite = res.write.bind(res);
+  const origEnd = res.end.bind(res);
+  let encoder = null;
+  let decided = false;
+
+  const isCompressible = () => {
+    if (res.headersSent || res.getHeader('Content-Encoding')) return false;
+    if (res.statusCode === 204 || res.statusCode === 304) return false;
+    const ct = String(res.getHeader('Content-Type') || '');
+    return /^(?:text\/|application\/(?:javascript|json|xml|ld\+json)|image\/svg\+xml)/i.test(ct);
+  };
+
+  const initEncoder = () => {
+    decided = true;
+    if (!isCompressible()) return false;
+    const enc = useBr ? 'br' : 'gzip';
+    res.setHeader('Content-Encoding', enc);
+    res.setHeader('Vary', 'Accept-Encoding');
+    res.removeHeader('Content-Length');
+    encoder = useBr
+      ? zlib.createBrotliCompress({ params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 4 } })
+      : zlib.createGzip({ level: 6 });
+    encoder.on('data', (chunk) => origWrite(chunk));
+    encoder.on('drain', () => res.emit('drain'));
+    encoder.on('end', () => origEnd());
+    return true;
+  };
+
+  res.write = (chunk, encoding, cb) => {
+    if (!decided) initEncoder();
+    if (encoder) return encoder.write(chunk, encoding, cb);
+    return origWrite(chunk, encoding, cb);
+  };
+
+  res.end = (chunk, encoding, cb) => {
+    if (!decided) {
+      if (chunk && Buffer.byteLength(chunk, encoding) < 1024) {
+        decided = true;
+        return origEnd(chunk, encoding, cb);
+      }
+      initEncoder();
+    }
+    if (encoder) {
+      if (typeof chunk === 'function') {
+        cb = chunk;
+        chunk = null;
+      }
+      if (chunk) encoder.write(chunk, encoding);
+      if (cb) encoder.once('end', cb);
+      encoder.end();
+      return res;
+    }
+    return origEnd(chunk, encoding, cb);
+  };
+
+  next();
+}
+
 // ── Middleware ──────────────────────────────────────────────────────────────
+app.use(compressionMiddleware);
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -27,8 +95,8 @@ app.options('*', cors()); // Handle preflight requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Disable caching for dynamic assets
-app.use((req, res, next) => {
+// Disable caching ONLY for dynamic API and admin routes
+app.use(['/api', '/admin'], (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   next();
 });
@@ -96,7 +164,7 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 
 // ── Dynamic SEO & HTML Page Serving ──────────────────────────────────────────
-const { findSeoMatch, injectSeoIntoHtml } = require('./routes/seo');
+const { findSeoMatch, injectSeoIntoHtml, warmSeoCache } = require('./routes/seo');
 
 // 1. Homepage Router with dynamic SEO injection from database
 app.get(['/', '/index.html', '/index.php'], async (req, res) => {
@@ -124,6 +192,7 @@ app.get(['/', '/index.html', '/index.php'], async (req, res) => {
       content = injectSeoIntoHtml(content, seo);
     }
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache');
     return res.send(content);
   } catch (err) {
     console.warn('[Server] Error rendering dynamic homepage SEO:', err.message);
@@ -163,6 +232,7 @@ app.get('/:page.html', async (req, res, next) => {
       content = injectSeoIntoHtml(content, seo);
     }
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache');
     return res.send(content);
   } catch (err) {
     console.warn(`[Server] Error rendering dynamic SEO for ${pageName}:`, err.message);
@@ -171,7 +241,20 @@ app.get('/:page.html', async (req, res, next) => {
 });
 
 // Serve main website static files (CSS, JS, Assets) — index: false ensures HTML routes above take priority
-const staticOpts = { index: false };
+const staticOpts = {
+  index: false,
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    if (/\.(webp|avif|png|jpe?g|gif|svg|woff2|ico)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=2592000');
+    } else if (/\.css$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=2592000');
+    } else if (/\.js$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800');
+    }
+  }
+};
 app.use(express.static(path.join(__dirname, 'public'), staticOpts));
 app.use(express.static(path.join(__dirname, '..'), staticOpts));
 app.use(express.static(path.join(__dirname, '../public'), staticOpts));
@@ -237,6 +320,7 @@ async function start() {
   }
 
   app.listen(PORT, () => {
+    warmSeoCache().catch(() => {});
     console.log(`\n🚀 Mangalam Admin Backend running at http://localhost:${PORT}`);
     console.log(`📊 Admin Panel: http://localhost:${PORT}/admin`);
     console.log(`🔗 API Base:    http://localhost:${PORT}/api\n`);

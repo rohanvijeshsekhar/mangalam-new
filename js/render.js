@@ -160,7 +160,7 @@
             <!-- Footer Divider & Explore Link -->
             <div class="pt-2 border-t border-slate-100 flex items-center justify-between mt-auto">
               <span class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-1.5 group-hover:text-pink-600 transition-colors">
-                Explore <i class="fas fa-arrow-right text-[10px] sm:text-xs group-hover:translate-x-1.5 transition-transform duration-300"></i>
+                Explore <svg class="w-3 h-3 group-hover:translate-x-1.5 transition-transform duration-300 inline-block" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/></svg>
               </span>
             </div>
           </div>

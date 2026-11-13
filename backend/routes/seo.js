@@ -3,6 +3,44 @@ const store   = require('../db/store');
 const { verifyToken } = require('./auth');
 const router  = express.Router();
 
+let _seoCache = null;
+let _seoCacheAt = 0;
+let _seoInflight = null;
+const SEO_CACHE_TTL_MS = 60 * 1000;
+
+function invalidateSeoCache() {
+  _seoCache = null;
+  _seoCacheAt = 0;
+}
+
+async function getCachedSeoEntries(timeoutMs = 300) {
+  const now = Date.now();
+  if (_seoCache && (now - _seoCacheAt) < SEO_CACHE_TTL_MS) {
+    return _seoCache;
+  }
+  if (!_seoInflight) {
+    _seoInflight = store.getAll('seo')
+      .then((rows) => {
+        _seoCache = (rows || []).map(map);
+        _seoCacheAt = Date.now();
+        return _seoCache;
+      })
+      .catch(() => _seoCache || [])
+      .finally(() => { _seoInflight = null; });
+  }
+  if (!timeoutMs) return _seoInflight;
+  return Promise.race([
+    _seoInflight,
+    new Promise((resolve) => setTimeout(() => {
+      if (!_seoCache) {
+        _seoCache = [];
+        _seoCacheAt = Date.now();
+      }
+      resolve(_seoCache);
+    }, timeoutMs))
+  ]);
+}
+
 const map = s => ({
   id:               s.id,
   page_route:       s.page_route || '/',
@@ -81,7 +119,7 @@ function escapeHtml(str) {
 async function findSeoMatch(rawRoute) {
   try {
     const normalizedRoute = normalizePageRoute(rawRoute).toLowerCase();
-    const all = (await store.getAll('seo')).map(map);
+    const all = await getCachedSeoEntries(100);
     // Only match SEO configs that are Active (Inactive configs are blocked)
     const activeEntries = all.filter(s => s.status === 'Active');
 
@@ -437,6 +475,7 @@ router.post('/', verifyToken, async (req, res) => {
     }
 
     const mapped = map(doc);
+    invalidateSeoCache();
     try { syncSeoToStaticHtml(mapped); } catch (e) { console.warn('[SEO] sync error:', e); }
 
     res.status(201).json({ success: true, message: existing ? 'SEO configuration updated!' : 'SEO configuration added!', seo: mapped });
@@ -474,6 +513,7 @@ router.put('/:id', verifyToken, async (req, res) => {
     if (!doc) return res.status(404).json({ error: 'SEO record not found' });
 
     const mapped = map(doc);
+    invalidateSeoCache();
     try { syncSeoToStaticHtml(mapped); } catch (e) { console.warn('[SEO] sync error:', e); }
 
     res.json({ success: true, message: 'SEO configuration updated!', seo: mapped });
@@ -487,6 +527,7 @@ router.put('/:id', verifyToken, async (req, res) => {
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
     await store.remove('seo', req.params.id);
+    invalidateSeoCache();
     res.json({ success: true, message: 'SEO record deleted!' });
   } catch (e) {
     console.error('[SEO Delete Error]:', e);
@@ -495,6 +536,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
 });
 
 router.findSeoMatch = findSeoMatch;
+router.warmSeoCache = () => getCachedSeoEntries(0);
 router.injectSeoIntoHtml = injectSeoIntoHtml;
 router.toAbsoluteUrl = toAbsoluteUrl;
 router.syncSeoToStaticHtml = syncSeoToStaticHtml;

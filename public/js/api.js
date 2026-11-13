@@ -323,8 +323,11 @@ async function loadDynamicSeo(overrideSlug) {
 
 window.loadDynamicSeo = loadDynamicSeo;
 
-// Call immediately so request fires in parallel
-loadDynamicSeo();
+// Call immediately only if not already executed
+if (!window._dynamicSeoCalled) {
+  window._dynamicSeoCalled = true;
+  loadDynamicSeo();
+}
 
 function setMeta(nameOrProp, attr, content) {
   if (!content) return;
@@ -351,6 +354,7 @@ function setLink(rel, href) {
 // ─── Mobile Bottom Nav Styling Enhancement ──────────────────────────────────
 function injectMobileNavStyles() {
   if (document.getElementById('mt-mobile-nav-styles')) return;
+  if (!document.querySelector('.responsive-float-header, #mobileServicesDropdown, #posterCarousel')) return;
   const style = document.createElement('style');
   style.id = 'mt-mobile-nav-styles';
   style.textContent = `
@@ -1261,14 +1265,21 @@ document.addEventListener('DOMContentLoaded', () => {
   injectMobileNavStyles();
   initMenuDropdowns();
   initBranchesDropdowns();
-  loadDynamicSeo();
-  loadNotice();
-  loadFooterLinks();
-  loadDestinationDropdowns();
-  loadHomePosters();
-  loadHomeTestimonials();
-  loadHomePartners();
-  loadHomeGallery();
+  if (!window._dynamicSeoCalled) {
+    window._dynamicSeoCalled = true;
+    loadDynamicSeo();
+  }
+  const deferWork = () => {
+    loadNotice();
+    loadFooterLinks();
+    loadDestinationDropdowns();
+    loadHomePosters();
+    loadHomeTestimonials();
+    loadHomePartners();
+    loadHomeGallery();
+  };
+  if (window.requestIdleCallback) requestIdleCallback(deferWork, { timeout: 600 });
+  else setTimeout(deferWork, 150);
 });
 
 // Also run immediately if DOM is ready
