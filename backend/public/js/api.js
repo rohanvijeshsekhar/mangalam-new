@@ -123,10 +123,10 @@ async function loadFooterLinks() {
       apiGet('/api/packages')
     ]);
 
-    // 1. Top Destinations
-    let destLinksHTML = '<p class="text-gray-400 text-sm">No destinations available</p>';
-    if (Array.isArray(dests) && dests.length > 0) {
-      destLinksHTML = dests.map(d => {
+    // 1. Top Destinations (only overwrite if valid data returned)
+    const destContainer = document.getElementById('footer-dests');
+    if (destContainer && Array.isArray(dests) && dests.length > 0) {
+      destContainer.innerHTML = dests.map(d => {
         const label = d.footer_title || d.footer_label || `${d.destination_name || d.name} Holiday Packages`;
         const slug = d.slug_url || d.slug || (d.destination_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
         const url = slug ? `packages.html?slug=${encodeURIComponent(slug)}&type=package` : 'packages.html';
@@ -134,34 +134,16 @@ async function loadFooterLinks() {
       }).join('');
     }
 
-    // 2. Holiday Packages
-    let pkgLinksHTML = '<p class="text-gray-400 text-sm">No packages available</p>';
-    if (Array.isArray(pkgs) && pkgs.length > 0) {
-      pkgLinksHTML = pkgs.map(p => {
+    // 2. Holiday Packages (only overwrite if valid data returned)
+    const pkgContainer = document.getElementById('footer-pkgs');
+    if (pkgContainer && Array.isArray(pkgs) && pkgs.length > 0) {
+      pkgContainer.innerHTML = pkgs.map(p => {
         const label = p.footer_title || p.footer_label || p.package_name || p.title || 'Holiday Package';
         const slug = p.slug_url || p.slug || (p.package_name || p.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
         const pkgId = p.package_id || p.id || '';
         const url = slug ? `package-details.html?slug=${encodeURIComponent(slug)}&id=${encodeURIComponent(pkgId)}` : `package-details.html?id=${encodeURIComponent(pkgId)}`;
         return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">${label}</a>`;
       }).join('');
-    }
-
-    // Target upper footer section across all pages and format as 2 side-by-side columns
-    const upperSection = document.querySelector('footer section.border-b, footer section:first-child');
-    if (upperSection) {
-      const container = upperSection.querySelector('.container') || upperSection;
-      container.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 py-2">
-            <div>
-                <h3 class="text-lg font-bold mb-4 text-white">Top Destinations</h3>
-                <div class="space-y-2">${destLinksHTML}</div>
-            </div>
-            <div>
-                <h3 class="text-lg font-bold mb-4 text-white">Holiday Packages</h3>
-                <div class="space-y-2">${pkgLinksHTML}</div>
-            </div>
-        </div>
-      `;
     }
   } catch (err) {
     console.warn('[Footer] Links load error:', err);

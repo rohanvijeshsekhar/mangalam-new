@@ -2152,13 +2152,25 @@
                         <div>
                             <h3 class="text-lg font-bold mb-4 text-white">Top Destinations</h3>
                             <div id="footer-dests" class="space-y-2">
-                                <p class="text-gray-400 text-sm">Loading destinations...</p>
+                                <a href="packages.html?slug=malaysia&amp;type=package" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Malaysia Tour Packages</a>
+                                <a href="packages.html?slug=kazakhstan&amp;type=package" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Kazakhstan Tour Packages</a>
+                                <a href="packages.html?slug=singapore&amp;type=package" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Singapore Tour Packages</a>
+                                <a href="packages.html?slug=india&amp;type=package" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">India Tour Packages</a>
+                                <a href="packages.html?slug=dubai&amp;type=package" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Dubai Tour Packages</a>
                             </div>
                         </div>
                         <div>
                             <h3 class="text-lg font-bold mb-4 text-white">Holiday Packages</h3>
                             <div id="footer-pkgs" class="space-y-2">
-                                <p class="text-gray-400 text-sm">Loading packages...</p>
+                                <a href="package-details.html?slug=malaysia-kuala-lumpur-tour-package&amp;id=13" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Malaysia Kuala Lumpur Wonders – 3 Nights 4 Days</a>
+                                <a href="package-details.html?slug=kazakhstan-explore-package-5-nights-6-days&amp;id=12" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Kazakhstan  Explore Package – 5 Nights 6 Days</a>
+                                <a href="package-details.html?slug=singapore-dream-escape-4-nights-5-days&amp;id=11" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Singapore Dream Escape – 4 Nights 5 Days</a>
+                                <a href="package-details.html?slug=dubai-quick-escape-3-nights-4-days&amp;id=10" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Dubai Quick Escape – 3 Nights 4 Days</a>
+                                <a href="package-details.html?slug=hyderabad-tour-package-3-days-2-nights&amp;id=9" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Hyderabad Tour Package</a>
+                                <a href="package-details.html?slug=golden-triangle-tour-package-05-nights&amp;id=8" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Golden Triangle Tour Package</a>
+                                <a href="package-details.html?slug=goa-getaway-2-nights-3-days&amp;id=7" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Goa Getaway – 2 Nights 3 Days</a>
+                                <a href="package-details.html?slug=dubai-abu-dhabi-experience-4-nights-5-days&amp;id=6" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Dubai &amp; Abu Dhabi Experience – 4 Nights 5 Days</a>
+                                <a href="package-details.html?slug=dubai-dream-escape-3-nights-4-days&amp;id=5" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">Dubai Dream Escape – 3 Nights 4 Days</a>
                             </div>
                         </div>
                     </div>
@@ -2194,6 +2206,8 @@
                                         class="text-gray-300 hover:text-white transition-colors">About</a></li>
                                 <li><a href="/contact.html"
                                         class="text-gray-300 hover:text-white transition-colors">Contact</a></li>
+                                <li><a href="/best-travel-agency-trivandrum.html"
+                                        class="text-gray-300 hover:text-white transition-colors">Our Trivandrum Travel Agency</a></li>
                                 <li><a href="/career.html"
                                         class="text-gray-300 hover:text-white transition-colors">Career</a></li>
                                 <li><a href="/holiday-package.html"
@@ -3305,10 +3319,44 @@
                 });
             }
 
+            // ── Footer Dynamic Links Loader (/api/destinations & /api/packages) ──
+            async function initFooterLinks() {
+                try {
+                    const [dests, pkgs] = await Promise.all([
+                        fetchVerifiedJson('/api/destinations'),
+                        fetchVerifiedJson('/api/packages')
+                    ]);
+                    if (Array.isArray(dests) && dests.length > 0) {
+                        const destEl = document.getElementById('footer-dests');
+                        if (destEl) {
+                            destEl.innerHTML = dests.map(d => {
+                                const label = d.footer_title || d.footer_label || `${d.destination_name || d.name} Holiday Packages`;
+                                const slug = d.slug_url || d.slug || (d.destination_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                                const url = slug ? `packages.html?slug=${encodeURIComponent(slug)}&type=package` : 'packages.html';
+                                return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">${esc(label)}</a>`;
+                            }).join('');
+                        }
+                    }
+                    if (Array.isArray(pkgs) && pkgs.length > 0) {
+                        const pkgEl = document.getElementById('footer-pkgs');
+                        if (pkgEl) {
+                            pkgEl.innerHTML = pkgs.map(p => {
+                                const label = p.footer_title || p.footer_label || p.package_name || p.title || 'Holiday Package';
+                                const slug = p.slug_url || p.slug || (p.package_name || p.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                                const pkgId = p.package_id || p.id || '';
+                                const url = slug ? `package-details.html?slug=${encodeURIComponent(slug)}&id=${encodeURIComponent(pkgId)}` : `package-details.html?id=${encodeURIComponent(pkgId)}`;
+                                return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">${esc(label)}</a>`;
+                            }).join('');
+                        }
+                    }
+                } catch (_) { }
+            }
+
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
                     initFaqAccordion();
                     initJourneyEnquiryForm();
+                    initFooterLinks();
                     function deferUntilNear(selector, fn, fallbackDelay) {
                         const el = document.querySelector(selector);
                         if (!el) { fn(); return; }
@@ -3333,6 +3381,7 @@
                 initRealJourneysSection();
                 initFaqAccordion();
                 initJourneyEnquiryForm();
+                initFooterLinks();
             }
         })();
     </script>
