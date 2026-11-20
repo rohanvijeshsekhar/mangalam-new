@@ -200,6 +200,42 @@ app.get(['/', '/index.html', '/index.php'], async (req, res) => {
   }
 });
 
+// ── Old Hacked Spam URLs – Permanently Removed (HTTP 410 Gone) ────────────────
+const SPAM_URL_PATTERN = /^\/(?:products|category|shop|toyu|hg|reserve|contents)(?:\/.*)?$/i;
+app.all(SPAM_URL_PATTERN, (req, res) => {
+  res.status(410).type('text/html; charset=utf-8').send(
+    '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>410 Gone</title></head>' +
+    '<body><h1>410 Gone</h1><p>The requested resource has been permanently removed.</p></body></html>'
+  );
+});
+app.all(/^\/search(?:\/.*)?$/i, (req, res) => {
+  res.status(410).type('text/html; charset=utf-8').send(
+    '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>410 Gone</title></head>' +
+    '<body><h1>410 Gone</h1><p>The requested resource has been permanently removed.</p></body></html>'
+  );
+});
+
+// ── Genuine Legacy Pages – Permanent 301 Redirects ────────────────────────────
+app.get('/tickets.php', (req, res) => {
+  res.redirect(301, '/flight-tickets.html');
+});
+app.get('/attraction.php', (req, res) => {
+  res.redirect(301, '/attraction.html');
+});
+app.get('/global-visa-services.php', (req, res) => {
+  res.redirect(301, '/global-visa-services.html');
+});
+app.get('/package.php', (req, res) => {
+  // Query string discarded per SEO specification
+  res.redirect(301, '/holiday-package.html');
+});
+app.get('/packages', (req, res) => {
+  res.redirect(301, '/holiday-package.html');
+});
+app.get(['/our-teams', '/our-teams/'], (req, res) => {
+  res.redirect(301, '/about.html');
+});
+
 // Landing page clean slug redirect to canonical .html
 app.get('/best-travel-agency-trivandrum', (req, res) => {
   res.redirect(301, '/best-travel-agency-trivandrum.html');
