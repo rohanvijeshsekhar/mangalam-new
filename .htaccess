@@ -11,6 +11,22 @@
     # RewriteCond %{HTTPS} off
     # RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
 
+    # ─────────────────────────────────────────────────────────────
+    # Old Hacked PHP Website Spam URLs – Permanently Removed (410)
+    # ─────────────────────────────────────────────────────────────
+    RewriteRule ^(products|category|shop|toyu|hg|reserve|contents)(/|$) - [G,L]
+    RewriteRule ^search$ - [G,L]
+
+    # ─────────────────────────────────────────────────────────────
+    # Genuine Legacy Pages – Permanent Redirects (301)
+    # ─────────────────────────────────────────────────────────────
+    RewriteRule ^tickets\.php$ /flight-tickets.html [R=301,L]
+    RewriteRule ^attraction\.php$ /attraction.html [R=301,L]
+    RewriteRule ^global-visa-services\.php$ /global-visa-services.html [R=301,L]
+    RewriteRule ^package\.php$ /holiday-package.html [R=301,L,QSD]
+    RewriteRule ^packages$ /holiday-package.html [R=301,L]
+    RewriteRule ^our-teams$ /about.html [R=301,L]
+
     # ── 1. 301 Permanent Redirects: Old .html?slug= URLs -> New Clean URLs ──
     # Package Details
     RewriteCond %{THE_REQUEST} \s/+package-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]

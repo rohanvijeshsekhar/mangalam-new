@@ -66,59 +66,123 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+const sanitizeText = (v, maxLen = 2000) =>
+  String(v === null || v === undefined ? '' : v)
+    .replace(/[<>]/g, '')
+    .trim()
+    .slice(0, maxLen);
+
+function isValidPhone(raw) {
+  const s = String(raw || '').trim();
+  if (!/^[+\d][\d\s\-().]{5,24}$/.test(s)) return false;
+  const digits = s.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15;
+}
+
+const enquiryRateMap = new Map();
+function checkEnquiryRateLimit(ip) {
+  const now = Date.now();
+  const windowMs = 10 * 60 * 1000;
+  const entries = (enquiryRateMap.get(ip) || []).filter(ts => now - ts < windowMs);
+  if (entries.length >= 30) return false;
+  entries.push(now);
+  enquiryRateMap.set(ip, entries);
+  return true;
+}
+
 // Helper to extract and insert enquiry
 async function createEnquiryDoc(body, defaultType = 'General') {
-  const name = body.name || body.customer_name || body.fullname || body.applicant_name || 'Anonymous';
-  const phone = body.phone || body.customer_phone || body.mobile || body.contact || '';
-  const email = body.email || body.customer_email || '';
-  const packageName = body.package_name || body.package_title || body.package || '';
-  const position = body.position || body.job_title || body.role || '';
-  const destinationName = body.destination_name || body.destination || body.target_location || (position ? `Career: ${position}` : packageName) || (defaultType === 'Career Application' ? 'Career Application' : 'Custom Trip');
-  const resolvedType = body.enquiry_type || (position || defaultType === 'Career Application' ? 'Career Application' : (packageName ? 'Package' : (body.destination_name || body.destination ? 'Destination' : defaultType)));
+  const name = sanitizeText(body.name || body.customer_name || body.fullname || body.applicant_name || 'Anonymous', 200) || 'Anonymous';
+  const phone = sanitizeText(body.phone || body.customer_phone || body.mobile || body.contact || '', 40);
+  const email = sanitizeText(body.email || body.customer_email || '', 200);
+  const packageName = sanitizeText(body.package_name || body.package_title || body.package || '', 240);
+  const position = sanitizeText(body.position || body.job_title || body.role || '', 200);
+  const destinationRaw = sanitizeText(body.destination || '', 240);
+  const destinationName = sanitizeText(
+    body.destination_name || body.destination || body.target_location || (position ? `Career: ${position}` : packageName) || (defaultType === 'Career Application' ? 'Career Application' : 'Custom Trip'),
+    240
+  );
+  const resolvedType = sanitizeText(body.enquiry_type || (position || defaultType === 'Career Application' ? 'Career Application' : (packageName ? 'Package' : (body.destination_name || body.destination ? 'Destination' : defaultType))), 80);
 
-  let notes = body.notes || body.message || body.special_requests || body.comments || '';
+  let notes = sanitizeText(body.notes || body.message || body.special_requests || body.comments || '', 3000);
+  const budget = sanitizeText(body.approximate_budget || body.budget || '', 120);
+  if (budget && !notes.includes('Approximate Budget')) {
+    notes = `Approximate Budget (INR): ${budget}${notes ? '\n' + notes : ''}`;
+  }
   if (position && !notes.includes('Position Applied')) {
     notes = `Position Applied: ${position}\n${notes}`.trim();
   }
   if (body.resume_url || body.resume) {
-    notes = `${notes}\nResume: ${body.resume_url || body.resume}`.trim();
+    notes = `${notes}\nResume: ${sanitizeText(body.resume_url || body.resume, 500)}`.trim();
   }
 
   return await store.insert('enquiries', {
     enquiry_type: resolvedType,
     package_name: packageName,
     package_id: body.package_id || null,
-    destination: body.destination || '',
+    destination: destinationRaw,
     destination_name: destinationName,
-    start_date: body.start_date || body.travel_date || '',
-    end_date: body.end_date || '',
+    start_date: sanitizeText(body.start_date || body.travel_date || '', 50),
+    end_date: sanitizeText(body.end_date || '', 50),
     duration_days: (body.duration_days || body.duration || body.days) ? Number(body.duration_days || body.duration || body.days) : null,
     adults: (body.adults !== undefined && body.adults !== null && body.adults !== '') ? Number(body.adults) : ((body.adult_count || body.passengers) ? Number(body.adult_count || body.passengers) : null),
     children: (body.children !== undefined && body.children !== null && body.children !== '') ? Number(body.children) : ((body.child_count) ? Number(body.child_count) : null),
     children_ages: Array.isArray(body.children_ages) ? body.children_ages : [],
-    hotel_rating: body.hotel_rating || body.hotel_preference || '',
+    hotel_rating: sanitizeText(body.hotel_rating || body.hotel_preference || '', 50),
     places_to_visit: Array.isArray(body.places_to_visit) ? body.places_to_visit : [],
     name,
     email,
     phone,
     notes,
-    status: body.status || 'New'
+    status: sanitizeText(body.status || 'New', 40) || 'New'
   });
 }
 
 // POST submit new enquiry
 router.post('/', uploadResume.single('resume'), async (req, res) => {
   try {
+    const clientIp = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    if (!checkEnquiryRateLimit(clientIp)) {
+      return res.status(429).json({ error: 'Too many requests. Please wait a few minutes and try again.' });
+    }
+
     const body = { ...req.body };
+    if (body._hp && String(body._hp).trim() !== '') {
+      return res.status(400).json({ error: 'Invalid submission.' });
+    }
+
     if (req.file) {
       body.resume_url = `/uploads/${req.file.filename}`;
       body.resume = req.file.originalname;
     }
-    const name = body.name || body.customer_name || body.fullname;
-    const phone = body.phone || body.customer_phone || body.mobile;
+    const name = sanitizeText(body.name || body.customer_name || body.fullname, 200);
+    const phone = sanitizeText(body.phone || body.customer_phone || body.mobile, 40);
 
     if (!name && !phone) {
-      return res.status(400).json({ error: 'Name or phone number is required.' });
+      return res.status(400).json({ error: 'Name and phone number are required.' });
+    }
+    if (body.source === 'landing-trivandrum') {
+      if (!name || name.length < 2) {
+        return res.status(400).json({ error: 'Please enter your name.' });
+      }
+      if (!phone || !isValidPhone(phone)) {
+        return res.status(400).json({ error: 'Please enter a valid phone or WhatsApp number.' });
+      }
+      const destVal = sanitizeText(body.destination || body.destination_name, 240);
+      if (!destVal || destVal.length < 2) {
+        return res.status(400).json({ error: 'Please enter your preferred destination.' });
+      }
+      if (body.adults !== undefined && body.adults !== null && body.adults !== '') {
+        const numTrav = Number(body.adults);
+        if (!Number.isFinite(numTrav) || numTrav < 1) {
+          return res.status(400).json({ error: 'Number of travellers must be at least 1.' });
+        }
+      }
+      if (body.consent !== true && body.consent !== 'true' && body.consent !== 'on') {
+        return res.status(400).json({ error: 'Please confirm your consent to be contacted about this enquiry.' });
+      }
+    } else if (phone && !isValidPhone(phone)) {
+      return res.status(400).json({ error: 'Please enter a valid phone number.' });
     }
 
     const doc = await createEnquiryDoc(body);

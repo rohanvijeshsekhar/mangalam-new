@@ -90,7 +90,7 @@ function page(filename, title, desc, body, jsFile) {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index,follow">
 <meta name="theme-color" content="#dc2626">
 <title>${title} | Mangalam Travel &amp; Tours</title>
@@ -242,7 +242,7 @@ page('cart.html', 'Cart', 'Your booked items and enquiry cart',
 fs.writeFileSync(path.join(pub, 'thankyou.html'), `<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,user-scalable=no">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Thank You | Mangalam Travel &amp; Tours</title>
 ${HEAD_LINKS}
 </head>

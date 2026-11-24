@@ -28,12 +28,24 @@ function formatFromDb(table, row) {
       }
     }
   }
+
+  // Normalize ID fields across legacy and current table schemas
+  const pk = copy.id !== undefined && copy.id !== null
+    ? copy.id
+    : (copy.blog_id || copy.destination_id || copy.package_id || copy.testimonial_id);
+  if (copy.id === undefined && pk !== undefined) copy.id = pk;
+  if (table === 'blogs' && copy.blog_id === undefined && pk !== undefined) copy.blog_id = pk;
+
   return copy;
 }
 
 function formatForDb(table, doc) {
   const clean = { ...doc };
   delete clean.id; // Don't overwrite auto-increment primary key on insert/update
+  delete clean.blog_id;
+  delete clean.destination_id;
+  delete clean.package_id;
+  delete clean.testimonial_id;
   const jsonCols = JSON_COLUMNS[table] || [];
 
   for (const col of jsonCols) {
@@ -55,18 +67,45 @@ const store = {
    * @param {string} [orderBy] e.g. "ORDER BY id DESC"
    */
   async getAll(table, whereSql = '', params = [], orderBy = 'ORDER BY id DESC') {
-    const sql = `SELECT * FROM \`${table}\` ${whereSql} ${orderBy}`;
-    const rows = await query(sql, params);
-    return rows.map(r => formatFromDb(table, r));
+    try {
+      const sql = `SELECT * FROM \`${table}\` ${whereSql} ${orderBy}`;
+      const rows = await query(sql, params);
+      return rows.map(r => formatFromDb(table, r));
+    } catch (err) {
+      if (err.message && err.message.includes("Unknown column 'id'") && orderBy.includes('id')) {
+        const altPk = table === 'blogs' ? 'blog_id' : (table.endsWith('s') ? table.slice(0, -1) + '_id' : table + '_id');
+        const fallbackOrder = `ORDER BY \`${altPk}\` DESC`;
+        const sql = `SELECT * FROM \`${table}\` ${whereSql} ${fallbackOrder}`;
+        const rows = await query(sql, params);
+        return rows.map(r => formatFromDb(table, r));
+      }
+      throw err;
+    }
   },
 
   /**
    * Fetch a single record by primary key id
    */
   async getById(table, id) {
-    const rows = await query(`SELECT * FROM \`${table}\` WHERE id = ? LIMIT 1`, [Number(id)]);
-    if (!rows || rows.length === 0) return null;
-    return formatFromDb(table, rows[0]);
+    const numId = Number(id);
+    if (isNaN(numId)) return null;
+
+    try {
+      const rows = await query(`SELECT * FROM \`${table}\` WHERE id = ? LIMIT 1`, [numId]);
+      if (rows && rows.length > 0) return formatFromDb(table, rows[0]);
+    } catch (err) {
+      if (!err.message || !err.message.includes("Unknown column 'id'")) throw err;
+    }
+
+    // Fallback if legacy table uses blog_id, destination_id, etc.
+    const altPk = table === 'blogs' ? 'blog_id' : (table.endsWith('s') ? table.slice(0, -1) + '_id' : table + '_id');
+    try {
+      const rows = await query(`SELECT * FROM \`${table}\` WHERE \`${altPk}\` = ? LIMIT 1`, [numId]);
+      if (rows && rows.length > 0) return formatFromDb(table, rows[0]);
+    } catch (err) {
+      console.warn(`[Store] getById fallback failed for ${table}:`, err.message);
+    }
+    return null;
   },
 
   /**
@@ -100,26 +139,57 @@ const store = {
    * Update an existing record by id and return the updated doc
    */
   async update(table, id, updates) {
+    let targetId = Number(id);
+    if (isNaN(targetId)) {
+      const existing = await this.getOne(table, 'WHERE slug_url = ?', [id]);
+      if (existing) {
+        targetId = Number(existing.id || existing.blog_id);
+      }
+    }
+    if (isNaN(targetId)) return null;
+
     const data = formatForDb(table, updates);
     const keys = Object.keys(data).filter(k => data[k] !== undefined);
-    if (keys.length === 0) return await this.getById(table, id);
+    if (keys.length === 0) return await this.getById(table, targetId);
 
     const setClauses = keys.map(k => `\`${k}\` = ?`).join(', ');
     const values = keys.map(k => data[k]);
-    values.push(Number(id));
+    values.push(targetId);
 
-    const sql = `UPDATE \`${table}\` SET ${setClauses} WHERE id = ?`;
-    await query(sql, values);
+    try {
+      const sql = `UPDATE \`${table}\` SET ${setClauses} WHERE id = ?`;
+      await query(sql, values);
+    } catch (err) {
+      if (err.message && err.message.includes("Unknown column 'id'")) {
+        const altPk = table === 'blogs' ? 'blog_id' : (table.endsWith('s') ? table.slice(0, -1) + '_id' : table + '_id');
+        const sql = `UPDATE \`${table}\` SET ${setClauses} WHERE \`${altPk}\` = ?`;
+        await query(sql, values);
+      } else {
+        throw err;
+      }
+    }
 
-    return await this.getById(table, id);
+    return await this.getById(table, targetId);
   },
 
   /**
    * Delete a record by id
    */
   async remove(table, id) {
-    await query(`DELETE FROM \`${table}\` WHERE id = ?`, [Number(id)]);
-    return true;
+    const numId = Number(id);
+    if (isNaN(numId)) return false;
+
+    try {
+      await query(`DELETE FROM \`${table}\` WHERE id = ?`, [numId]);
+      return true;
+    } catch (err) {
+      if (err.message && err.message.includes("Unknown column 'id'")) {
+        const altPk = table === 'blogs' ? 'blog_id' : (table.endsWith('s') ? table.slice(0, -1) + '_id' : table + '_id');
+        await query(`DELETE FROM \`${table}\` WHERE \`${altPk}\` = ?`, [numId]);
+        return true;
+      }
+      throw err;
+    }
   },
 
   /**

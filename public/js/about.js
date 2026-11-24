@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (testimonials && testimonials.length) {
       tGrid.innerHTML = testimonials.slice(0, 6).map(t => R.testimonialCard(t)).join('');
     } else {
-      tGrid.innerHTML = '<p class="col-span-full text-center text-gray-400 py-8">No reviews yet.</p>';
+      tGrid.innerHTML = '<p class="col-span-full text-center text-gray-600 py-8">No reviews yet.</p>';
     }
   }
 

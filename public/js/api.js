@@ -19,7 +19,9 @@ function resolveImg(src, fallback = '/assets/images/logo-color.png') {
 /** Generic GET helper */
 async function apiGet(path) {
   try {
-    const res = await fetch(API_BASE + path);
+    const sep = path.includes('?') ? '&' : '?';
+    const noCachePath = `${path}${sep}_t=${Date.now()}`;
+    const res = await fetch(API_BASE + noCachePath, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (e) {
@@ -192,10 +194,10 @@ async function loadFooterLinks() {
       apiGet('/api/packages')
     ]);
 
-    // 1. Top Destinations
-    let destLinksHTML = '<p class="text-gray-400 text-sm">No destinations available</p>';
-    if (Array.isArray(dests) && dests.length > 0) {
-      destLinksHTML = dests.map(d => {
+    // 1. Top Destinations (only overwrite if valid data returned)
+    const destContainer = document.getElementById('footer-dests');
+    if (destContainer && Array.isArray(dests) && dests.length > 0) {
+      destContainer.innerHTML = dests.map(d => {
         const label = d.footer_title || d.footer_label || `${d.destination_name || d.name} Holiday Packages`;
         const slug = d.slug_url || d.slug || (d.destination_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
         const url = slug ? `/packages/${encodeURIComponent(slug)}` : '/packages.html';
@@ -203,34 +205,16 @@ async function loadFooterLinks() {
       }).join('');
     }
 
-    // 2. Holiday Packages
-    let pkgLinksHTML = '<p class="text-gray-400 text-sm">No packages available</p>';
-    if (Array.isArray(pkgs) && pkgs.length > 0) {
-      pkgLinksHTML = pkgs.map(p => {
+    // 2. Holiday Packages (only overwrite if valid data returned)
+    const pkgContainer = document.getElementById('footer-pkgs');
+    if (pkgContainer && Array.isArray(pkgs) && pkgs.length > 0) {
+      pkgContainer.innerHTML = pkgs.map(p => {
         const label = p.footer_title || p.footer_label || p.package_name || p.title || 'Holiday Package';
         const slug = p.slug_url || p.slug || (p.package_name || p.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
         const pkgId = p.package_id || p.id || '';
         const url = slug ? `/package-details/${encodeURIComponent(slug)}` : `/package-details/${encodeURIComponent(pkgId)}`;
         return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">${label}</a>`;
       }).join('');
-    }
-
-    // Target upper footer section across all pages and format as 2 side-by-side columns
-    const upperSection = document.querySelector('footer section.border-b, footer section:first-child');
-    if (upperSection) {
-      const container = upperSection.querySelector('.container') || upperSection;
-      container.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 py-2">
-            <div>
-                <h3 class="text-lg font-bold mb-4 text-white">Top Destinations</h3>
-                <div class="space-y-2">${destLinksHTML}</div>
-            </div>
-            <div>
-                <h3 class="text-lg font-bold mb-4 text-white">Holiday Packages</h3>
-                <div class="space-y-2">${pkgLinksHTML}</div>
-            </div>
-        </div>
-      `;
     }
   } catch (err) {
     console.warn('[Footer] Links load error:', err);
@@ -316,7 +300,7 @@ async function loadDynamicSeo(overrideSlug) {
 
     // 3. Fallback for destination pages without a custom SEO entry in Admin Panel
     if (!seo || !seo.id || (seo.status && seo.status !== 'Active')) {
-      if (slug) {
+      if (slug && !cleanPath.includes('blog')) {
         const destTitle = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/[-_]/g, ' ');
         const fallbackTitle = `${destTitle} Holiday Packages | Mangalam Travel & Tours`;
         if (!document.title || document.title.includes('Explore All Travel Packages') || document.title.includes('Malaysia')) {
@@ -392,8 +376,11 @@ async function loadDynamicSeo(overrideSlug) {
 
 window.loadDynamicSeo = loadDynamicSeo;
 
-// Call immediately so request fires in parallel
-loadDynamicSeo();
+// Call immediately only if not already executed
+if (!window._dynamicSeoCalled) {
+  window._dynamicSeoCalled = true;
+  loadDynamicSeo();
+}
 
 function setMeta(nameOrProp, attr, content) {
   if (!content) return;
@@ -420,6 +407,7 @@ function setLink(rel, href) {
 // ─── Mobile Bottom Nav Styling Enhancement ──────────────────────────────────
 function injectMobileNavStyles() {
   if (document.getElementById('mt-mobile-nav-styles')) return;
+  if (!document.querySelector('.responsive-float-header, #mobileServicesDropdown, #posterCarousel')) return;
   const style = document.createElement('style');
   style.id = 'mt-mobile-nav-styles';
   style.textContent = `
@@ -651,30 +639,34 @@ function injectMobileNavStyles() {
     }
     #posterCarousel .splide__pagination {
       position: absolute !important;
-      bottom: 1rem !important;
+      bottom: 0.5rem !important;
       left: 0 !important;
       right: 0 !important;
       z-index: 10 !important;
       display: flex !important;
       justify-content: center !important;
       align-items: center !important;
-      gap: 6px !important;
+      gap: 2px !important;
       padding: 0 !important;
       margin: 0 !important;
     }
     #posterCarousel .splide__pagination__page {
-      width: 8px !important;
-      height: 8px !important;
+      width: 24px !important;
+      height: 24px !important;
+      box-sizing: border-box !important;
       border-radius: 9999px !important;
       background: rgba(255, 255, 255, 0.5) !important;
+      background-clip: content-box !important;
       border: none !important;
       margin: 0 !important;
-      padding: 0 !important;
+      padding: 8px !important;
       transition: all 0.3s ease !important;
     }
     #posterCarousel .splide__pagination__page.is-active {
-      width: 24px !important;
+      width: 40px !important;
+      height: 24px !important;
       background: #ffffff !important;
+      background-clip: content-box !important;
       border-radius: 9999px !important;
       transform: none !important;
       opacity: 1 !important;
@@ -685,28 +677,43 @@ function injectMobileNavStyles() {
 
 // ─── Home Page Testimonials Running Marquee ──────────────────────────────────
 async function loadHomeTestimonials() {
+  const section = document.getElementById('home-testimonials-section');
   const track = document.getElementById('testimonials-marquee-track');
   if (!track) return;
 
   try {
-    let list = await apiGet('/api/testimonials');
-    if (!Array.isArray(list) || !list.length) {
-      list = [
-        { name: 'Arun & Sneha Krishnan', location: 'Dubai Luxury Tour (5N/6D)', feedback: 'Mangalam Tours made our honeymoon to Dubai unforgettable! From the private yacht cruise to the desert safari, everything was planned to perfection.', rating: 5 },
-        { name: 'Dr. Ramesh Nair & Family', location: 'Switzerland & Paris Tour', feedback: 'Exceptional service from the Trivandrum team. All alpine excursions, train passes, and hotel bookings were flawless. Highly recommended!', rating: 5 },
-        { name: 'Ananya Menon', location: 'Bali Tropical Paradise', feedback: 'Booking through Mangalam was the best travel decision! The private pool villa in Ubud and sunrise volcano tour were breathtaking. 10/10 hospitality.', rating: 5 },
-        { name: 'Vishnu & Divya Pillai', location: 'Singapore & Malaysia Tour', feedback: 'We were amazed by the attention to detail. Every day itinerary was smoothly coordinated with private chauffeurs and priority entry passes.', rating: 5 },
-        { name: 'Capt. Joseph Thomas', location: 'Vietnam & Cambodia Discovery', feedback: 'Flawless visa assistance, fantastic local guides, and top-tier 5-star accommodations throughout Hanoi and Siem Reap.', rating: 5 },
-        { name: 'Meera Balakrishnan', location: 'Thailand Island Hopping', feedback: 'Super responsive team! They customized our Phuket and Krabi itinerary within hours and gave us the best price guarantee.', rating: 5 }
-      ];
+    const list = await apiGet('/api/testimonials');
+    const valid = Array.isArray(list)
+      ? list.filter(t => t && t.name && String(t.feedback || '').trim() !== '')
+      : [];
+
+    if (!valid.length) {
+      if (section) {
+        section.classList.add('hidden');
+        section.style.display = 'none';
+      }
+      track.innerHTML = '';
+      return;
     }
 
+    if (section) {
+      section.classList.remove('hidden');
+      section.style.display = '';
+    }
+
+    const esc = (s) => String(s || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
     const renderCard = (t) => {
-      const rating = Number(t.rating) || 5;
+      const rating = Math.min(5, Math.max(1, Number(t.rating) || 5));
       const stars = '★'.repeat(rating) + '☆'.repeat(Math.max(0, 5 - rating));
-      const initials = (t.name || 'Traveler').split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'TT';
-      const colors = ['bg-rose-500', 'bg-blue-600', 'bg-emerald-600', 'bg-amber-500', 'bg-purple-600', 'bg-indigo-600'];
-      const bgCol = colors[Math.abs((t.name || '').charCodeAt(0) || 0) % colors.length];
+      const safeName = (t.name || 'Happy Traveler').trim();
+      const initials = safeName.split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'TT';
+      const colors = ['bg-rose-700', 'bg-blue-700', 'bg-emerald-700', 'bg-amber-800', 'bg-purple-700', 'bg-indigo-700'];
+      const bgCol = colors[Math.abs(safeName.charCodeAt(0) || 0) % colors.length];
 
       return `
         <div class="testimonial-card flex flex-col justify-between flex-shrink-0">
@@ -718,17 +725,17 @@ async function loadHomeTestimonials() {
               </div>
             </div>
             <p class="text-gray-700 font-dm-sans text-sm leading-relaxed mb-3 italic testimonial-text">
-              "${t.feedback || 'Outstanding experience with Mangalam Travel & Tours!'}"
+              "${esc(t.feedback)}"
             </p>
           </div>
           <div class="flex items-center gap-3 pt-3 border-t border-gray-100">
             <div class="w-10 h-10 rounded-full ${bgCol} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
-              ${initials}
+              ${esc(initials)}
             </div>
             <div class="overflow-hidden">
-              <h4 class="font-bold text-gray-900 font-dm-sans text-sm truncate">${t.name || 'Happy Traveler'}</h4>
-              <p class="text-gray-500 font-dm-sans text-xs truncate flex items-center gap-1">
-                <i class="fas fa-map-marker-alt text-red-500 text-[10px]"></i> ${t.location || 'Verified Traveler'}
+              <h3 class="font-bold text-gray-900 font-dm-sans text-sm truncate">${esc(safeName)}</h3>
+              <p class="text-gray-600 font-dm-sans text-xs truncate flex items-center gap-1">
+                <i class="fas fa-map-marker-alt text-red-600 text-[10px]" aria-hidden="true"></i> ${esc(t.location || 'Verified Traveler')}
               </p>
             </div>
           </div>
@@ -737,9 +744,10 @@ async function loadHomeTestimonials() {
     };
 
     // Duplicate list 3 times so the marquee loop is completely seamless and infinite
-    const itemsHTML = list.map(renderCard).join('');
+    const itemsHTML = valid.map(renderCard).join('');
     track.innerHTML = itemsHTML + itemsHTML + itemsHTML;
   } catch (err) {
+    if (section) section.classList.add('hidden');
     console.warn('[Testimonials] Load error:', err);
   }
 }
@@ -939,7 +947,7 @@ async function loadHomeGallery() {
              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
              onerror="this.onerror=null;this.src='./assets/images/destination-placeholder.jpg';">
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 flex flex-col justify-end">
-          <h4 class="text-white font-bold text-xs font-[Quicksand] truncate drop-shadow-sm">${p.title || 'Tour Moment'}</h4>
+          <h3 class="text-white font-bold text-xs font-[Quicksand] truncate drop-shadow-sm">${p.title || 'Tour Moment'}</h3>
           ${p.caption ? `<p class="text-slate-200 text-[10px] line-clamp-1 mt-0.5">${p.caption}</p>` : ''}
         </div>
       </a>
@@ -960,7 +968,7 @@ async function loadHomeGallery() {
                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                  onerror="this.onerror=null;this.src='./assets/images/destination-placeholder.jpg';">
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
-              <h4 class="text-white font-bold text-sm font-[Quicksand] truncate drop-shadow-sm">${p.title || 'Tour Moment'}</h4>
+              <h3 class="text-white font-bold text-sm font-[Quicksand] truncate drop-shadow-sm">${p.title || 'Tour Moment'}</h3>
               ${p.caption ? `<p class="text-slate-200 text-xs line-clamp-1 mt-0.5">${p.caption}</p>` : ''}
             </div>
           </a>
@@ -1103,23 +1111,235 @@ function initMenuDropdowns() {
   });
 }
 
+// ─── Homepage Branches Navigation Dropdown (Desktop + Mobile) ────────────────
+const MT_BRANCHES = [
+  { name: 'Trivandrum', location: 'Head Office · Kerala', href: '/best-travel-agency-trivandrum.html' },
+  { name: 'Kochi', location: 'Kerala', href: '/contact.html#branch-kochi' },
+  { name: 'Nagercoil', location: 'Tamil Nadu', href: '/contact.html#branch-nagercoil' },
+  { name: 'Madurai', location: 'Tamil Nadu', href: '/contact.html#branch-madurai' },
+  { name: 'Tirunelveli', location: 'Tamil Nadu', href: '/contact.html#branch-tirunelveli' },
+  { name: 'Chennai', location: 'Tamil Nadu', href: '/contact.html#branch-chennai' }
+];
+
+function renderBranchLinks(container, variant) {
+  if (!container || container.dataset.branchesRendered === '1') return;
+  container.dataset.branchesRendered = '1';
+  const escHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  container.innerHTML = MT_BRANCHES.map((b) => {
+    if (variant === 'mobile') {
+      return `
+        <a href="${b.href}"
+           class="flex items-center justify-between pl-7 pr-5 py-2.5 text-gray-700 hover:text-sky-600 hover:bg-sky-50/50 focus-visible:outline-none focus-visible:bg-sky-50/50 focus-visible:text-sky-600 transition-colors font-dm-sans text-sm">
+          <span>${escHtml(b.name)}</span>
+          <span class="text-xs text-gray-600">${escHtml(b.location)}</span>
+        </a>`;
+    }
+    return `
+      <a href="${b.href}"
+         class="flex items-center justify-between gap-3 px-5 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-sky-600 focus-visible:outline-none focus-visible:bg-gray-50 focus-visible:text-sky-600 transition-colors font-dm-sans font-medium text-base">
+        <span>${escHtml(b.name)}</span>
+        <span class="text-xs font-normal text-gray-600 shrink-0">${escHtml(b.location)}</span>
+      </a>`;
+  }).join('');
+}
+
+function closeAllDesktopBranchDropdowns() {
+  document.querySelectorAll('.nav-branches-dropdown').forEach((wrap) => {
+    wrap.classList.remove('is-open');
+    const toggle = wrap.querySelector('.branches-dropdown-toggle');
+    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function initBranchesDropdowns() {
+  document.querySelectorAll('.nav-branches-dropdown').forEach((wrap) => {
+    const toggle = wrap.querySelector('.branches-dropdown-toggle');
+    const list = wrap.querySelector('.branches-dropdown-list');
+    renderBranchLinks(list, 'desktop');
+    if (!toggle || !list || wrap.dataset.branchesBound === '1') return;
+    wrap.dataset.branchesBound = '1';
+
+    let closeTimer = null;
+    const clearCloseTimer = () => {
+      if (closeTimer) {
+        clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+    };
+    const openMenu = () => {
+      clearCloseTimer();
+      document.querySelectorAll('.nav-branches-dropdown').forEach((other) => {
+        if (other !== wrap) {
+          other.classList.remove('is-open');
+          const ot = other.querySelector('.branches-dropdown-toggle');
+          if (ot) ot.setAttribute('aria-expanded', 'false');
+        }
+      });
+      wrap.classList.add('is-open');
+      toggle.setAttribute('aria-expanded', 'true');
+    };
+    const closeMenu = () => {
+      clearCloseTimer();
+      wrap.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    };
+    const getItems = () => Array.from(list.querySelectorAll('a'));
+
+    wrap.addEventListener('mouseenter', openMenu);
+    wrap.addEventListener('mouseleave', () => {
+      clearCloseTimer();
+      closeTimer = setTimeout(closeMenu, 140);
+    });
+
+    toggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (wrap.classList.contains('is-open')) closeMenu();
+      else openMenu();
+    });
+
+    toggle.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        openMenu();
+        requestAnimationFrame(() => {
+          const items = getItems();
+          if (items[0]) items[0].focus();
+        });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        openMenu();
+        requestAnimationFrame(() => {
+          const items = getItems();
+          if (items.length) items[items.length - 1].focus();
+        });
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMenu();
+      }
+    });
+
+    list.addEventListener('keydown', (e) => {
+      const items = getItems();
+      const idx = items.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const next = items[(idx + 1) % items.length];
+        if (next) next.focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (idx <= 0) {
+          closeMenu();
+          toggle.focus();
+        } else {
+          items[idx - 1].focus();
+        }
+      } else if (e.key === 'Home' && items[0]) {
+        e.preventDefault();
+        items[0].focus();
+      } else if (e.key === 'End' && items.length) {
+        e.preventDefault();
+        items[items.length - 1].focus();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMenu();
+        toggle.focus();
+      }
+    });
+
+    list.addEventListener('click', (e) => {
+      if (e.target.closest('a')) {
+        closeMenu();
+      }
+    });
+
+    wrap.addEventListener('focusout', (e) => {
+      if (e.relatedTarget && !wrap.contains(e.relatedTarget)) {
+        closeMenu();
+      }
+    });
+  });
+
+  // Mobile hamburger nested Branches accordions
+  document.querySelectorAll('.menu-branches-accordion').forEach((accordion) => {
+    const toggle = accordion.querySelector('.menu-branches-toggle');
+    const list = accordion.querySelector('.menu-branches-list');
+    const arrow = accordion.querySelector('.menu-branches-arrow');
+    renderBranchLinks(list, 'mobile');
+    if (!toggle || !list || accordion.dataset.branchesBound === '1') return;
+    accordion.dataset.branchesBound = '1';
+
+    const setExpanded = (expanded) => {
+      list.classList.toggle('hidden', !expanded);
+      toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      if (arrow) arrow.classList.toggle('rotate-180', expanded);
+    };
+
+    toggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const willOpen = list.classList.contains('hidden');
+      setExpanded(willOpen);
+    });
+
+    accordion.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !list.classList.contains('hidden')) {
+        e.preventDefault();
+        e.stopPropagation();
+        setExpanded(false);
+        toggle.focus();
+      }
+    });
+
+    list.addEventListener('click', (e) => {
+      if (e.target.closest('a')) {
+        setExpanded(false);
+        document.querySelectorAll('#menuDropdown, #menuDropdown2').forEach(d => d.classList.add('hidden'));
+      }
+    });
+  });
+
+  if (!window._branchesOutsideBound) {
+    window._branchesOutsideBound = true;
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.nav-branches-dropdown')) {
+        closeAllDesktopBranchDropdowns();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAllDesktopBranchDropdowns();
+      }
+    });
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   injectMobileNavStyles();
   initMenuDropdowns();
-  loadDynamicSeo();
-  loadNotice();
-  loadFooterLinks();
-  loadDestinationDropdowns();
-  loadHomePosters();
-  loadHomeTestimonials();
-  loadHomePartners();
-  loadHomeGallery();
+  initBranchesDropdowns();
+  if (!window._dynamicSeoCalled) {
+    window._dynamicSeoCalled = true;
+    loadDynamicSeo();
+  }
+  const deferWork = () => {
+    loadNotice();
+    loadFooterLinks();
+    loadDestinationDropdowns();
+    loadHomePosters();
+    loadHomeTestimonials();
+    loadHomePartners();
+    loadHomeGallery();
+  };
+  if (window.requestIdleCallback) requestIdleCallback(deferWork, { timeout: 600 });
+  else setTimeout(deferWork, 150);
 });
 
 // Also run immediately if DOM is ready
 if (document.readyState !== 'loading') {
   injectMobileNavStyles();
   initMenuDropdowns();
+  initBranchesDropdowns();
   loadHomePosters();
   loadHomeTestimonials();
   loadHomePartners();

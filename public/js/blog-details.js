@@ -34,8 +34,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Process fields
-        const title = blog.title || 'Travel Blog';
+    const title = blog.title || 'Travel Blog';
     document.title = title;
+
+    // Short Overview / Excerpt written in Admin Panel
+    const plainTextContent = blog.content ? blog.content.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim() : '';
+    const blogDesc = (blog.description || blog.meta_description || plainTextContent.slice(0, 180) || '').trim();
 
     const imgStr = blog.banner_image || blog.card_image || (blog.images && blog.images.length > 0 ? (typeof blog.images[0] === 'object' ? (blog.images[0].file_name || blog.images[0].name || blog.images[0].image) : blog.images[0]) : '');
     const bannerImg = MT.resolveImg(imgStr) || './assets/images/banner-img.webp';
@@ -43,15 +47,200 @@ document.addEventListener('DOMContentLoaded', async () => {
     const author = blog.author || 'Mangalam Editorial Team';
     const category = blog.category || 'Travel Guide';
 
-    // Format content (support raw HTML or plain text linebreaks)
-    let rawContent = blog.content || blog.description || '';
-    let formattedContent = rawContent;
-    if (rawContent && !rawContent.includes('<p>') && !rawContent.includes('<div>') && !rawContent.includes('<br>')) {
-      formattedContent = rawContent.split(/\n\n+/).map(p => `<p class="mb-4">${p.replace(/\n/g, '<br>')}</p>`).join('');
+    // Canonical & Social sharing absolute URL
+    const slugVal = blog.slug_url || blog.slug || param || '';
+    const blogCanonical = `https://mangalamtravel.com/blog-details.html?slug=${encodeURIComponent(slugVal)}`;
+    const absBannerImg = (bannerImg.startsWith('http://') || bannerImg.startsWith('https://'))
+      ? bannerImg
+      : `https://mangalamtravel.com/${bannerImg.replace(/^\.?\//, '')}`;
+
+    // Update Meta Tags so browser extensions, crawlers and social previews reflect Admin Short Overview
+    const setMetaTag = (nameOrProp, attr, val) => {
+      if (!val) return;
+      let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, nameOrProp);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', val);
+    };
+
+    const setLinkTag = (rel, href) => {
+      if (!href) return;
+      let el = document.querySelector(`link[rel="${rel}"]`);
+      if (!el) {
+        el = document.createElement('link');
+        el.setAttribute('rel', rel);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('href', href);
+    };
+
+    if (blogDesc) {
+      setMetaTag('description', 'name', blogDesc);
+      setMetaTag('og:description', 'property', blogDesc);
+      setMetaTag('twitter:description', 'name', blogDesc);
+    }
+    setMetaTag('title', 'name', title);
+    setMetaTag('og:title', 'property', title);
+    setMetaTag('twitter:title', 'name', title);
+    setMetaTag('og:image', 'property', absBannerImg);
+    setMetaTag('og:image:secure_url', 'property', absBannerImg);
+    setMetaTag('twitter:image', 'name', absBannerImg);
+    setMetaTag('og:url', 'property', blogCanonical);
+    setMetaTag('twitter:url', 'name', blogCanonical);
+    setLinkTag('canonical', blogCanonical);
+
+    // Dynamic Schema.org structured data injection
+    try {
+      let bSchema = document.getElementById('blog-posting-ldjson');
+      if (!bSchema) {
+        bSchema = document.createElement('script');
+        bSchema.id = 'blog-posting-ldjson';
+        bSchema.type = 'application/ld+json';
+        document.head.appendChild(bSchema);
+      }
+      bSchema.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": title,
+        "description": blogDesc,
+        "image": absBannerImg,
+        "author": {
+          "@type": "Person",
+          "name": author
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Mangalam Travel & Tours",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://mangalamtravel.com/assets/images/logo-color.png"
+          }
+        },
+        "datePublished": blog.created_at || blog.date || new Date().toISOString(),
+        "mainEntityOfPage": blogCanonical
+      }, null, 2);
+    } catch (_) {}
+
+    // Client-side URL cleaner matching backend rules
+    function cleanHref(rawHref) {
+      if (!rawHref || typeof rawHref !== 'string') return '';
+      let href = rawHref.trim();
+      const lower = href.toLowerCase();
+
+      // Block dangerous XSS protocols
+      if (
+        lower.startsWith('javascript:') ||
+        lower.startsWith('data:') ||
+        lower.startsWith('vbscript:') ||
+        lower.startsWith('file:') ||
+        href.includes('<') ||
+        href.includes('>') ||
+        href.includes('"')
+      ) {
+        return '';
+      }
+
+      // Safe relative paths (/packages.html, #section, ./page.html, ../page.html, ?query)
+      if (
+        href.startsWith('/') ||
+        href.startsWith('#') ||
+        href.startsWith('?') ||
+        href.startsWith('./') ||
+        href.startsWith('../')
+      ) {
+        return href;
+      }
+
+      // Safe action schemes
+      if (lower.startsWith('mailto:') || lower.startsWith('tel:') || lower.startsWith('whatsapp:')) {
+        return href;
+      }
+
+      // Safe relative HTML pages (e.g. packages.html, contact.html, holiday-package.html?id=1)
+      if (/^[a-zA-Z0-9_\-\.\/]+(?:\.html|\.php)?(?:\?[^"'\s<>]*)?(?:#[^"'\s<>]*)?$/i.test(href)) {
+        if (/^(?:www\.)?[a-zA-Z0-9][-a-zA-Z0-9@:%._\+~#=]{0,256}\.(?:com|org|net|in|io|co|ai|me|info|biz|gov|edu|uk|us|de|travel)\b/i.test(href)) {
+          return 'https://' + href;
+        }
+        return href;
+      }
+
+      // Safe HTTP/HTTPS URLs
+      if (/^https?:\/\//i.test(href)) {
+        return href;
+      }
+
+      // Domain-like links without protocol: e.g. "www.google.com" or "mangalamtravel.com"
+      if (/^(?:www\.)?[a-zA-Z0-9][-a-zA-Z0-9@:%._\+~#=]{0,256}\.[a-zA-Z0-9()]{2,6}/i.test(href)) {
+        return 'https://' + href;
+      }
+
+      return href;
     }
 
+    // Client-side HTML and hyperlink sanitization
+    function sanitizeClientContent(html) {
+      if (!html || typeof html !== 'string') return '';
+      // 1. Strip unsafe tags
+      let clean = html
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+        .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+        .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
+        .replace(/<form\b[^<]*(?:(?!<\/form>)<[^<]*)*<\/form>/gi, '');
+
+      // 2. Remove inline event handlers (onerror, onload, onclick, etc.)
+      clean = clean.replace(/\s+on[a-zA-Z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+
+      // 3. Sanitize anchor tags and ensure secure attributes with innerText preserved
+      clean = clean.replace(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi, (fullMatch, attrs, innerText) => {
+        const hrefMatch = attrs.match(/href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+        const rawHref = hrefMatch ? (hrefMatch[1] || hrefMatch[2] || hrefMatch[3] || '').trim() : '';
+        const href = cleanHref(rawHref);
+
+        // If href is empty or unsafe, unwrap the link and keep the inner text intact
+        if (!href) {
+          return innerText;
+        }
+
+        const titleMatch = attrs.match(/title\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+        const title = titleMatch ? (titleMatch[1] || titleMatch[2] || titleMatch[3] || '').trim() : '';
+
+        const targetMatch = attrs.match(/target\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+        const target = targetMatch ? (targetMatch[1] || targetMatch[2] || targetMatch[3] || '').trim() : '';
+        const isBlank = target.toLowerCase() === '_blank';
+
+        let tag = `<a href="${href.replace(/"/g, '&quot;')}"`;
+        if (title) tag += ` title="${title.replace(/"/g, '&quot;')}"`;
+        if (isBlank) tag += ` target="_blank" rel="noopener noreferrer"`;
+        tag += ` class="blog-article-link"`;
+        tag += `>${innerText}</a>`;
+        return tag;
+      });
+
+      return clean;
+    }
+
+    // Format content (support raw HTML or plain text linebreaks)
+    let rawContent = blog.content || blog.description || '';
+    // Unescape HTML entities if content was stored encoded
+    if (rawContent && !rawContent.includes('<') && rawContent.includes('&lt;')) {
+      const txt = document.createElement('textarea');
+      txt.innerHTML = rawContent;
+      rawContent = txt.value;
+    }
+
+    let formattedContent = rawContent;
+    if (rawContent && !rawContent.includes('<p>') && !rawContent.includes('<div>') && !rawContent.includes('<br>') && !rawContent.includes('<h2>') && !rawContent.includes('<h3>')) {
+      formattedContent = rawContent.split(/\n\n+/).map(p => `<p class="mb-4">${p.replace(/\n/g, '<br>')}</p>`).join('');
+    }
+    formattedContent = sanitizeClientContent(formattedContent);
+
     // Estimated read time
-    const words = rawContent.replace(/<[^>]*>?/gm, '').split(/\s+/).length;
+    const words = rawContent.replace(/<[^>]*>?/gm, '').split(/\s+/).filter(Boolean).length;
     const readTime = Math.max(1, Math.round(words / 180)) + ' min read';
 
     // Other related blogs
@@ -105,13 +294,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           <!-- Article Content -->
           <div class="prose prose-lg max-w-none text-gray-700 font-dm-sans leading-relaxed text-base md:text-lg space-y-6">
-            ${formattedContent || '<p class="text-gray-400 italic">No written content available for this post.</p>'}
+            ${formattedContent || '<p class="text-gray-600 italic">No written content available for this post.</p>'}
           </div>
 
           <!-- Article Footer & Social Share -->
           <div class="mt-12 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-              <span class="text-xs font-bold text-gray-400 uppercase tracking-wider font-dm-sans">Share this story:</span>
+              <span class="text-xs font-bold text-gray-600 uppercase tracking-wider font-dm-sans">Share this story:</span>
               <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(title + ' ' + window.location.href)}" target="_blank" class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-colors shadow-sm">
                 <i class="fa-brands fa-whatsapp text-sm"></i>
               </a>

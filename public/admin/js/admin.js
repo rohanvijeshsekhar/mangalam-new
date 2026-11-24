@@ -229,7 +229,10 @@ function openModal(title, bodyHtml) {
   document.getElementById('modal-body').innerHTML = bodyHtml;
   document.getElementById('modal-overlay').classList.add('open');
 }
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  if (typeof hideBubbleToolbar === 'function') hideBubbleToolbar();
+}
 document.getElementById('modal-close').addEventListener('click', closeModal);
 // Do NOT close modal when clicking outside the modal box, so user data is never lost by accident.
 
@@ -996,9 +999,692 @@ async function loadBlogs() {
   }).join('');
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// BLOG HYPERLINK & RICH EDITOR LOGIC
+// ══════════════════════════════════════════════════════════════════════════════
+window._blogSavedRange = null;
+window._blogCurrentAnchor = null;
+
+function formatBlogContentForEditor(raw) {
+  if (!raw) return '';
+  const str = String(raw).trim();
+  if (!str) return '';
+  // If it already contains HTML block tags, return as-is
+  if (/<(p|div|h[1-6]|ul|ol|li|blockquote|br)[^>]*>/i.test(str)) {
+    return str;
+  }
+  // Convert plain text linebreaks to paragraphs
+  return str.split(/\n\n+/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+}
+
+function validateBlogUrl(inputUrl) {
+  if (!inputUrl || !inputUrl.trim()) {
+    return { valid: false, error: 'Please enter a URL.' };
+  }
+  let url = inputUrl.trim();
+  const lower = url.toLowerCase();
+
+  // Block dangerous schemes and script injections
+  if (
+    lower.startsWith('javascript:') ||
+    lower.startsWith('data:') ||
+    lower.startsWith('vbscript:') ||
+    lower.startsWith('file:') ||
+    url.includes('<') ||
+    url.includes('>') ||
+    url.includes('"')
+  ) {
+    return { valid: false, error: 'Unsafe URL protocol or invalid characters detected.' };
+  }
+
+  // Safe relative paths (/packages.html, #section, ./page.html, ../page.html, ?query)
+  if (
+    url.startsWith('/') ||
+    url.startsWith('#') ||
+    url.startsWith('?') ||
+    url.startsWith('./') ||
+    url.startsWith('../') ||
+    lower.startsWith('mailto:') ||
+    lower.startsWith('tel:') ||
+    lower.startsWith('whatsapp:')
+  ) {
+    return { valid: true, url };
+  }
+
+  // Safe relative HTML pages (e.g. packages.html, contact.html, holiday-package.html?id=1)
+  if (/^[a-zA-Z0-9_\-\.\/]+(?:\.html|\.php)?(?:\?[^"'\s<>]*)?(?:#[^"'\s<>]*)?$/i.test(url)) {
+    if (/^(?:www\.)?[a-zA-Z0-9][-a-zA-Z0-9@:%._\+~#=]{0,256}\.(?:com|org|net|in|io|co|ai|me|info|biz|gov|edu|uk|us|de|travel)\b/i.test(url)) {
+      return { valid: true, url: 'https://' + url };
+    }
+    return { valid: true, url };
+  }
+
+  // Safe absolute HTTP / HTTPS protocols
+  if (/^https?:\/\//i.test(url)) {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        return { valid: true, url };
+      }
+    } catch {
+      return { valid: false, error: 'Invalid URL format.' };
+    }
+  }
+
+  // Auto-prefix domain-like URLs (e.g. mangalamtravel.com or travel.com/packages)
+  if (/^[a-zA-Z0-9][-a-zA-Z0-9@:%._\+~#=]{0,256}\.[a-zA-Z0-9()]{2,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/i.test(url)) {
+    return { valid: true, url: 'https://' + url };
+  }
+
+  return { valid: false, error: 'Please enter a valid URL (e.g. https://mangalamtravel.com or /packages.html)' };
+}
+
+// State for Blog Floating Bubble Toolbar
+window._bubbleSavedRange = null;
+window._bubbleTargetAnchor = null;
+
+function getSelectedBlogAnchor() {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return null;
+  let node = sel.getRangeAt(0).commonAncestorContainer;
+  if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+  const editor = document.getElementById('b-content-editor');
+  if (!editor || !editor.contains(node)) return null;
+  return node ? node.closest('a') : null;
+}
+
+function updateBlogToolbarStates() {
+  const btnLink = document.getElementById('btn-blog-link');
+  const btnUnlink = document.getElementById('btn-blog-unlink');
+  if (!btnLink) return;
+
+  const anchor = getSelectedBlogAnchor();
+  if (anchor) {
+    btnLink.classList.add('active');
+    if (btnUnlink) btnUnlink.style.display = 'inline-flex';
+  } else {
+    btnLink.classList.remove('active');
+    if (btnUnlink) btnUnlink.style.display = 'none';
+  }
+}
+
+/**
+ * Calculates the exact word boundary under the cursor (x, y) coordinates.
+ * Returns a DOM Range containing only that word.
+ */
+function getWordRangeAtPoint(x, y) {
+  let range = null;
+  if (document.caretRangeFromPoint) {
+    range = document.caretRangeFromPoint(x, y);
+  } else if (document.caretPositionFromPoint) {
+    const pos = document.caretPositionFromPoint(x, y);
+    if (pos && pos.offsetNode) {
+      range = document.createRange();
+      range.setStart(pos.offsetNode, pos.offset);
+      range.collapse(true);
+    }
+  }
+  if (!range) return null;
+
+  let node = range.startContainer;
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    if (range.startOffset < node.childNodes.length) {
+      node = node.childNodes[range.startOffset];
+    } else if (node.lastChild) {
+      node = node.lastChild;
+    }
+  }
+  if (!node || node.nodeType !== Node.TEXT_NODE) return null;
+
+  const text = node.textContent;
+  let offset = range.startOffset;
+  if (offset >= text.length && offset > 0) offset = text.length - 1;
+
+  const isWordChar = (char) => char && /[\w\u00C0-\u024F\u1E00-\u1EFF'-]/i.test(char);
+  if (!isWordChar(text[offset])) {
+    if (offset > 0 && isWordChar(text[offset - 1])) {
+      offset--;
+    } else {
+      return null;
+    }
+  }
+
+  let start = offset;
+  while (start > 0 && isWordChar(text[start - 1])) {
+    start--;
+  }
+
+  let end = offset;
+  while (end < text.length && isWordChar(text[end])) {
+    end++;
+  }
+
+  if (start >= end) return null;
+
+  const wordRange = document.createRange();
+  wordRange.setStart(node, start);
+  wordRange.setEnd(node, end);
+  return wordRange;
+}
+
+/**
+ * Positions the floating bubble toolbar above targetRect (centered with arrow pointing down).
+ */
+function positionBubbleToolbar(rect) {
+  const toolbar = document.getElementById('blog-bubble-toolbar');
+  const arrow = document.getElementById('bubble-arrow');
+  if (!toolbar || !arrow || !rect) return;
+
+  toolbar.style.display = 'flex';
+  const toolbarRect = toolbar.getBoundingClientRect();
+  const tbWidth = toolbarRect.width || 320;
+  const tbHeight = toolbarRect.height || 42;
+
+  const wordCenterX = rect.left + (rect.width / 2);
+  let left = wordCenterX - (tbWidth / 2);
+  const minLeft = 12;
+  const maxLeft = window.innerWidth - tbWidth - 12;
+  left = Math.max(minLeft, Math.min(maxLeft, left));
+
+  let top = rect.top - tbHeight - 10;
+  let isAbove = true;
+  if (top < 10) {
+    top = rect.bottom + 10;
+    isAbove = false;
+  }
+
+  toolbar.style.top = `${Math.round(top)}px`;
+  toolbar.style.left = `${Math.round(left)}px`;
+
+  arrow.className = isAbove ? 'bubble-arrow arrow-bottom' : 'bubble-arrow arrow-top';
+  const arrowOffset = wordCenterX - left;
+  const clampedArrow = Math.max(16, Math.min(tbWidth - 16, arrowOffset));
+  arrow.style.left = `${Math.round(clampedArrow)}px`;
+  arrow.style.transform = 'translateX(-50%)';
+}
+
+/**
+ * Shows the floating bubble toolbar in either 'main' (formatting) or 'link' (inline URL input) mode.
+ */
+function showBubbleToolbar(mode = 'main', anchor = null) {
+  const toolbar = document.getElementById('blog-bubble-toolbar');
+  const modeMain = document.getElementById('bubble-mode-main');
+  const modeLink = document.getElementById('bubble-mode-link');
+  const inputUrl = document.getElementById('bubble-link-url');
+  const inputBlank = document.getElementById('bubble-link-blank');
+  const btnUnlink = document.getElementById('bubble-link-unlink');
+  const btnPreview = document.getElementById('bubble-link-preview-btn');
+  const errorDiv = document.getElementById('bubble-link-error');
+  if (!toolbar || !modeMain || !modeLink) return;
+
+  window._bubbleTargetAnchor = anchor;
+  if (errorDiv) {
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+  }
+
+  if (mode === 'link') {
+    modeMain.style.display = 'none';
+    modeLink.style.display = 'flex';
+
+    if (anchor) {
+      const href = anchor.getAttribute('href') || '';
+      inputUrl.value = href;
+      inputBlank.checked = anchor.getAttribute('target') === '_blank';
+      if (btnUnlink) btnUnlink.style.display = 'inline-flex';
+      if (btnPreview) {
+        btnPreview.href = href || '#';
+        btnPreview.style.display = 'inline-flex';
+      }
+    } else {
+      inputUrl.value = '';
+      inputBlank.checked = true;
+      if (btnUnlink) btnUnlink.style.display = 'none';
+      if (btnPreview) btnPreview.style.display = 'none';
+    }
+
+    const rect = anchor
+      ? anchor.getBoundingClientRect()
+      : (window._bubbleSavedRange ? window._bubbleSavedRange.getBoundingClientRect() : null);
+    if (rect) positionBubbleToolbar(rect);
+
+    toolbar.classList.remove('bubble-anim-in');
+    void toolbar.offsetWidth;
+    toolbar.classList.add('bubble-anim-in');
+
+    setTimeout(() => {
+      inputUrl.focus();
+      inputUrl.select();
+    }, 40);
+  } else {
+    modeMain.style.display = 'flex';
+    modeLink.style.display = 'none';
+
+    // Highlight active formatting buttons
+    const btnBold = modeMain.querySelector('[data-bubble-cmd="bold"]');
+    const btnItalic = modeMain.querySelector('[data-bubble-cmd="italic"]');
+    if (btnBold) btnBold.classList.toggle('active', document.queryCommandState('bold'));
+    if (btnItalic) btnItalic.classList.toggle('active', document.queryCommandState('italic'));
+
+    const rect = anchor
+      ? anchor.getBoundingClientRect()
+      : (window._bubbleSavedRange ? window._bubbleSavedRange.getBoundingClientRect() : null);
+    if (rect) positionBubbleToolbar(rect);
+
+    toolbar.classList.remove('bubble-anim-in');
+    void toolbar.offsetWidth;
+    toolbar.classList.add('bubble-anim-in');
+  }
+}
+
+/**
+ * Hides the floating bubble toolbar.
+ */
+function hideBubbleToolbar() {
+  const toolbar = document.getElementById('blog-bubble-toolbar');
+  if (toolbar) toolbar.style.display = 'none';
+  const errorDiv = document.getElementById('bubble-link-error');
+  if (errorDiv) errorDiv.style.display = 'none';
+  window._bubbleTargetAnchor = null;
+}
+
+/**
+ * Applies a hyperlink ONLY to the targeted word/selection (never anywhere else in the document).
+ */
+function applyBubbleLink() {
+  const inputUrl = document.getElementById('bubble-link-url');
+  const inputBlank = document.getElementById('bubble-link-blank');
+  const errorDiv = document.getElementById('bubble-link-error');
+  const editor = document.getElementById('b-content-editor');
+  const textarea = document.getElementById('b-content');
+  if (!inputUrl || !editor) return;
+
+  const validation = validateBlogUrl(inputUrl.value);
+  if (!validation.valid) {
+    if (errorDiv) {
+      errorDiv.textContent = validation.error;
+      errorDiv.style.display = 'block';
+    }
+    inputUrl.focus();
+    return;
+  }
+  if (errorDiv) errorDiv.style.display = 'none';
+
+  const finalUrl = validation.url;
+  const openInNewTab = inputBlank ? inputBlank.checked : true;
+
+  editor.focus();
+
+  if (window._bubbleTargetAnchor) {
+    // ── Update this specific anchor ONLY ──
+    const a = window._bubbleTargetAnchor;
+    a.setAttribute('href', finalUrl);
+    if (openInNewTab) {
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+    } else {
+      a.removeAttribute('target');
+      a.removeAttribute('rel');
+    }
+    a.className = 'blog-link';
+    showToast('Hyperlink updated for this word!', 'success');
+  } else if (window._bubbleSavedRange) {
+    // ── Wrap ONLY this specific selected word / range in a New <a> ──
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(window._bubbleSavedRange);
+
+    const a = document.createElement('a');
+    a.href = finalUrl;
+    if (openInNewTab) {
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+    }
+    a.className = 'blog-link';
+
+    try {
+      const fragment = window._bubbleSavedRange.extractContents();
+      a.appendChild(fragment);
+      window._bubbleSavedRange.insertNode(a);
+      showToast('Hyperlink added to this word!', 'success');
+    } catch (err) {
+      console.error('Error inserting link:', err);
+      document.execCommand('createLink', false, finalUrl);
+    }
+  }
+
+  if (textarea) textarea.value = editor.innerHTML;
+  hideBubbleToolbar();
+  updateBlogToolbarStates();
+}
+
+/**
+ * Removes hyperlink from the target anchor, keeping its original text completely intact.
+ */
+function unlinkBubbleLink() {
+  const a = window._bubbleTargetAnchor || getSelectedBlogAnchor();
+  const editor = document.getElementById('b-content-editor');
+  const textarea = document.getElementById('b-content');
+
+  if (a && editor && editor.contains(a)) {
+    const parent = a.parentNode;
+    while (a.firstChild) {
+      parent.insertBefore(a.firstChild, a);
+    }
+    parent.removeChild(a);
+    showToast('Hyperlink removed. Original word preserved.', 'info');
+  } else if (window._bubbleSavedRange) {
+    document.execCommand('unlink', false, null);
+    showToast('Hyperlink removed.', 'info');
+  }
+
+  if (textarea) textarea.value = editor.innerHTML;
+  hideBubbleToolbar();
+  updateBlogToolbarStates();
+}
+
+function initBlogEditor(initialContent = '') {
+  const editor = document.getElementById('b-content-editor');
+  const textarea = document.getElementById('b-content');
+  const toolbar = document.getElementById('blog-editor-toolbar');
+  const bubble = document.getElementById('blog-bubble-toolbar');
+  if (!editor || !textarea) return;
+
+  if (initialContent) {
+    editor.innerHTML = initialContent;
+    textarea.value = initialContent;
+  }
+
+  // Sync content from editable surface to hidden textarea
+  editor.addEventListener('input', () => {
+    textarea.value = editor.innerHTML;
+  });
+
+  // Track cursor position to update toolbar button states
+  ['keyup', 'mouseup', 'selectionchange'].forEach(evt => {
+    editor.addEventListener(evt, updateBlogToolbarStates);
+  });
+
+  // ── RIGHT CLICK TO HYPERLINK SPECIFIC WORD ───────────────────────
+  editor.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+
+    const sel = window.getSelection();
+    let clickedAnchor = e.target.closest('a');
+    if (clickedAnchor && !editor.contains(clickedAnchor)) clickedAnchor = null;
+
+    if (clickedAnchor) {
+      // Right-clicked directly on an existing link: edit just this link
+      window._bubbleTargetAnchor = clickedAnchor;
+      const r = document.createRange();
+      r.selectNodeContents(clickedAnchor);
+      sel.removeAllRanges();
+      sel.addRange(r);
+      window._bubbleSavedRange = r.cloneRange();
+      showBubbleToolbar('link', clickedAnchor);
+      return;
+    }
+
+    // If user already has an active selection in the editor
+    if (sel && !sel.isCollapsed && editor.contains(sel.anchorNode)) {
+      window._bubbleSavedRange = sel.getRangeAt(0).cloneRange();
+      window._bubbleTargetAnchor = null;
+      showBubbleToolbar('link', null);
+      return;
+    }
+
+    // Auto-detect word boundary under the cursor
+    const wordRange = getWordRangeAtPoint(e.clientX, e.clientY);
+    if (wordRange && editor.contains(wordRange.commonAncestorContainer)) {
+      sel.removeAllRanges();
+      sel.addRange(wordRange);
+      window._bubbleSavedRange = wordRange.cloneRange();
+      window._bubbleTargetAnchor = null;
+      showBubbleToolbar('link', null);
+    } else {
+      hideBubbleToolbar();
+    }
+  });
+
+  // ── MOUSEUP / TEXT SELECTION: SHOW FLOATING BUBBLE TOOLBAR ────────
+  editor.addEventListener('mouseup', (e) => {
+    // If clicked directly on an existing link: open bubble in link mode
+    const a = e.target.closest('a');
+    if (a && editor.contains(a)) {
+      e.preventDefault();
+      const sel = window.getSelection();
+      const r = document.createRange();
+      r.selectNodeContents(a);
+      sel.removeAllRanges();
+      sel.addRange(r);
+      window._bubbleSavedRange = r.cloneRange();
+      showBubbleToolbar('link', a);
+      return;
+    }
+
+    // Delay slightly to allow browser selection to settle
+    setTimeout(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || !sel.rangeCount) {
+        const tb = document.getElementById('blog-bubble-toolbar');
+        if (!tb || !tb.contains(document.activeElement)) {
+          hideBubbleToolbar();
+        }
+        return;
+      }
+
+      const r = sel.getRangeAt(0);
+      if (!editor.contains(r.commonAncestorContainer)) {
+        hideBubbleToolbar();
+        return;
+      }
+
+      const text = r.toString().trim();
+      if (text.length > 0) {
+        window._bubbleSavedRange = r.cloneRange();
+        window._bubbleTargetAnchor = null;
+        showBubbleToolbar('main', null);
+      } else {
+        hideBubbleToolbar();
+      }
+    }, 15);
+  });
+
+  // Keyboard shortcut Ctrl+K / Cmd+K for Link
+  editor.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      const sel = window.getSelection();
+      const a = getSelectedBlogAnchor();
+      if (a) {
+        showBubbleToolbar('link', a);
+      } else if (sel && !sel.isCollapsed && editor.contains(sel.anchorNode)) {
+        window._bubbleSavedRange = sel.getRangeAt(0).cloneRange();
+        showBubbleToolbar('link', null);
+      } else {
+        // Try word expansion under caret
+        const r = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+        if (r) {
+          const rect = r.getBoundingClientRect();
+          const wordRange = getWordRangeAtPoint(rect.left, rect.top);
+          if (wordRange) {
+            sel.removeAllRanges();
+            sel.addRange(wordRange);
+            window._bubbleSavedRange = wordRange.cloneRange();
+            showBubbleToolbar('link', null);
+            return;
+          }
+        }
+        showToast('Select a word or right-click any word to add a link.', 'info');
+      }
+    }
+  });
+
+  // ── FLOATING BUBBLE TOOLBAR ACTIONS ──────────────────────────────
+  if (bubble) {
+    // Formatting buttons in bubble
+    bubble.querySelectorAll('[data-bubble-cmd]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const cmd = btn.getAttribute('data-bubble-cmd');
+        if (window._bubbleSavedRange) {
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(window._bubbleSavedRange);
+        }
+        document.execCommand(cmd, false, null);
+        textarea.value = editor.innerHTML;
+        editor.focus();
+        showBubbleToolbar('main', null);
+      });
+    });
+
+    bubble.querySelectorAll('[data-bubble-format]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const fmt = btn.getAttribute('data-bubble-format');
+        if (window._bubbleSavedRange) {
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(window._bubbleSavedRange);
+        }
+        document.execCommand('formatBlock', false, `<${fmt}>`);
+        textarea.value = editor.innerHTML;
+        editor.focus();
+        showBubbleToolbar('main', null);
+      });
+    });
+
+    // Trigger link input mode from bubble
+    document.getElementById('bubble-trigger-link')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      showBubbleToolbar('link', window._bubbleTargetAnchor || getSelectedBlogAnchor());
+    });
+
+    // Apply hyperlink button
+    document.getElementById('bubble-link-apply')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      applyBubbleLink();
+    });
+
+    // Unlink button
+    document.getElementById('bubble-link-unlink')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      unlinkBubbleLink();
+    });
+
+    // Close button
+    document.getElementById('bubble-link-close')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      hideBubbleToolbar();
+    });
+
+    // Enter & Escape in Link input
+    const linkInput = document.getElementById('bubble-link-url');
+    if (linkInput) {
+      linkInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyBubbleLink();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          hideBubbleToolbar();
+        }
+      });
+    }
+  }
+
+  // Dismiss bubble when clicking outside or pressing Escape
+  document.addEventListener('click', (e) => {
+    const tb = document.getElementById('blog-bubble-toolbar');
+    if (tb && tb.style.display !== 'none') {
+      if (!tb.contains(e.target) && !editor.contains(e.target)) {
+        hideBubbleToolbar();
+      }
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      hideBubbleToolbar();
+    }
+  });
+
+  // ── TOP EDITOR TOOLBAR ACTIONS (COMPATIBILITY) ─────────────────────
+  if (toolbar) {
+    toolbar.querySelectorAll('button[data-cmd]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const cmd = btn.getAttribute('data-cmd');
+        document.execCommand(cmd, false, null);
+        textarea.value = editor.innerHTML;
+        editor.focus();
+      });
+    });
+
+    toolbar.querySelectorAll('button[data-format]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const fmt = btn.getAttribute('data-format');
+        document.execCommand('formatBlock', false, `<${fmt}>`);
+        textarea.value = editor.innerHTML;
+        editor.focus();
+      });
+    });
+
+    // Top Toolbar Link & Unlink Buttons
+    document.getElementById('btn-blog-link')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const a = getSelectedBlogAnchor();
+      const sel = window.getSelection();
+      if (a) {
+        showBubbleToolbar('link', a);
+      } else if (sel && !sel.isCollapsed && editor.contains(sel.anchorNode)) {
+        window._bubbleSavedRange = sel.getRangeAt(0).cloneRange();
+        showBubbleToolbar('link', null);
+      } else {
+        editor.focus();
+        showToast('Right-click any word or select text to add a link.', 'info');
+      }
+    });
+
+    document.getElementById('btn-blog-unlink')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      unlinkBubbleLink();
+    });
+
+    // Toggle HTML Source Code view
+    const btnCode = document.getElementById('btn-blog-toggle-code');
+    if (btnCode) {
+      btnCode.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isCodeView = textarea.style.display !== 'none';
+        if (isCodeView) {
+          editor.innerHTML = textarea.value;
+          textarea.style.display = 'none';
+          editor.style.display = 'block';
+          btnCode.classList.remove('active');
+          btnCode.innerHTML = `<i class="fas fa-code"></i> <span>HTML</span>`;
+          editor.focus();
+        } else {
+          hideBubbleToolbar();
+          textarea.value = editor.innerHTML;
+          editor.style.display = 'none';
+          textarea.style.display = 'block';
+          btnCode.classList.add('active');
+          btnCode.innerHTML = `<i class="fas fa-eye"></i> <span>Visual</span>`;
+          textarea.focus();
+        }
+      });
+    }
+  }
+}
+
 function openBlogForm(b = null) {
   const today = new Date().toISOString().split('T')[0];
   const blogId = b ? (b.blog_id || b.id) : null;
+  const initialHtml = formatBlogContentForEditor(b?.content || '');
+
   openModal(b ? 'Edit Blog' : 'Add Blog', `
     <div class="form-group"><label>Title *</label><input id="b-title" value="${b?.title||''}" placeholder="Blog post title"></div>
     <div class="form-row">
@@ -1007,22 +1693,82 @@ function openBlogForm(b = null) {
     </div>
     <div class="form-group"><label>Cover / Banner Image</label>${createImageUpload('b-card', b?.card_image||b?.banner_image||'')}</div>
     <div class="form-group"><label>Short Overview / Excerpt (Optional)</label><textarea id="b-desc" rows="2" placeholder="Brief 1-2 sentence excerpt for cards...">${b?.description||''}</textarea></div>
-    <div class="form-group"><label>Full Article Content *</label><textarea id="b-content" rows="8" placeholder="Write or paste your article content here...">${b?.content||''}</textarea></div>
+    
+    <!-- Rich Text Blog Editor with Floating Bubble Toolbar -->
+    <div class="form-group">
+      <label style="display:flex;align-items:center;justify-content:space-between">
+        <span>Full Article Content *</span>
+        <span style="font-weight:normal;color:#64748b;font-size:11px"><i class="fas fa-mouse-pointer"></i> Right-click any word or select text to link</span>
+      </label>
+      <div class="blog-editor-wrapper" id="blog-editor-wrapper">
+        <div class="blog-editor-toolbar" id="blog-editor-toolbar" role="toolbar" aria-label="Blog Content Toolbar">
+          <div class="blog-toolbar-group">
+            <button type="button" class="blog-tool-btn" data-cmd="bold" title="Bold (Ctrl+B)"><i class="fas fa-bold"></i></button>
+            <button type="button" class="blog-tool-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i class="fas fa-italic"></i></button>
+            <button type="button" class="blog-tool-btn" data-cmd="underline" title="Underline (Ctrl+U)"><i class="fas fa-underline"></i></button>
+          </div>
+          <div class="blog-toolbar-divider"></div>
+          <div class="blog-toolbar-group">
+            <button type="button" class="blog-tool-btn blog-tool-btn-link" id="btn-blog-link" title="Insert / Edit Hyperlink (Ctrl+K)">
+              <i class="fas fa-link"></i> <span>Link</span>
+            </button>
+            <button type="button" class="blog-tool-btn" id="btn-blog-unlink" title="Remove Hyperlink" style="display:none">
+              <i class="fas fa-unlink"></i>
+            </button>
+          </div>
+          <div class="blog-toolbar-divider"></div>
+          <div class="blog-toolbar-group">
+            <button type="button" class="blog-tool-btn" data-format="h2" title="Heading 2">H2</button>
+            <button type="button" class="blog-tool-btn" data-format="h3" title="Heading 3">H3</button>
+            <button type="button" class="blog-tool-btn" data-format="p" title="Paragraph">¶</button>
+            <button type="button" class="blog-tool-btn" data-cmd="insertUnorderedList" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+            <button type="button" class="blog-tool-btn" data-cmd="insertOrderedList" title="Numbered List"><i class="fas fa-list-ol"></i></button>
+          </div>
+          <div class="blog-toolbar-divider"></div>
+          <div class="blog-toolbar-group" style="margin-left:auto">
+            <button type="button" class="blog-tool-btn" id="btn-blog-toggle-code" title="View / Edit HTML Source Code">
+              <i class="fas fa-code"></i> <span>HTML</span>
+            </button>
+          </div>
+        </div>
+        <div id="b-content-editor" class="blog-content-editor" contenteditable="true" spellcheck="true" placeholder="Write or paste your article content here..."></div>
+        <textarea id="b-content" class="blog-content-textarea" rows="8"></textarea>
+      </div>
+      <div class="blog-editor-hint">
+        <i class="fas fa-info-circle text-amber-500"></i>
+        <span><strong>Right-click on any word</strong> or select text to open the floating toolbar and add a link just to that word. Click an existing link to edit its URL or remove it.</span>
+      </div>
+    </div>
+
     <div class="modal-actions">
       <div>
-        ${blogId ? `<button type="button" class="btn-danger" onclick="deleteBlog(${blogId})"><i class="fas fa-trash-alt"></i> Delete Blog</button>` : ''}
+        ${blogId ? `<button type="button" class="btn-danger" onclick="deleteBlog('${blogId}')"><i class="fas fa-trash-alt"></i> Delete Blog</button>` : ''}
       </div>
       <div class="modal-actions-right">
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button type="button" class="btn-primary" onclick="saveBlog(${blogId || 'null'})"><i class="fas fa-save"></i> ${b ? 'Update' : 'Save'}</button>
+        <button type="button" class="btn-primary" onclick="saveBlog('${blogId || ''}')"><i class="fas fa-save"></i> ${b ? 'Update' : 'Save'}</button>
       </div>
     </div>`);
+
+  // Initialize Blog Editor interactions and safely set content
+  initBlogEditor(initialHtml);
 }
 
 window.editBlog = function(id) { const b = blogs.find(x => String(x.blog_id || x.id) === String(id)); if (b) openBlogForm(b); };
 
 window.saveBlog = async function(id) {
+  const blogId = (id && id !== 'null' && id !== 'undefined' && String(id).trim()) ? String(id).trim() : null;
   const cardImg = document.getElementById('img-url-b-card')?.value || '';
+  const editor = document.getElementById('b-content-editor');
+  const textarea = document.getElementById('b-content');
+
+  // Synchronize visual editor contents into the form payload
+  if (editor && editor.style.display !== 'none') {
+    textarea.value = editor.innerHTML;
+  }
+
+  const contentVal = textarea ? textarea.value.trim() : '';
+
   const body = {
     title: document.getElementById('b-title').value.trim(),
     category: document.getElementById('b-category')?.value.trim() || 'Travel Guide',
@@ -1030,21 +1776,47 @@ window.saveBlog = async function(id) {
     card_image: cardImg,
     banner_image: cardImg,
     description: document.getElementById('b-desc')?.value.trim() || '',
-    content: document.getElementById('b-content').value.trim(),
+    content: contentVal,
   };
   if (!body.title) { showToast('Title required', 'error'); return; }
-  const res = id ? await api('PUT', `/blogs/${id}`, body) : await api('POST', '/blogs', body);
-  if (res?.error) { showToast(res.error, 'error'); return; }
-  showToast(id ? 'Blog updated!' : 'Blog added!', 'success');
-  closeModal(); loadBlogs(); loadDashboard();
+
+  const saveBtn = document.querySelector('.modal-actions .btn-primary');
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+  }
+
+  try {
+    const res = blogId ? await api('PUT', `/blogs/${blogId}`, body) : await api('POST', '/blogs', body);
+    if (res?.error) {
+      showToast(res.error, 'error');
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<i class="fas fa-save"></i> ${blogId ? 'Update' : 'Save'}`;
+      }
+      return;
+    }
+    showToast(blogId ? 'Blog updated successfully!' : 'Blog added successfully!', 'success');
+    closeModal();
+    await loadBlogs();
+    loadDashboard();
+  } catch (err) {
+    showToast('Failed to save blog: ' + err.message, 'error');
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = `<i class="fas fa-save"></i> ${blogId ? 'Update' : 'Save'}`;
+    }
+  }
 };
 
 window.deleteBlog = async function(id) {
+  const blogId = (id && id !== 'null' && id !== 'undefined') ? String(id).trim() : null;
+  if (!blogId) return;
   if (!confirm('Are you sure you want to delete this blog?')) return;
-  const res = await api('DELETE', `/blogs/${id}`);
+  const res = await api('DELETE', `/blogs/${blogId}`);
   if (res?.error) { showToast(res.error, 'error'); return; }
   showToast('Blog deleted', 'success');
-  closeModal(); loadBlogs(); loadDashboard();
+  closeModal(); await loadBlogs(); loadDashboard();
 };
 
 document.getElementById('btn-add-blog')?.addEventListener('click', () => openBlogForm());

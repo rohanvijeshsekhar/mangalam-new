@@ -42,3 +42,7 @@ desktop.ini
 # Build outputs
 dist/
 build/
+
+# Scratch scripts
+scratch/
+*.pdf

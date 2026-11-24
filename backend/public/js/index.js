@@ -63,7 +63,7 @@ async function loadDestinations() {
         </li>`;
       destList.innerHTML = emptySlide.repeat(4);
     } else if (gridEl) {
-      gridEl.innerHTML = '<p class="col-span-full text-center text-gray-400 py-16">No destinations available at the moment.</p>';
+      gridEl.innerHTML = '<p class="col-span-full text-center text-gray-600 py-16">No destinations available at the moment.</p>';
     }
     return;
   }

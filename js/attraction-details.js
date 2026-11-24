@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     root.innerHTML = `
       <div class="container mx-auto px-4 py-24 text-center font-dm-sans">
         <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
-          <i class="fa-solid fa-camera text-3xl text-gray-400"></i>
+          <i class="fa-solid fa-camera text-3xl text-gray-600"></i>
         </div>
         <h2 class="text-2xl font-bold font-[Quicksand] text-gray-800 mb-2">Attraction Not Found</h2>
         <p class="text-gray-500 max-w-md mx-auto mb-6">The requested attraction or place could not be found. Please check back later or explore other attractions.</p>
@@ -40,12 +40,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Experience badge color mappings
   const expColors = {
-    'Adventure': 'bg-amber-500 text-white shadow-amber-500/30',
+    'Adventure': 'bg-amber-800 text-white shadow-amber-800/30',
     'Cultural':  'bg-indigo-600 text-white shadow-indigo-600/30',
     'Luxury':    'bg-yellow-400 text-slate-900 shadow-yellow-400/30',
-    'Sightseeing':'bg-emerald-600 text-white shadow-emerald-600/30',
-    'Nature':    'bg-green-600 text-white shadow-green-600/30',
-    'Family':    'bg-purple-600 text-white shadow-purple-600/30',
+    'Sightseeing':'bg-emerald-700 text-white shadow-emerald-700/30',
+    'Nature':    'bg-green-700 text-white shadow-green-700/30',
+    'Family':    'bg-purple-700 text-white shadow-purple-700/30',
   };
   const badgeColor = expColors[expType] || 'bg-red-600 text-white shadow-red-600/30';
 
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
               </div>
               <div>
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider font-dm-sans block mb-0.5">Experience Type</span>
+                <span class="text-[11px] font-bold text-gray-600 uppercase tracking-wider font-dm-sans block mb-0.5">Experience Type</span>
                 <span class="text-base font-extrabold text-gray-900 font-[Quicksand]">${expType}</span>
               </div>
             </div>
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <i class="fa-regular fa-clock"></i>
               </div>
               <div>
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider font-dm-sans block mb-0.5">Duration</span>
+                <span class="text-[11px] font-bold text-gray-600 uppercase tracking-wider font-dm-sans block mb-0.5">Duration</span>
                 <span class="text-base font-extrabold text-gray-900 font-[Quicksand]">${duration}</span>
               </div>
             </div>
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <i class="fa-solid fa-map-location-dot"></i>
               </div>
               <div>
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider font-dm-sans block mb-0.5">Location</span>
+                <span class="text-[11px] font-bold text-gray-600 uppercase tracking-wider font-dm-sans block mb-0.5">Location</span>
                 <span class="text-base font-extrabold text-gray-900 font-[Quicksand] truncate">${dest}</span>
               </div>
             </div>
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             ${price ? `
               <div class="border-b border-gray-100 pb-6">
-                <span class="text-xs uppercase tracking-wider text-gray-400 font-bold font-dm-sans block mb-1">Starting Price</span>
+                <span class="text-xs uppercase tracking-wider text-gray-600 font-bold font-dm-sans block mb-1">Starting Price</span>
                 <div class="text-4xl font-extrabold text-gray-900 font-[Quicksand]">${price}</div>
                 <span class="text-sm text-gray-500 font-dm-sans">per person</span>
               </div>

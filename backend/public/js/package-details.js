@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     root.innerHTML = `
       <div class="container mx-auto px-4 py-24 text-center font-dm-sans">
         <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
-          <i class="fa-solid fa-suitcase text-3xl text-gray-400"></i>
+          <i class="fa-solid fa-suitcase text-3xl text-gray-600"></i>
         </div>
         <h2 class="text-2xl font-bold font-[Quicksand] text-gray-800 mb-2">Package Not Found</h2>
         <p class="text-gray-500 max-w-md mx-auto mb-6">The requested package could not be found. Please check back later or explore other packages.</p>
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <i class="fa-regular fa-calendar-days"></i>
               </div>
               <div>
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider font-dm-sans block mb-0.5">Duration</span>
+                <span class="text-[11px] font-bold text-gray-600 uppercase tracking-wider font-dm-sans block mb-0.5">Duration</span>
                 <span class="text-base font-extrabold text-gray-900 font-[Quicksand]">
                   ${days ? `${days} Days` : ''}${nights ? ` / ${nights} N` : ''}${!days && !nights ? 'Flexible' : ''}
                 </span>
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <i class="fa-solid fa-hotel"></i>
               </div>
               <div>
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider font-dm-sans block mb-0.5">Hotel Type</span>
+                <span class="text-[11px] font-bold text-gray-600 uppercase tracking-wider font-dm-sans block mb-0.5">Hotel Type</span>
                 <span class="text-base font-extrabold text-gray-900 font-[Quicksand]">
                   ${d.hotel_type || '4 Star Hotel'}
                 </span>
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <i class="fa-solid fa-camera"></i>
               </div>
               <div>
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider font-dm-sans block mb-0.5">Sightseeing</span>
+                <span class="text-[11px] font-bold text-gray-600 uppercase tracking-wider font-dm-sans block mb-0.5">Sightseeing</span>
                 <span class="text-base font-extrabold text-gray-900 font-[Quicksand]">
                   ${d.activities_count || '5 Included'}
                 </span>
@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             ${price ? `
               <div class="border-b border-gray-100 pb-6">
-                <span class="text-xs uppercase tracking-wider text-gray-400 font-bold font-dm-sans block mb-1">Package Price</span>
+                <span class="text-xs uppercase tracking-wider text-gray-600 font-bold font-dm-sans block mb-1">Package Price</span>
                 <div class="text-4xl font-extrabold text-gray-900 font-[Quicksand]">${price}</div>
                 <span class="text-sm text-gray-500 font-dm-sans">per person inclusive of all taxes</span>
               </div>

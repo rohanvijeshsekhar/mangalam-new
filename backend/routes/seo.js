@@ -3,6 +3,44 @@ const store   = require('../db/store');
 const { verifyToken } = require('./auth');
 const router  = express.Router();
 
+let _seoCache = null;
+let _seoCacheAt = 0;
+let _seoInflight = null;
+const SEO_CACHE_TTL_MS = 60 * 1000;
+
+function invalidateSeoCache() {
+  _seoCache = null;
+  _seoCacheAt = 0;
+}
+
+async function getCachedSeoEntries(timeoutMs = 300) {
+  const now = Date.now();
+  if (_seoCache && (now - _seoCacheAt) < SEO_CACHE_TTL_MS) {
+    return _seoCache;
+  }
+  if (!_seoInflight) {
+    _seoInflight = store.getAll('seo')
+      .then((rows) => {
+        _seoCache = (rows || []).map(map);
+        _seoCacheAt = Date.now();
+        return _seoCache;
+      })
+      .catch(() => _seoCache || [])
+      .finally(() => { _seoInflight = null; });
+  }
+  if (!timeoutMs) return _seoInflight;
+  return Promise.race([
+    _seoInflight,
+    new Promise((resolve) => setTimeout(() => {
+      if (!_seoCache) {
+        _seoCache = [];
+        _seoCacheAt = Date.now();
+      }
+      resolve(_seoCache);
+    }, timeoutMs))
+  ]);
+}
+
 const map = s => ({
   id:               s.id,
   page_route:       s.page_route || '/',
@@ -81,7 +119,7 @@ function escapeHtml(str) {
 async function findSeoMatch(rawRoute) {
   try {
     const normalizedRoute = normalizePageRoute(rawRoute).toLowerCase();
-    const all = (await store.getAll('seo')).map(map);
+    const all = await getCachedSeoEntries(100);
     // Only match SEO configs that are Active (Inactive configs are blocked)
     const activeEntries = all.filter(s => s.status === 'Active');
 
@@ -139,6 +177,54 @@ async function findSeoMatch(rawRoute) {
         if (sNorm.includes('?')) return false;
         return sNorm.split('?')[0].replace(/\.html$/i, '') === base;
       });
+    }
+
+    // 5. Automatic dynamic SEO fallback for blogs (uses Admin Short Overview / Excerpt)
+    if (!matched && (normalizedRoute.includes('blog-details') || normalizedRoute.startsWith('/blog'))) {
+      try {
+        const queryIdx = rawRoute.indexOf('?');
+        const queryStr = queryIdx !== -1 ? rawRoute.slice(queryIdx + 1) : '';
+        const qParams = new URLSearchParams(queryStr);
+        const slugParam = (qParams.get('slug') || '').trim();
+        const idParam = (qParams.get('id') || '').trim();
+        const targetKey = (slugParam || idParam).toLowerCase();
+
+        if (targetKey) {
+          const allBlogs = await store.getAll('blogs');
+          const blog = allBlogs.find(b => {
+            const bSlug = String(b.slug_url || b.slug || '').toLowerCase().trim();
+            const bId = String((b.id !== undefined && b.id !== null) ? b.id : (b.blog_id || '')).trim();
+            return (slugParam && bSlug === slugParam.toLowerCase()) ||
+                   (idParam && bId === idParam) ||
+                   bSlug === targetKey ||
+                   bId === targetKey;
+          });
+
+          if (blog) {
+            const plainText = blog.content ? blog.content.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim() : '';
+            const desc = (blog.description || blog.meta_description || plainText.slice(0, 180) || '').trim();
+            const title = blog.title || 'Travel Blog';
+            const slug = blog.slug_url || blog.slug || blog.id || targetKey;
+            const bannerImg = blog.banner_image || blog.card_image || 'https://mangalamtravel.com/assets/images/banner-img.webp';
+
+            matched = {
+              id: `blog-${blog.id || blog.blog_id || 0}`,
+              page_route: rawRoute,
+              page_name: title,
+              meta_title: title,
+              meta_description: desc,
+              meta_keywords: `${blog.category || 'Travel Guide'}, ${title}, Mangalam Travel`,
+              canonical_url: `https://mangalamtravel.com/blog-details.html?slug=${encodeURIComponent(slug)}`,
+              og_image: toAbsoluteUrl(bannerImg),
+              robots: 'index, follow',
+              status: 'Active',
+              created_at: blog.created_at || new Date().toISOString()
+            };
+          }
+        }
+      } catch (err) {
+        console.warn('[SEO] Failed to resolve dynamic blog SEO:', err.message);
+      }
     }
 
     return matched || null;
@@ -407,6 +493,7 @@ router.post('/', verifyToken, async (req, res) => {
     }
 
     const mapped = map(doc);
+    invalidateSeoCache();
     try { syncSeoToStaticHtml(mapped); } catch (e) { console.warn('[SEO] sync error:', e); }
 
     res.status(201).json({ success: true, message: existing ? 'SEO configuration updated!' : 'SEO configuration added!', seo: mapped });
@@ -444,6 +531,7 @@ router.put('/:id', verifyToken, async (req, res) => {
     if (!doc) return res.status(404).json({ error: 'SEO record not found' });
 
     const mapped = map(doc);
+    invalidateSeoCache();
     try { syncSeoToStaticHtml(mapped); } catch (e) { console.warn('[SEO] sync error:', e); }
 
     res.json({ success: true, message: 'SEO configuration updated!', seo: mapped });
@@ -457,6 +545,7 @@ router.put('/:id', verifyToken, async (req, res) => {
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
     await store.remove('seo', req.params.id);
+    invalidateSeoCache();
     res.json({ success: true, message: 'SEO record deleted!' });
   } catch (e) {
     console.error('[SEO Delete Error]:', e);
@@ -465,6 +554,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
 });
 
 router.findSeoMatch = findSeoMatch;
+router.warmSeoCache = () => getCachedSeoEntries(0);
 router.injectSeoIntoHtml = injectSeoIntoHtml;
 router.toAbsoluteUrl = toAbsoluteUrl;
 router.syncSeoToStaticHtml = syncSeoToStaticHtml;

@@ -45,10 +45,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderTickets(list, destId) {
     const grid = document.getElementById('tickets-grid');
     if (!grid) return;
-    if (!list || !list.length) { grid.innerHTML = '<p class="col-span-full text-center text-gray-400 py-20">No tickets available.</p>'; return; }
+    if (!list || !list.length) { grid.innerHTML = '<p class="col-span-full text-center text-gray-600 py-20">No tickets available.</p>'; return; }
     let filtered = list;
     if (destId) filtered = list.filter(t => String(t.destination_id) === String(destId));
-    if (!filtered.length) { grid.innerHTML = '<p class="col-span-full text-center text-gray-400 py-20">No tickets for this destination.</p>'; return; }
+    if (!filtered.length) { grid.innerHTML = '<p class="col-span-full text-center text-gray-600 py-20">No tickets for this destination.</p>'; return; }
     grid.innerHTML = filtered.map(t => {
       const title = t.title || t.name || '';
       const slug  = t.slug_url || t.slug || '';

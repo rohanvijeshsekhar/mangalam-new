@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="author" content="Mangalam Travel & Tours" />
     <meta name="publisher" content="Mangalam Travel & Tours">
@@ -181,6 +181,25 @@
                     width: 2.5rem;
                     height: 2.5rem;
                 }
+            }
+
+            /* Blog Article Hyperlinks (matches admin bubble toolbar hyperlinks) */
+            .blog-article-link,
+            .blog-link {
+                color: #dc2626 !important;
+                font-weight: 600 !important;
+                text-decoration: underline !important;
+                text-underline-offset: 3px;
+                text-decoration-thickness: 1.5px;
+                transition: all 0.15s ease-in-out;
+                cursor: pointer;
+            }
+            .blog-article-link:hover,
+            .blog-link:hover {
+                color: #b91c1c !important;
+                text-decoration-color: #b91c1c !important;
+                background-color: rgba(220, 38, 38, 0.08);
+                border-radius: 3px;
             }
 
             /* Component Styles - Cart, Customize, MobileNav, FixedButton */
@@ -920,6 +939,25 @@
             .c-inside-alert {
                 display: none;
             }
+
+            /* Blog Article Hyperlinks Styling */
+            .prose a,
+            .blog-article-link,
+            .prose a:visited {
+                color: #dc2626 !important;
+                font-weight: 600 !important;
+                text-decoration: underline !important;
+                text-underline-offset: 3px !important;
+                text-decoration-thickness: 1.5px !important;
+                transition: color 0.15s ease, text-decoration-color 0.15s ease !important;
+                word-break: break-word !important;
+            }
+            .prose a:hover,
+            .blog-article-link:hover,
+            .prose a:focus {
+                color: #991b1b !important;
+                text-decoration-color: #991b1b !important;
+            }
         </style>
         <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
         <script>
@@ -1161,9 +1199,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="./js/api.js?v=20260817_1140"></script>
-    <script src="./js/render.js?v=20260815"></script>
-    <script src="./js/blog-details.js?v=20260815"></script>
+    <script src="./js/api.js?v=20261027_linkfix"></script>
+    <script src="./js/render.js?v=20261027_linkfix"></script>
+    <script src="./js/blog-details.js?v=20261027_linkfix"></script>
     <script>AOS.init({once:true,duration:700});</script>
 </body>
 </html>

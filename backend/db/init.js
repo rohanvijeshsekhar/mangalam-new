@@ -61,13 +61,17 @@ db.exec(`
   );
 
   CREATE TABLE IF NOT EXISTS blogs (
-    blog_id    INTEGER PRIMARY KEY AUTOINCREMENT,
-    title      TEXT    NOT NULL,
-    slug_url   TEXT    UNIQUE NOT NULL,
-    card_image TEXT    DEFAULT '',
-    date       TEXT    DEFAULT '',
-    content    TEXT    DEFAULT '',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    blog_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    title        TEXT    NOT NULL,
+    slug_url     TEXT    UNIQUE NOT NULL,
+    card_image   TEXT    DEFAULT '',
+    banner_image TEXT    DEFAULT '',
+    date         TEXT    DEFAULT '',
+    author       TEXT    DEFAULT 'Mangalam Editorial',
+    category     TEXT    DEFAULT 'Travel Guide',
+    description  TEXT    DEFAULT '',
+    content      TEXT    DEFAULT '',
+    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS testimonials (
