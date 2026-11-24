@@ -26,7 +26,61 @@
     RewriteRule ^package\.php$ /holiday-package.html [R=301,L,QSD]
     RewriteRule ^packages$ /holiday-package.html [R=301,L]
     RewriteRule ^our-teams$ /about.html [R=301,L]
+
+    # ── Asset & Script routing fallback for nested path URLs ──
+    RewriteRule ^.+/(js|assets|uploads)/(.*)$ /$1/$2 [L]
+
+    # ── 1. 301 Permanent Redirects: Old .html?slug= URLs -> New Clean URLs ──
+    # Package Details
+    RewriteCond %{THE_REQUEST} \s/+package-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^package-details\.html$ /package-details/%2? [R=301,L]
+    RewriteCond %{THE_REQUEST} \s/+package-details\.html\?([^\s&]*&)?id=([^&\s]+) [NC]
+    RewriteRule ^package-details\.html$ /package-details/%2? [R=301,L]
+
+    # Destination Packages
+    RewriteCond %{THE_REQUEST} \s/+packages\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^packages\.html$ /packages/%2? [R=301,L]
+
+    # Attraction Details
+    RewriteCond %{THE_REQUEST} \s/+attraction-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^attraction-details\.html$ /attraction-details/%2? [R=301,L]
+
+    # Activity Details
+    RewriteCond %{THE_REQUEST} \s/+activity-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^activity-details\.html$ /activity-details/%2? [R=301,L]
+
+    # Ticket Details
+    RewriteCond %{THE_REQUEST} \s/+ticket-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^ticket-details\.html$ /ticket-details/%2? [R=301,L]
+    RewriteCond %{THE_REQUEST} \s/+ticket-details\.html\?([^\s&]*&)?id=([^&\s]+) [NC]
+    RewriteRule ^ticket-details\.html$ /ticket-details/%2? [R=301,L]
+
+    # Blog Details
+    RewriteCond %{THE_REQUEST} \s/+blog-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^blog-details\.html$ /blog-details/%2? [R=301,L]
+
+    # Fixed Departure Details
+    RewriteCond %{THE_REQUEST} \s/+fixed-departure-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^fixed-departure-details\.html$ /fixed-departure-details/%2? [R=301,L]
+
+    # ── 2. Clean URL Internal Rewrites (serve handler without changing browser URL) ──
+    RewriteRule ^package[-_]details/([^/]+)/?$ /package-details.html?slug=$1 [L,QSA]
+    RewriteRule ^packages/([^/]+)/?$ /packages.html?slug=$1 [L,QSA]
+    RewriteRule ^attraction[-_]details/([^/]+)/?$ /attraction-details.html?slug=$1 [L,QSA]
+    RewriteRule ^activity[-_]details/([^/]+)/?$ /activity-details.html?slug=$1 [L,QSA]
+    RewriteRule ^ticket[-_]details/([^/]+)/?$ /ticket-details.html?slug=$1 [L,QSA]
+    RewriteRule ^blog[-_]details/([^/]+)/?$ /blog-details.html?slug=$1 [L,QSA]
+    RewriteRule ^fixed[-_]departure[-_]details/([^/]+)/?$ /fixed-departure-details.html?slug=$1 [L,QSA]
+
+    # ── 3. Extensionless static HTML files (/about -> about.html) ──
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+    RewriteRule ^([^/]+)/?$ /$1.html [L]
 </IfModule>
+
+# Custom 404 Error Document
+ErrorDocument 404 /404.html
 
 # Prevent directory index listing
 Options -Indexes
@@ -47,7 +101,7 @@ RedirectMatch 404 (?i)\.sqlite$
 
 # Enable GZIP / Deflate Output Compression
 <IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json image/svg+xml font/woff2
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json image/svg+xml
 </IfModule>
 
 # Browser Caching Rules for Static Assets
@@ -58,21 +112,10 @@ RedirectMatch 404 (?i)\.sqlite$
     ExpiresByType image/gif "access plus 1 year"
     ExpiresByType image/png "access plus 1 year"
     ExpiresByType image/webp "access plus 1 year"
-    ExpiresByType image/avif "access plus 1 year"
     ExpiresByType image/svg+xml "access plus 1 year"
-    ExpiresByType font/woff2 "access plus 1 year"
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType application/javascript "access plus 1 month"
     ExpiresByType application/x-javascript "access plus 1 month"
-</IfModule>
-
-<IfModule mod_headers.c>
-    <FilesMatch "\.(jpg|jpeg|png|gif|webp|avif|svg|woff2|ico|css|js)$">
-        Header set Cache-Control "public, max-age=2592000"
-    </FilesMatch>
-    <FilesMatch "\.(html|htm)$">
-        Header set Cache-Control "no-cache"
-    </FilesMatch>
 </IfModule>
 
 # PHP Execution & Limit Tuning for Hostinger

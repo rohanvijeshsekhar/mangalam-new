@@ -27,6 +27,9 @@
     RewriteRule ^packages$ /holiday-package.html [R=301,L]
     RewriteRule ^our-teams$ /about.html [R=301,L]
 
+    # ── Asset & Script routing fallback for nested path URLs ──
+    RewriteRule ^.+/(js|assets|uploads)/(.*)$ /$1/$2 [L]
+
     # ── 1. 301 Permanent Redirects: Old .html?slug= URLs -> New Clean URLs ──
     # Package Details
     RewriteCond %{THE_REQUEST} \s/+package-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
@@ -61,13 +64,13 @@
     RewriteRule ^fixed-departure-details\.html$ /fixed-departure-details/%2? [R=301,L]
 
     # ── 2. Clean URL Internal Rewrites (serve handler without changing browser URL) ──
-    RewriteRule ^package-details/([^/]+)/?$ /package-details.html?slug=$1 [L,QSA]
+    RewriteRule ^package[-_]details/([^/]+)/?$ /package-details.html?slug=$1 [L,QSA]
     RewriteRule ^packages/([^/]+)/?$ /packages.html?slug=$1 [L,QSA]
-    RewriteRule ^attraction-details/([^/]+)/?$ /attraction-details.html?slug=$1 [L,QSA]
-    RewriteRule ^activity-details/([^/]+)/?$ /activity-details.html?slug=$1 [L,QSA]
-    RewriteRule ^ticket-details/([^/]+)/?$ /ticket-details.html?slug=$1 [L,QSA]
-    RewriteRule ^blog-details/([^/]+)/?$ /blog-details.html?slug=$1 [L,QSA]
-    RewriteRule ^fixed-departure-details/([^/]+)/?$ /fixed-departure-details.html?slug=$1 [L,QSA]
+    RewriteRule ^attraction[-_]details/([^/]+)/?$ /attraction-details.html?slug=$1 [L,QSA]
+    RewriteRule ^activity[-_]details/([^/]+)/?$ /activity-details.html?slug=$1 [L,QSA]
+    RewriteRule ^ticket[-_]details/([^/]+)/?$ /ticket-details.html?slug=$1 [L,QSA]
+    RewriteRule ^blog[-_]details/([^/]+)/?$ /blog-details.html?slug=$1 [L,QSA]
+    RewriteRule ^fixed[-_]departure[-_]details/([^/]+)/?$ /fixed-departure-details.html?slug=$1 [L,QSA]
 
     # ── 3. Extensionless static HTML files (/about -> about.html) ──
     RewriteCond %{REQUEST_FILENAME} !-d

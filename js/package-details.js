@@ -13,11 +13,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (Array.isArray(packages) && packages.length > 0) {
     if (rawParam) {
       const lower = rawParam.toLowerCase();
+      const slugHyphen = lower.replace(/\s+/g, '-');
       pkg = packages.find(p => 
         String(p.slug_url || p.slug || '').toLowerCase() === lower ||
+        String(p.slug_url || p.slug || '').toLowerCase() === slugHyphen ||
         String(p.package_id || p.id || '') === rawParam ||
         String(p.package_name || p.title || '').toLowerCase() === lower ||
-        String(p.package_name || p.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-') === lower
+        String(p.package_name || p.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-') === slugHyphen ||
+        String(p.package_name || p.title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim() === lower
       );
     }
     if (!pkg && rawParam) {
@@ -25,7 +28,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       const direct = await MT.apiGet(`/api/packages/${encodeURIComponent(rawParam)}`);
       if (direct && (direct.package_id || direct.id || direct.package_name)) pkg = direct;
     }
-    // No unsafe fallback to packages[0] — show 404 when requested slug is missing
+    // Safe fallback: if page was visited without any slug/id parameter, show first package
+    if (!pkg && !rawParam && packages.length > 0) {
+      pkg = packages[0];
+    }
   }
 
   if (!pkg) {
@@ -45,19 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const d = detail || pkg;
 
     const title = d.package_name || d.title || d.name || '';
-  const canonicalUrl = `https://mangalamtravel.com/package-details/${encodeURIComponent(d.slug_url || d.slug || rawParam)}`;
-  const seoTitle = `${title} — Holiday Package | Mangalam Travel & Tours`;
-  const seoDesc = (d.meta_description || d.description || d.overview || `Explore ${title} with Mangalam Travel & Tours. Complete itinerary, hotel details, and best prices.`).replace(/<[^>]*>?/gm, '').slice(0, 160);
-  if (typeof MT.setDetailSeo === 'function') {
-    MT.setDetailSeo({
-      title: seoTitle,
-      description: seoDesc,
-      canonicalUrl: canonicalUrl,
-      ogImage: bannerList[0] || d.card_image || '/assets/images/logo-color.png'
-    });
-  } else {
-    document.title = seoTitle;
-  }
 
   
   // Extract banner images list (up to 4 images)
@@ -71,6 +64,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     bannerList = [fallback];
   }
   bannerList = bannerList.slice(0, 4); // max 4 images
+
+  // Inject dynamic SEO metadata with clean canonical URL (after bannerList is safely initialized)
+  const canonicalUrl = `https://mangalamtravel.com/package-details/${encodeURIComponent(d.slug_url || d.slug || rawParam)}`;
+  const seoTitle = `${title} — Holiday Package | Mangalam Travel & Tours`;
+  const seoDesc = (d.meta_description || d.description || d.overview || `Explore ${title} with Mangalam Travel & Tours. Complete itinerary, hotel details, and best prices.`).replace(/<[^>]*>?/gm, '').slice(0, 160);
+  if (typeof MT.setDetailSeo === 'function') {
+    MT.setDetailSeo({
+      title: seoTitle,
+      description: seoDesc,
+      canonicalUrl: canonicalUrl,
+      ogImage: bannerList[0] || d.card_image || '/assets/images/logo-color.png'
+    });
+  } else {
+    document.title = seoTitle;
+  }
 
   const price      = d.amount || d.price ? `₹ ${Number(d.amount || d.price).toLocaleString('en-IN')}` : '';
   const nights     = d.nights || '';

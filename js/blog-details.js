@@ -18,9 +18,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const allBlogs = await MT.apiGet('/api/blogs') || [];
     
     // Find matching post
+    const paramLower = param.toLowerCase();
+    const paramHyphen = paramLower.replace(/\s+/g, '-');
     let blog = allBlogs.find(b => 
-      String(b.slug_url || b.slug || '').toLowerCase() === param.toLowerCase() ||
-      String(b.id || b.blog_id || '') === param
+      String(b.slug_url || b.slug || '').toLowerCase() === paramLower ||
+      String(b.slug_url || b.slug || '').toLowerCase() === paramHyphen ||
+      String(b.id || b.blog_id || '') === param ||
+      String(b.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-') === paramHyphen
     );
 
     // If not found in list, attempt direct fetch
@@ -49,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Canonical & Social sharing absolute URL
     const slugVal = blog.slug_url || blog.slug || param || '';
-    const blogCanonical = `https://mangalamtravel.com/blog-details.html?slug=${encodeURIComponent(slugVal)}`;
+    const blogCanonical = `https://mangalamtravel.com/blog-details/${encodeURIComponent(slugVal)}`;
     const absBannerImg = (bannerImg.startsWith('http://') || bannerImg.startsWith('https://'))
       ? bannerImg
       : `https://mangalamtravel.com/${bannerImg.replace(/^\.?\//, '')}`;
