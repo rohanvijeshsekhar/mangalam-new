@@ -109,6 +109,20 @@ async function findSeoMatch(rawRoute) {
       }
     }
 
+    // 2b. Clean URL path matching (e.g. /packages/dubai or /package-details/xyz) against /packages.html?slug=dubai or vice versa
+    if (!matched) {
+      const cleanDynamicMatch = normalizedRoute.match(/^\/(package-details|packages|attraction-details|activity-details|ticket-details|blog-details|fixed-departure-details)\/([^/?#]+)/);
+      if (cleanDynamicMatch) {
+        const [, section, cleanSlug] = cleanDynamicMatch;
+        matched = activeEntries.find(s => {
+          const sNorm = normalizePageRoute(s.page_route).toLowerCase();
+          if (sNorm === normalizedRoute) return true;
+          if (sNorm.includes(`/${section}.html?slug=${cleanSlug}`) || sNorm.includes(`/${section}?slug=${cleanSlug}`)) return true;
+          return false;
+        });
+      }
+    }
+
     // 3. Match root / homepage
     if (!matched && normalizedRoute === '/') {
       matched = activeEntries.find(s => {
@@ -198,7 +212,7 @@ function injectSeoIntoHtml(html, entry) {
     }
   }
 
-  // Canonical
+  // Canonical, OG:URL, Twitter:URL
   if (canonical) {
     if (/<link\s+[^>]*rel=["']canonical["'][^>]*>/i.test(content)) {
       content = content.replace(/<link\s+[^>]*rel=["']canonical["'][^>]*>/i, () => '<link rel="canonical" href="' + escapeAttr(canonical) + '" />');
@@ -207,9 +221,13 @@ function injectSeoIntoHtml(html, entry) {
     }
     if (/<meta\s+[^>]*property=["']og:url["'][^>]*>/i.test(content)) {
       content = content.replace(/<meta\s+[^>]*property=["']og:url["'][^>]*>/i, () => '<meta property="og:url" content="' + escapeAttr(canonical) + '">');
+    } else {
+      content = content.replace(/<\/head>/i, '    <meta property="og:url" content="' + escapeAttr(canonical) + '">\n</head>');
     }
     if (/<meta\s+[^>]*name=["']twitter:url["'][^>]*>/i.test(content)) {
       content = content.replace(/<meta\s+[^>]*name=["']twitter:url["'][^>]*>/i, () => '<meta name="twitter:url" content="' + escapeAttr(canonical) + '">');
+    } else {
+      content = content.replace(/<\/head>/i, '    <meta name="twitter:url" content="' + escapeAttr(canonical) + '">\n</head>');
     }
   }
 

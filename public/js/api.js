@@ -86,9 +86,80 @@ function slugify(text) {
 }
 
 /** Read URL query param */
+function getSlugFromUrl() {
+  const pathname = window.location.pathname.replace(/\/+$/, '');
+  const segments = pathname.split('/').filter(Boolean);
+  const dynamicSections = [
+    'package-details', 'packages', 'attraction-details', 
+    'activity-details', 'ticket-details', 'blog-details', 
+    'fixed-departure-details'
+  ];
+  if (segments.length >= 2 && dynamicSections.includes(segments[0])) {
+    return decodeURIComponent(segments[1]);
+  }
+  return null;
+}
+
 function qParam(name) {
+  if (name === 'slug' || name === 'id' || name === 'package_id') {
+    const pathSlug = getSlugFromUrl();
+    if (pathSlug) return pathSlug;
+  }
   return new URLSearchParams(window.location.search).get(name);
 }
+
+function setDetailSeo({ title, description, canonicalUrl, ogImage, keywords }) {
+  if (title) {
+    document.title = title;
+    setMeta('title', 'name', title);
+    setMeta('og:title', 'property', title);
+    setMeta('twitter:title', 'name', title);
+  }
+  if (description) {
+    const cleanDesc = description.replace(/<[^>]*>?/gm, '').slice(0, 160);
+    setMeta('description', 'name', cleanDesc);
+    setMeta('og:description', 'property', cleanDesc);
+    setMeta('twitter:description', 'name', cleanDesc);
+  }
+  if (keywords) {
+    setMeta('keywords', 'name', keywords);
+  }
+  if (canonicalUrl) {
+    setCanonical(canonicalUrl);
+    setMeta('og:url', 'property', canonicalUrl);
+    setMeta('twitter:url', 'name', canonicalUrl);
+  }
+  if (ogImage) {
+    const absImg = ogImage.startsWith('http') ? ogImage : `${window.location.origin}/${ogImage.replace(/^\.?\//, '')}`;
+    setMeta('og:image', 'property', absImg);
+    setMeta('og:image:secure_url', 'property', absImg);
+    setMeta('twitter:image', 'name', absImg);
+    setMeta('twitter:card', 'name', 'summary_large_image');
+  }
+}
+
+function setMeta(nameOrProperty, attr, content) {
+  if (!content) return;
+  let el = document.querySelector(`meta[${attr}="${nameOrProperty}"]`);
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, nameOrProperty);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+}
+
+function setCanonical(href) {
+  if (!href) return;
+  let el = document.querySelector('link[rel="canonical"]');
+  if (!el) {
+    el = document.createElement('link');
+    el.setAttribute('rel', 'canonical');
+    document.head.appendChild(el);
+  }
+  el.setAttribute('href', href);
+}
+
 
 // ─── Notice bar loader (runs on every page) ──────────────────────────────────
 async function loadNotice() {
@@ -127,7 +198,7 @@ async function loadFooterLinks() {
       destLinksHTML = dests.map(d => {
         const label = d.footer_title || d.footer_label || `${d.destination_name || d.name} Holiday Packages`;
         const slug = d.slug_url || d.slug || (d.destination_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        const url = slug ? `packages.html?slug=${encodeURIComponent(slug)}&type=package` : 'packages.html';
+        const url = slug ? `/packages/${encodeURIComponent(slug)}` : '/packages.html';
         return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">${label}</a>`;
       }).join('');
     }
@@ -139,7 +210,7 @@ async function loadFooterLinks() {
         const label = p.footer_title || p.footer_label || p.package_name || p.title || 'Holiday Package';
         const slug = p.slug_url || p.slug || (p.package_name || p.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
         const pkgId = p.package_id || p.id || '';
-        const url = slug ? `package-details.html?slug=${encodeURIComponent(slug)}&id=${encodeURIComponent(pkgId)}` : `package-details.html?id=${encodeURIComponent(pkgId)}`;
+        const url = slug ? `/package-details/${encodeURIComponent(slug)}` : `/package-details/${encodeURIComponent(pkgId)}`;
         return `<a href="${url}" class="block text-gray-300 hover:text-white transition-colors text-sm py-0.5">${label}</a>`;
       }).join('');
     }
@@ -1059,5 +1130,8 @@ if (document.readyState !== 'loading') {
 window.MT = {
   apiGet, apiPost, resolveImg, showSkeleton, showError,
   fmtPrice, truncate, slugify, qParam,
+    getSlug: getSlugFromUrl,
+    setDetailSeo,
+    setCanonical,
   loadHomePosters, loadHomeTestimonials, loadHomePartners, loadHomeGallery
 };

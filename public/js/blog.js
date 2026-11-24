@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const img = MT.resolveImg(imgStr) || './assets/images/banner-img.webp';
     const date = blog.date || '';
     const desc = blog.description || (blog.content ? blog.content.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim().slice(0, 110) + '...' : '');
-    const url = `blog-details.html?slug=${encodeURIComponent(slug)}`;
+    const url = `/blog-details/${encodeURIComponent(slug)}`;
     const category = blog.category || 'Travel Guide';
 
     return `

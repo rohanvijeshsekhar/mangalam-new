@@ -131,21 +131,51 @@ app.get(['/', '/index.html', '/index.php'], async (req, res) => {
   }
 });
 
-// 2. HTML Page Router with dynamic SEO injection from database
-app.get('/:page.html', async (req, res, next) => {
-  const pageName = `${req.params.page}.html`;
+// ── Clean SEO-Friendly URL Routing & Permanent Redirects ───────────────────
+const dynamicRouteConfig = [
+  { prefix: '/package-details', page: 'package-details.html', entity: 'packages', label: 'Package' },
+  { prefix: '/packages', page: 'packages.html', entity: 'destinations', label: 'Destination' },
+  { prefix: '/attraction-details', page: 'attraction-details.html', entity: 'attractions', label: 'Attraction' },
+  { prefix: '/activity-details', page: 'activity-details.html', entity: 'activities', label: 'Activity' },
+  { prefix: '/ticket-details', page: 'ticket-details.html', entity: 'tickets', label: 'Ticket' },
+  { prefix: '/blog-details', page: 'blog-details.html', entity: 'blogs', label: 'Blog' },
+  { prefix: '/fixed-departure-details', page: 'fixed-departure-details.html', entity: 'packages', label: 'Fixed Departure' }
+];
+
+// Helper to find HTML file across public directories
+function findHtmlFile(pageName) {
   const possiblePaths = [
     path.join(__dirname, 'public', pageName),
     path.join(__dirname, '..', pageName),
     path.join(__dirname, '../public', pageName)
   ];
-  let filePath = null;
-  for (const p of possiblePaths) {
-    if (fs.existsSync(p)) {
-      filePath = p;
-      break;
+  return possiblePaths.find(p => fs.existsSync(p)) || null;
+}
+
+// 2. HTML Page Router: Permanent 301 Redirects for Old Query URLs + Dynamic SEO Injection
+app.get('/:page.html', async (req, res, next) => {
+  const pageBase = req.params.page;
+  const pageName = `${pageBase}.html`;
+
+  // ── Permanent 301 Redirect for Legacy ?slug= and ?id= Queries ─────────────
+  const matchedRoute = dynamicRouteConfig.find(r => r.page === pageName);
+  if (matchedRoute && (req.query.slug || req.query.id || req.query.package_id)) {
+    const slugVal = String(req.query.slug || req.query.id || req.query.package_id).trim();
+    if (slugVal) {
+      // Preserve other tracking parameters (e.g. utm_source), strip old slug/id
+      const remainingParams = new URLSearchParams();
+      for (const [k, v] of Object.entries(req.query)) {
+        if (k !== 'slug' && k !== 'id' && k !== 'package_id') {
+          remainingParams.append(k, v);
+        }
+      }
+      const qs = remainingParams.toString();
+      const redirectUrl = `${matchedRoute.prefix}/${encodeURIComponent(slugVal)}${qs ? '?' + qs : ''}`;
+      return res.redirect(301, redirectUrl);
     }
   }
+
+  const filePath = findHtmlFile(pageName);
   if (!filePath) {
     return next();
   }
@@ -164,6 +194,78 @@ app.get('/:page.html', async (req, res, next) => {
     return res.sendFile(filePath);
   }
 });
+
+// ── Clean Dynamic Route Handlers (App Router Style URL Paths) ───────────────
+for (const route of dynamicRouteConfig) {
+  app.get(`${route.prefix}/:slug`, async (req, res, next) => {
+    const rawSlug = req.params.slug;
+    if (!rawSlug) return next();
+
+    const cleanSlug = decodeURIComponent(rawSlug).trim();
+    const filePath = findHtmlFile(route.page);
+    if (!filePath) return next();
+
+    try {
+      // Validate existence against data store if records exist
+      let item = null;
+      try {
+        const allItems = await store.getAll(route.entity);
+        if (Array.isArray(allItems) && allItems.length > 0) {
+          const lower = cleanSlug.toLowerCase();
+          item = allItems.find(i => 
+            String(i.slug_url || i.slug || '').toLowerCase() === lower ||
+            String(i.id || i.package_id || i.ticket_id || i.blog_id || i.attraction_id || i.destination_id || '') === cleanSlug ||
+            String(i.package_name || i.destination_name || i.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-') === lower
+          );
+
+          // If store has records but no matching slug is found, return proper 404 page
+          if (!item && allItems.length > 0) {
+            const notFoundPath = findHtmlFile('404.html');
+            if (notFoundPath) {
+              res.setHeader('Content-Type', 'text/html; charset=utf-8');
+              return res.status(404).sendFile(notFoundPath);
+            }
+            return res.status(404).send(`<h1>404 — ${route.label} Not Found</h1><p>The requested ${route.label.toLowerCase()} slug does not exist.</p>`);
+          }
+        }
+      } catch (dbErr) {
+        // Continue if offline or table uninitialized
+      }
+
+      let content = fs.readFileSync(filePath, 'utf8');
+
+      // Canonical URL must be clean self-referencing URL
+      const canonicalUrl = `https://mangalamtravel.com${route.prefix}/${encodeURIComponent(cleanSlug)}`;
+
+      // Check if admin defined explicit SEO match for this clean route
+      const cleanPath = `${route.prefix}/${cleanSlug}`;
+      const customSeo = await findSeoMatch(cleanPath);
+
+      if (customSeo && customSeo.status === 'Active') {
+        const seoToInject = { ...customSeo, canonical_url: canonicalUrl };
+        content = injectSeoIntoHtml(content, seoToInject);
+      } else {
+        // Build dynamic metadata from item properties
+        const itemTitle = item ? (item.package_name || item.destination_name || item.title || item.name || cleanSlug) : cleanSlug;
+        const itemDesc = item ? (item.meta_description || item.description || item.overview || `Explore ${itemTitle} with Mangalam Travel & Tours.`).replace(/<[^>]*>?/gm, '').slice(0, 160) : `Explore ${itemTitle} with Mangalam Travel & Tours.`;
+        const itemImg = item ? (item.card_image || item.inner_image || item.image || '/assets/images/logo-color.png') : '/assets/images/logo-color.png';
+
+        content = injectSeoIntoHtml(content, {
+          meta_title: `${itemTitle} — Mangalam Travel & Tours`,
+          meta_description: itemDesc,
+          canonical_url: canonicalUrl,
+          og_image: itemImg
+        });
+      }
+
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.send(content);
+    } catch (err) {
+      console.warn(`[Server] Error rendering clean route ${route.prefix}/${cleanSlug}:`, err.message);
+      return res.sendFile(filePath);
+    }
+  });
+}
 
 // Serve main website static files (CSS, JS, Assets) — index: false ensures HTML routes above take priority
 const staticOpts = { index: false };

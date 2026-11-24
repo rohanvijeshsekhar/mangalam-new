@@ -1,100 +1,139 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/css" href="https://www.xml-sitemaps.com/css/sitemap.css"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-       <loc>https://mangalamtravel.com/</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>1.0000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/holiday-package.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/flight-tickets.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/global-visa-services.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/travel-insurance.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/miscellaneous.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/mice-tourism.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/cruises.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/attraction.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/about.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/contact.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/blog.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/gallery.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/career.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/privacy-policy.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/terms-and-conditions.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/curated-itineraries.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.6400</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/fixed-departures.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.6400</priority>
-  </url>
-  <url>
-       <loc>https://mangalamtravel.com/honeymoon-packages.html</loc>
-       <lastmod>2026-09-16T09:08:40+00:00</lastmod>
-       <priority>0.6400</priority>
+    <loc>https://mangalamtravel.com/</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/packages.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/holiday-package.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/attraction.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/about.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/contact.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/blog.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/flight-tickets.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/global-visa-services.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/travel-insurance.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/cruises.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/mice-tourism.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/miscellaneous.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/gallery.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/career.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/curated-itineraries.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/fixed-departures.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/honeymoon-packages.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/privacy-policy.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/terms-and-conditions.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/package-details/deluxe</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/package-details/hyderabad-tour-package-3-days-2-nights</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/packages/dubai</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/packages/singapore</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/packages/malaysia</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/packages/thailand</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>  <url>
+    <loc>https://mangalamtravel.com/packages/bali</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
   </url>
 </urlset>

@@ -10,7 +10,58 @@
     # Redirect HTTP to HTTPS (Uncomment after enabling SSL in Hostinger hPanel)
     # RewriteCond %{HTTPS} off
     # RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+    # ── 1. 301 Permanent Redirects: Old .html?slug= URLs -> New Clean URLs ──
+    # Package Details
+    RewriteCond %{THE_REQUEST} \s/+package-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^package-details\.html$ /package-details/%2? [R=301,L]
+    RewriteCond %{THE_REQUEST} \s/+package-details\.html\?([^\s&]*&)?id=([^&\s]+) [NC]
+    RewriteRule ^package-details\.html$ /package-details/%2? [R=301,L]
+
+    # Destination Packages
+    RewriteCond %{THE_REQUEST} \s/+packages\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^packages\.html$ /packages/%2? [R=301,L]
+
+    # Attraction Details
+    RewriteCond %{THE_REQUEST} \s/+attraction-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^attraction-details\.html$ /attraction-details/%2? [R=301,L]
+
+    # Activity Details
+    RewriteCond %{THE_REQUEST} \s/+activity-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^activity-details\.html$ /activity-details/%2? [R=301,L]
+
+    # Ticket Details
+    RewriteCond %{THE_REQUEST} \s/+ticket-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^ticket-details\.html$ /ticket-details/%2? [R=301,L]
+    RewriteCond %{THE_REQUEST} \s/+ticket-details\.html\?([^\s&]*&)?id=([^&\s]+) [NC]
+    RewriteRule ^ticket-details\.html$ /ticket-details/%2? [R=301,L]
+
+    # Blog Details
+    RewriteCond %{THE_REQUEST} \s/+blog-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^blog-details\.html$ /blog-details/%2? [R=301,L]
+
+    # Fixed Departure Details
+    RewriteCond %{THE_REQUEST} \s/+fixed-departure-details\.html\?([^\s&]*&)?slug=([^&\s]+) [NC]
+    RewriteRule ^fixed-departure-details\.html$ /fixed-departure-details/%2? [R=301,L]
+
+    # ── 2. Clean URL Internal Rewrites (serve handler without changing browser URL) ──
+    RewriteRule ^package-details/([^/]+)/?$ /package-details.html?slug=$1 [L,QSA]
+    RewriteRule ^packages/([^/]+)/?$ /packages.html?slug=$1 [L,QSA]
+    RewriteRule ^attraction-details/([^/]+)/?$ /attraction-details.html?slug=$1 [L,QSA]
+    RewriteRule ^activity-details/([^/]+)/?$ /activity-details.html?slug=$1 [L,QSA]
+    RewriteRule ^ticket-details/([^/]+)/?$ /ticket-details.html?slug=$1 [L,QSA]
+    RewriteRule ^blog-details/([^/]+)/?$ /blog-details.html?slug=$1 [L,QSA]
+    RewriteRule ^fixed-departure-details/([^/]+)/?$ /fixed-departure-details.html?slug=$1 [L,QSA]
+
+    # ── 3. Extensionless static HTML files (/about -> about.html) ──
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+    RewriteRule ^([^/]+)/?$ /$1.html [L]
 </IfModule>
+
+# Custom 404 Error Document
+ErrorDocument 404 /404.html
 
 # Prevent directory index listing
 Options -Indexes

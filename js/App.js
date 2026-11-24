@@ -942,7 +942,7 @@
                     closeDropdown();
 
                     // Redirect directly to the destination packages / details page
-                    const destinationUrl = slug ? `packages.html?slug=${encodeURIComponent(slug)}&type=package` : 'packages.html';
+                    const destinationUrl = slug ? `/packages/${encodeURIComponent(slug)}` : '/packages.html';
                     window.location.href = destinationUrl;
                 });
 

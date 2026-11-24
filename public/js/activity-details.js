@@ -14,7 +14,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const price = MT.fmtPrice(d.adult_price || d.amount || d.price);
   const desc  = d.description || d.discription || '';
 
-  document.title = `${title} | Mangalam Travel & Tours`;
+  const canonicalUrl = `https://mangalamtravel.com/activity-details/${encodeURIComponent(a.slug_url || a.slug || slug)}`;
+  const seoTitle = `${title} — Activity Booking | Mangalam Travel & Tours`;
+  const seoDesc = (d.meta_description || d.description || `Book ${title} activities with Mangalam Travel & Tours.`).replace(/<[^>]*>?/gm, '').slice(0, 160);
+  if (window.MT && typeof MT.setDetailSeo === 'function') {
+    MT.setDetailSeo({
+      title: seoTitle,
+      description: seoDesc,
+      canonicalUrl: canonicalUrl,
+      ogImage: d.card_image || d.image || '/assets/images/logo-color.png'
+    });
+  } else {
+    document.title = seoTitle;
+  }
+
 
   root.innerHTML = `
     <div class="relative h-[50vh] overflow-hidden">

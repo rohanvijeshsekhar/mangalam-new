@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               const bDate = b.date || '';
               const bDesc = b.description || (b.content ? b.content.replace(/<[^>]*>?/gm, '').slice(0, 80) + '...' : '');
               return `
-              <a href="blog-details.html?slug=${encodeURIComponent(bSlug)}" class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-md shadow-gray-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+              <a href="/blog-details/${encodeURIComponent(bSlug)}" class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-md shadow-gray-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
                 <div class="relative h-48 w-full overflow-hidden bg-slate-900">
                   <img src="${bImg}" alt="${bTitle}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                   <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>

@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   container.innerHTML = list.map(a => {
     const title = a.name || a.title || 'Attraction';
     const slug = a.slug_url || a.slug || '';
-    const link = `attraction-details.html?slug=${encodeURIComponent(slug || a.id || a.attraction_id)}`;
+    const link = `/attraction-details/${encodeURIComponent(slug || a.id || a.attraction_id)}`;
     const img = MT.resolveImg(a.card_image || a.banner_image || a.image);
     const expType = a.experience_type || 'Cultural';
     const duration = a.duration || '2-3 Hours';

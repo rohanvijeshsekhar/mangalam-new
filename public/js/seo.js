@@ -34,7 +34,14 @@
       const cleanPath = pathname === '/' || pathname.endsWith('/index.html') ? '/' : pathname;
       const search = window.location.search || '';
       const params = new URLSearchParams(search);
-      const slug = params.get('slug');
+      const pathSegments = pathname.replace(/^\/+|\/+$/g, '').split('/');
+      const dynamicSections = ['package-details', 'packages', 'attraction-details', 'activity-details', 'ticket-details', 'blog-details', 'fixed-departure-details'];
+      let pathSlug = null;
+      if (pathSegments.length >= 2 && dynamicSections.includes(pathSegments[0])) {
+        pathSlug = decodeURIComponent(pathSegments[1]);
+      }
+      const slug = pathSlug || params.get('slug');
+
       
       const apiOrigin = window.MT?.API_BASE?.replace(/\/api$/, '') || '';
       
@@ -71,7 +78,7 @@
             setMetaTag('og:title', 'property', fallbackTitle);
             setMetaTag('twitter:title', 'name', fallbackTitle);
           }
-          const currentUrl = window.location.href.split('#')[0];
+          const currentUrl = pathSlug ? `${window.location.origin}/${pathSegments[0]}/${encodeURIComponent(pathSlug)}` : window.location.href.split('#')[0];
           setLinkTag('canonical', currentUrl);
           setMetaTag('og:url', 'property', currentUrl);
         }

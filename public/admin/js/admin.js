@@ -1763,7 +1763,7 @@ function renderSeoTable() {
 
   tbody.innerHTML = filtered.map(s => {
     const seoId = s.id || s.seo_id;
-    const isDest = (s.page_route || '').includes('/packages.html?slug=') || (s.page_name || '').toLowerCase().startsWith('destination:');
+    const isDest = (s.page_route || '').includes('/packages/') || (s.page_route || '').includes('/packages.html?slug=') || (s.page_name || '').toLowerCase().startsWith('destination:');
     const typeBadge = isDest
       ? `<span class="badge blue" style="background:#eff6ff;color:#2563eb;font-size:10px;padding:2px 6px;margin-left:6px;font-weight:600"><i class="fas fa-map-marker-alt"></i> Destination</span>`
       : `<span class="badge gray" style="font-size:10px;padding:2px 6px;margin-left:6px"><i class="fas fa-file-alt"></i> Page</span>`;
@@ -1843,7 +1843,7 @@ async function openSeoForm(s = null) {
   // Build dynamic destination routes
   const destOptions = (destinations || []).map(d => {
     const slug = d.slug_url || (d.destination_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const route = `/packages.html?slug=${slug}`;
+    const route = `/packages/${slug}`;
     const name = d.destination_name || 'Destination';
     return `<option value="${route}">Destination: ${name} (${route})</option>`;
   }).join('');
@@ -1877,7 +1877,7 @@ async function openSeoForm(s = null) {
             <optgroup label="📍 All Destinations (${destinations.length})">
               ${(destinations || []).map(d => {
                 const slug = d.slug_url || (d.destination_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                const route = `/packages.html?slug=${slug}`;
+                const route = `/packages/${slug}`;
                 const isSelected = (s?.page_route === route) ? 'selected' : '';
                 return `<option value="${route}" ${isSelected}>Destination: ${d.destination_name}</option>`;
               }).join('')}
@@ -1890,7 +1890,7 @@ async function openSeoForm(s = null) {
             </optgroup>
           </select>
         </div>
-        <input id="seo-route" list="seo-routes-list" value="${s?.page_route || ''}" placeholder="Select or type URL path (e.g. /packages.html?slug=dubai)" oninput="handleSeoRouteChange(this.value)">
+        <input id="seo-route" list="seo-routes-list" value="${s?.page_route || ''}" placeholder="Select or type URL path (e.g. /packages/dubai or /package-details/slug)" oninput="handleSeoRouteChange(this.value)">
         <datalist id="seo-routes-list">
           ${routesDatalist}
         </datalist>
@@ -1929,7 +1929,7 @@ async function openSeoForm(s = null) {
     <div class="form-row">
       <div class="form-group">
         <label>Canonical URL (Optional)</label>
-        <input id="seo-canonical" value="${s?.canonical_url || ''}" placeholder="e.g. https://mangalamtravel.com/packages.html?slug=dubai">
+        <input id="seo-canonical" value="${s?.canonical_url || ''}" placeholder="e.g. https://mangalamtravel.com/packages/dubai">
       </div>
       <div class="form-group">
         <label>Robots Indexing</label>

@@ -116,7 +116,7 @@
     function destinationCard(destination) {
         if (!destination) return '';
         const dSlug = destination.slug_url || destination.slug || '';
-        const destinationUrl = dSlug ? `packages.html?slug=${encodeURIComponent(dSlug)}&type=package` : 'curated-itineraries.html';
+        const destinationUrl = dSlug ? `/packages/${encodeURIComponent(dSlug)}` : '/curated-itineraries.html';
         const rawTitle = destination.destination_name || destination.title || destination.name || '';
         const title = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
         const rawDesc = (destination.description || '').replace(/<[^>]*>?/gm, '').trim();
@@ -175,7 +175,7 @@
         const tktTitle = ticket.title || ticket.short_title || 'Attraction Ticket';
         const tktAmount = ticket.display_amount || ticket.amount || ticket.adult_price || 0;
         const destName = ticket.destination_name || ticket.destination || 'Global';
-        const detailUrl = `ticket-details.html?id=${encodeURIComponent(ticket.ticket_id || ticket.slug_url || ticket.id || '')}`;
+        const detailUrl = `/ticket-details/${encodeURIComponent(ticket.slug_url || ticket.slug || ticket.ticket_id || ticket.id || '')}`;
 
         return `
       <li class="splide__slide">
@@ -203,13 +203,15 @@
         const imgStr = blog.card_image || blog.banner_image || (blog.images && blog.images.length > 0 ? (typeof blog.images[0] === 'object' ? (blog.images[0].file_name || blog.images[0].name || blog.images[0].image) : blog.images[0]) : '');
         const blogImagePath = MT.resolveImg(imgStr) || './assets/images/logo-color.png';
         const date = blog.date || '';
-        const url = `blog-details.html?slug=${encodeURIComponent(slug)}`;
+        const url = `/blog-details/${encodeURIComponent(slug)}`;
+    // fallback to clean path if slug is empty
+    const finalUrl = slug ? url : '/blog.html';
         const excerpt = blog.description || (blog.content ? blog.content.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim().slice(0, 100) + '...' : 'Explore inspiring journeys, destination highlights, and expert travel tips.');
         const category = blog.category || 'Travel Guide';
 
         return `
       <li class="splide__slide">
-          <a href="${url}" class="group block h-full">
+          <a href="${finalUrl || url}" class="group block h-full">
               <div class="bg-white rounded-[26px] border border-gray-100 shadow-md shadow-gray-200/50 hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col h-full">
                   <!-- Square / Compact Image Box -->
                   <div class="relative h-56 w-full overflow-hidden bg-slate-900">
@@ -303,7 +305,7 @@
         const price = pkg.amount || pkg.price;
         const nights = pkg.nights || '';
         const days = pkg.days || '';
-        const url = `package-details.html?slug=${encodeURIComponent(slug || pkg.package_id || pkg.id || '')}`;
+        const url = `/package-details/${encodeURIComponent(slug || pkg.package_id || pkg.id || '')}`;
         const rawType = String(pkg.type || 'Curated').toLowerCase();
         const overview = pkg.overview || pkg.description || '';
         const destName = pkg.destination_name || (window.DESTINATIONS_MAP && window.DESTINATIONS_MAP[pkg.destination_id]) || 'Global Destination';
@@ -425,7 +427,7 @@
         if (!a) return '';
         const title = a.name || a.title || 'Attraction';
         const slug = a.slug_url || a.slug || '';
-        const link = `attraction-details.html?slug=${encodeURIComponent(slug || a.id || a.attraction_id)}`;
+        const link = `/attraction-details/${encodeURIComponent(slug || a.id || a.attraction_id)}`;
         const img = MT.resolveImg(a.card_image || a.banner_image || a.image);
         const expType = a.experience_type || 'Cultural';
         const duration = a.duration || '2-3 Hours';

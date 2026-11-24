@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const slug  = t.slug_url || t.slug || '';
       const img   = MT.resolveImg(t.image || t.card_image);
       const price = MT.fmtPrice(t.amount || t.price || t.adult_price);
-      const url   = slug ? `/ticket-details?slug=${encodeURIComponent(slug)}` : '#';
+      const url   = slug ? `/ticket-details/${encodeURIComponent(slug)}` : '#';
       return `<a href="${url}" class="block group rounded-2xl overflow-hidden shadow hover:shadow-lg transition-shadow bg-white">
         <div class="relative overflow-hidden h-52"><img src="${img}" alt="${title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='/assets/images/logo-color.png'"></div>
         <div class="p-4">

@@ -25,10 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const direct = await MT.apiGet(`/api/packages/${encodeURIComponent(rawParam)}`);
       if (direct && (direct.package_id || direct.id || direct.package_name)) pkg = direct;
     }
-    if (!pkg && packages.length > 0) {
-      // Fallback to first available package if single package exists
-      pkg = packages[0];
-    }
+    // No unsafe fallback to packages[0] — show 404 when requested slug is missing
   }
 
   if (!pkg) {
@@ -48,7 +45,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const d = detail || pkg;
 
     const title = d.package_name || d.title || d.name || '';
-  if (title) document.title = title;
+  const canonicalUrl = `https://mangalamtravel.com/package-details/${encodeURIComponent(d.slug_url || d.slug || rawParam)}`;
+  const seoTitle = `${title} — Holiday Package | Mangalam Travel & Tours`;
+  const seoDesc = (d.meta_description || d.description || d.overview || `Explore ${title} with Mangalam Travel & Tours. Complete itinerary, hotel details, and best prices.`).replace(/<[^>]*>?/gm, '').slice(0, 160);
+  if (typeof MT.setDetailSeo === 'function') {
+    MT.setDetailSeo({
+      title: seoTitle,
+      description: seoDesc,
+      canonicalUrl: canonicalUrl,
+      ogImage: bannerList[0] || d.card_image || '/assets/images/logo-color.png'
+    });
+  } else {
+    document.title = seoTitle;
+  }
+
   
   // Extract banner images list (up to 4 images)
   let rawBanners = d.banner_images || [];
