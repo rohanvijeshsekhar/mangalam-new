@@ -27,7 +27,9 @@
     RewriteRule ^packages$ /holiday-package.html [R=301,L]
     RewriteRule ^our-teams$ /about.html [R=301,L]
 
-    # ── Asset & Script routing fallback for nested path URLs ──
+    # ── Asset & Script routing fallback for nested path URLs (exclude /admin/ and existing files) ──
+    RewriteCond %{REQUEST_URI} !^/admin(/|$) [NC]
+    RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^.+/(js|assets|uploads)/(.*)$ /$1/$2 [L]
 
     # ── 1. 301 Permanent Redirects: Old .html?slug= URLs -> New Clean URLs ──

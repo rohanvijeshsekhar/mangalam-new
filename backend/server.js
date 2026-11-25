@@ -162,6 +162,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 // Serve admin panel
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
+app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
+app.use('/admin', express.static(path.join(__dirname, 'public', 'admin')));
 
 // ── Dynamic SEO & HTML Page Serving ──────────────────────────────────────────
 const { findSeoMatch, injectSeoIntoHtml, warmSeoCache } = require('./routes/seo');
