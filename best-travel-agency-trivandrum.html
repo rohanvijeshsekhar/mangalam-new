@@ -887,9 +887,9 @@
                 <!-- 2x2 Balanced Services Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10 items-stretch">
 
-                    <!-- Service 1: Flight Booking -->
-                    <article id="service-flight-booking"
-                        class="scroll-mt-24 sm:scroll-mt-28 flex flex-col h-full bg-[#fafaf9] hover:bg-white rounded-3xl border border-slate-200/90 hover:border-emerald-300 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                    <!-- Service 1: Flight Booking (Clickable Redirect to /flight-tickets.html) -->
+                    <a href="/flight-tickets.html" id="service-flight-booking"
+                        class="scroll-mt-24 sm:scroll-mt-28 flex flex-col h-full bg-[#fafaf9] hover:bg-white rounded-3xl border border-slate-200/90 hover:border-emerald-400 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer block no-underline text-inherit">
                         <div class="relative overflow-hidden aspect-[16/9] bg-slate-100">
                             <img src="/assets/images/service-flight-booking.webp"
                                 alt="Commercial passenger airplane wing above bright clouds at sunrise"
@@ -907,18 +907,18 @@
                                 conditions before confirming your ticket.
                             </p>
                             <div class="mt-auto pt-4 border-t border-slate-200/60">
-                                <button type="button" data-service="Flight Booking"
-                                    class="service-enquiry-trigger group/btn inline-flex items-center gap-2 text-sm font-bold text-emerald-800 hover:text-red-600 font-dm-sans transition-colors cursor-pointer">
-                                    <span>Enquire about Flight Booking</span>
-                                    <svg class="w-3 h-3 transition-transform duration-200 group-hover/btn:translate-x-1 inline-block shrink-0" viewBox="0 0 448 512" fill="currentColor" aria-hidden="true"><path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg>
-                                </button>
+                                <span
+                                    class="group/btn inline-flex items-center gap-2 text-sm font-bold text-emerald-800 group-hover:text-red-600 font-dm-sans transition-colors">
+                                    <span>Explore Flight Booking</span>
+                                    <svg class="w-3 h-3 transition-transform duration-200 group-hover:translate-x-1 inline-block shrink-0" viewBox="0 0 448 512" fill="currentColor" aria-hidden="true"><path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg>
+                                </span>
                             </div>
                         </div>
-                    </article>
+                    </a>
 
-                    <!-- Service 2: Visa Assistance -->
-                    <article id="service-visa-assistance"
-                        class="scroll-mt-24 sm:scroll-mt-28 flex flex-col h-full bg-[#fafaf9] hover:bg-white rounded-3xl border border-slate-200/90 hover:border-emerald-300 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                    <!-- Service 2: Visa Assistance (Clickable Redirect to /global-visa-services.html) -->
+                    <a href="/global-visa-services.html" id="service-visa-assistance"
+                        class="scroll-mt-24 sm:scroll-mt-28 flex flex-col h-full bg-[#fafaf9] hover:bg-white rounded-3xl border border-slate-200/90 hover:border-emerald-400 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer block no-underline text-inherit">
                         <div class="relative overflow-hidden aspect-[16/9] bg-slate-100">
                             <img src="/assets/images/tourist-visa.webp"
                                 alt="Travel consultant reviewing passports and visa application documents with clients"
@@ -943,14 +943,14 @@
                                 </p>
                             </div>
                             <div class="mt-auto pt-4 border-t border-slate-200/60">
-                                <button type="button" data-service="Visa Assistance"
-                                    class="service-enquiry-trigger group/btn inline-flex items-center gap-2 text-sm font-bold text-emerald-800 hover:text-red-600 font-dm-sans transition-colors cursor-pointer">
-                                    <span>Enquire about Visa Assistance</span>
-                                    <svg class="w-3 h-3 transition-transform duration-200 group-hover/btn:translate-x-1 inline-block shrink-0" viewBox="0 0 448 512" fill="currentColor" aria-hidden="true"><path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg>
-                                </button>
+                                <span
+                                    class="group/btn inline-flex items-center gap-2 text-sm font-bold text-emerald-800 group-hover:text-red-600 font-dm-sans transition-colors">
+                                    <span>Explore Visa Assistance</span>
+                                    <svg class="w-3 h-3 transition-transform duration-200 group-hover:translate-x-1 inline-block shrink-0" viewBox="0 0 448 512" fill="currentColor" aria-hidden="true"><path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg>
+                                </span>
                             </div>
                         </div>
-                    </article>
+                    </a>
 
                     <!-- Service 3: Hotel Booking and Transfers -->
                     <article
@@ -1067,11 +1067,11 @@
                                     Business Profile</span>
                             </div>
 
-                            <!-- Prominent 4.8/5 Rating -->
+                            <!-- Prominent 4.3/5 Rating -->
                             <div class="mb-4">
                                 <p
                                     class="text-4xl sm:text-5xl font-extrabold font-[Quicksand] text-slate-900 tracking-tight leading-none">
-                                    <span>4.8/5</span>
+                                    <span>4.3/5</span>
                                     <span
                                         class="block sm:inline text-xl sm:text-2xl font-bold text-emerald-800 sm:ml-2 mt-1.5 sm:mt-0">on
                                         Google</span>
@@ -1080,7 +1080,7 @@
 
                             <!-- Clean 5-Star Visual Representation -->
                             <div class="flex items-center gap-1.5 mb-6" role="img"
-                                aria-label="4.8 out of 5 stars on Google">
+                                aria-label="4.3 out of 5 stars on Google">
                                 <svg class="w-5 h-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor"
                                     aria-hidden="true">
                                     <path
@@ -1104,8 +1104,8 @@
                                 <svg class="w-5 h-5" viewBox="0 0 20 20" aria-hidden="true">
                                     <defs>
                                         <linearGradient id="google-star-partial" x1="0%" y1="0%" x2="100%" y2="0%">
-                                            <stop offset="80%" stop-color="#fbbf24" />
-                                            <stop offset="80%" stop-color="#e2e8f0" />
+                                            <stop offset="30%" stop-color="#fbbf24" />
+                                            <stop offset="30%" stop-color="#e2e8f0" />
                                         </linearGradient>
                                     </defs>
                                     <path fill="url(#google-star-partial)"
@@ -1589,15 +1589,15 @@
 
                     <!-- Right Column: Branch Visual Slot & Verified Google Map -->
                     <div class="lg:col-span-7 flex flex-col gap-6">
-                        <div class="rounded-3xl border border-dashed border-slate-300 bg-[#fafaf9] p-6 sm:p-8 text-center flex flex-col items-center justify-center min-h-[150px]">
+                        <div class="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 text-center flex flex-col items-center justify-center min-h-[150px] shadow-sm">
                             <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/70 text-emerald-700 flex items-center justify-center mb-3" aria-hidden="true">
-                                <svg class="w-3.5 h-3.5 inline-block shrink-0" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M48 0C21.5 0 0 21.5 0 48V464c0 26.5 21.5 48 48 48h96V432c0-26.5 21.5-48 48-48s48 21.5 48 48v80h96c26.5 0 48-21.5 48-48V48c0-26.5-21.5-48-48-48H48zM64 240c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V240zm112-16h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H176c-8.8 0-16-7.2-16-16V240c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H272c-8.8 0-16-7.2-16-16V240zM80 96h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H176c-8.8 0-16-7.2-16-16V112zM272 96h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H272c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16z"/></svg>
+                                <svg class="w-4 h-4 inline-block shrink-0" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M48 0C21.5 0 0 21.5 0 48V464c0 26.5 21.5 48 48 48h96V432c0-26.5 21.5-48 48-48s48 21.5 48 48v80h96c26.5 0 48-21.5 48-48V48c0-26.5-21.5-48-48-48H48zM64 240c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V240zm112-16h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H176c-8.8 0-16-7.2-16-16V240c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H272c-8.8 0-16-7.2-16-16V240zM80 96h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H176c-8.8 0-16-7.2-16-16V112zM272 96h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H272c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16z"/></svg>
                             </div>
-                            <p class="text-sm font-bold font-[Quicksand] text-slate-900 mb-1">
+                            <h3 class="text-base font-bold font-[Quicksand] text-slate-900 mb-1.5">
                                 Mangalam Travel &amp; Tours &mdash; Trivandrum Branch
-                            </p>
-                            <p class="text-xs sm:text-sm text-slate-500 font-dm-sans max-w-md leading-relaxed">
-                                Our Tower, Vellayambalam &ndash; Sasthamangalam Rd &middot; Original branch office photograph pending upload.
+                            </h3>
+                            <p class="text-xs sm:text-sm text-slate-600 font-dm-sans max-w-md leading-relaxed">
+                                5 &amp; 6, 1st Floor, Our Tower, Vellayambalam &ndash; Sasthamangalam Rd, P.O, Thiruvananthapuram, Kerala 695010
                             </p>
                         </div>
 
